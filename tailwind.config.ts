@@ -52,6 +52,23 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Spanish app theme colors
+				terracotta: {
+					DEFAULT: 'hsl(var(--terracotta))',
+					light: 'hsl(var(--terracotta-light))'
+				},
+				mediterranean: {
+					DEFAULT: 'hsl(var(--mediterranean-blue))',
+					light: 'hsl(var(--mediterranean-blue-light))'
+				},
+				sunny: {
+					DEFAULT: 'hsl(var(--sunny-yellow))',
+					light: 'hsl(var(--sunny-yellow-light))'
+				},
+				warm: {
+					bg: 'hsl(var(--warm-bg))',
+					text: 'hsl(var(--warm-text))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

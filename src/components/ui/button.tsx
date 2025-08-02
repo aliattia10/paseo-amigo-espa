@@ -18,11 +18,17 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Spanish app variants
+        terracotta: "bg-terracotta text-white hover:bg-terracotta-light shadow-lg transition-all duration-200",
+        mediterranean: "bg-mediterranean text-white hover:bg-mediterranean/90 shadow-md",
+        sunny: "bg-sunny text-warm-text hover:bg-sunny-light shadow-md",
+        warm: "bg-warm-bg text-warm-text border-2 border-terracotta hover:bg-terracotta hover:text-white transition-all duration-200",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
+        xl: "h-14 rounded-lg px-10 text-lg",
         icon: "h-10 w-10",
       },
     },
