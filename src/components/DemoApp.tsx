@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, Clock, CheckCircle, Camera, ArrowLeft, Send, User, Dog } from 'lucide-react';
+import { Heart, MapPin, Clock, CheckCircle, Camera, ArrowLeft, Send, User, Dog, Home, Luggage, Star } from 'lucide-react';
 import appLogo from '@/assets/app-logo.png';
 import lucasDog from '@/assets/lucas-dog.jpg';
 import luciaProfile from '@/assets/lucia-profile.jpg';
@@ -23,7 +23,8 @@ type Screen =
   | 'walker-home'
   | 'accept-request'
   | 'walk-progress'
-  | 'walk-complete';
+  | 'walk-complete'
+  | 'review';
 
 interface DemoAppProps {}
 
@@ -50,6 +51,7 @@ const DemoApp: React.FC<DemoAppProps> = () => {
             else if (currentScreen === 'lucia-profile') navigateTo('companions');
             else if (currentScreen === 'request') navigateTo('lucia-profile');
             else if (currentScreen === 'chat') navigateTo('request');
+            else if (currentScreen === 'review') navigateTo('walk-complete');
             else navigateTo('welcome');
           }}
         >
@@ -337,6 +339,36 @@ const DemoApp: React.FC<DemoAppProps> = () => {
                 </p>
               </div>
               
+              <div>
+                <h3 className="font-semibold mb-3">Valoraciones</h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-1">
+                    {[1,2,3,4,5].map((star) => (
+                      <Star key={star} className="w-4 h-4 fill-sunny text-sunny" />
+                    ))}
+                  </div>
+                  <span className="font-semibold">4.9/5</span>
+                  <span className="text-sm text-muted-foreground">(12 valoraciones)</span>
+                </div>
+                
+                <div className="space-y-2 mb-3">
+                  <div className="bg-white/50 rounded-lg p-3">
+                    <p className="text-sm">"Lucía es un encanto, Lucas la adora."</p>
+                    <p className="text-xs text-muted-foreground mt-1">- Carmen</p>
+                  </div>
+                  <div className="bg-white/50 rounded-lg p-3">
+                    <p className="text-sm">"Muy puntual y comunicativa."</p>
+                    <p className="text-xs text-muted-foreground mt-1">- Javier</p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="text-xs">Puntual</Badge>
+                  <Badge variant="secondary" className="text-xs">Genial con los perros</Badge>
+                  <Badge variant="secondary" className="text-xs">Amable</Badge>
+                </div>
+              </div>
+              
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
@@ -363,7 +395,7 @@ const DemoApp: React.FC<DemoAppProps> = () => {
     </div>
   );
 
-  // Screen 7: Request Screen
+  // Screen 7: Service Request Screen - REVISED
   const RequestScreen = () => (
     <div className="min-h-screen bg-warm-bg">
       {renderHeader('Solicitar Servicio')}
@@ -376,20 +408,38 @@ const DemoApp: React.FC<DemoAppProps> = () => {
             <Button 
               variant="terracotta" 
               size="xl" 
-              className="w-full"
+              className="w-full justify-start"
               onClick={() => navigateTo('chat')}
             >
-              <Dog className="mr-2" />
-              Solicitar un Paseo
+              <Clock className="mr-3 w-5 h-5" />
+              <div className="text-left">
+                <div className="font-semibold">Solicitar un Paseo</div>
+                <div className="text-sm opacity-75">30-60 minutos</div>
+              </div>
             </Button>
             
             <Button 
               variant="warm" 
               size="xl" 
-              className="w-full"
+              className="w-full justify-start"
             >
-              <Heart className="mr-2" />
-              Solicitar Compañía en Casa
+              <Home className="mr-3 w-5 h-5" />
+              <div className="text-left">
+                <div className="font-semibold">Solicitar Cuidado por Horas</div>
+                <div className="text-sm opacity-75">Cuidado en tu casa</div>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="xl" 
+              className="w-full justify-start"
+            >
+              <Luggage className="mr-3 w-5 h-5" />
+              <div className="text-left">
+                <div className="font-semibold">Solicitar Alojamiento</div>
+                <div className="text-sm opacity-75">Estancia nocturna</div>
+              </div>
             </Button>
             
             <div className="text-center text-sm text-muted-foreground mt-4">
@@ -607,7 +657,7 @@ const DemoApp: React.FC<DemoAppProps> = () => {
     </div>
   );
 
-  // Screen 12: Walk Complete
+  // Screen 12: Walk Complete & Feedback - REVISED
   const WalkCompleteScreen = () => (
     <div className="min-h-screen bg-warm-bg">
       <div className="p-6">
@@ -620,22 +670,7 @@ const DemoApp: React.FC<DemoAppProps> = () => {
         </div>
         
         <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="text-center mb-6">
-              <h2 className="text-lg font-semibold mb-4">¿Cómo ha ido todo?</h2>
-              <div className="flex justify-center gap-4">
-                <Button variant="outline" size="lg" className="text-2xl p-4">
-                  🙂
-                </Button>
-                <Button variant="outline" size="lg" className="text-2xl p-4">
-                  😊
-                </Button>
-                <Button variant="terracotta" size="lg" className="text-2xl p-4">
-                  😄
-                </Button>
-              </div>
-            </div>
-            
+          <CardContent className="p-6">            
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Duración:</span>
@@ -658,6 +693,15 @@ const DemoApp: React.FC<DemoAppProps> = () => {
             variant="terracotta" 
             size="lg" 
             className="w-full"
+            onClick={() => navigateTo('review')}
+          >
+            <Star className="mr-2 w-4 h-4" />
+            Dejar una valoración a Lucía
+          </Button>
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="w-full"
             onClick={() => navigateTo('owner-home')}
           >
             Volver al Inicio
@@ -669,6 +713,96 @@ const DemoApp: React.FC<DemoAppProps> = () => {
       </div>
     </div>
   );
+
+  // Screen 13: Review Screen ("BlaBlaCar Style") - NEW
+  const ReviewScreen = () => {
+    const [selectedRating, setSelectedRating] = useState(5);
+    const [selectedTags, setSelectedTags] = useState(['Puntual', 'Genial con mi perro', 'Repetiría sin dudar']);
+    
+    const availableTags = ['Puntual', 'Amable', 'Genial con mi perro', 'Buena comunicación', 'Repetiría sin dudar'];
+    
+    const toggleTag = (tag: string) => {
+      setSelectedTags(prev => 
+        prev.includes(tag) 
+          ? prev.filter(t => t !== tag)
+          : [...prev, tag]
+      );
+    };
+    
+    return (
+      <div className="min-h-screen bg-warm-bg">
+        {renderHeader('Valoración')}
+        <div className="p-6">
+          <Card>
+            <CardHeader>
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-terracotta mx-auto mb-3">
+                  <img src={luciaProfile} alt="Lucía" className="w-full h-full object-cover" />
+                </div>
+                <h2 className="text-xl font-semibold">¿Qué tal ha ido con Lucía?</h2>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center">
+                <h3 className="font-semibold mb-3">Puntuación general</h3>
+                <div className="flex justify-center gap-2">
+                  {[1,2,3,4,5].map((star) => (
+                    <Button
+                      key={star}
+                      variant="ghost"
+                      size="sm"
+                      className="p-1"
+                      onClick={() => setSelectedRating(star)}
+                    >
+                      <Star 
+                        className={`w-8 h-8 ${star <= selectedRating ? 'fill-sunny text-sunny' : 'text-gray-300'}`}
+                      />
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold mb-3">Elige lo que más ha destacado:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {availableTags.map((tag) => (
+                    <Button
+                      key={tag}
+                      variant={selectedTags.includes(tag) ? "terracotta" : "outline"}
+                      size="sm"
+                      onClick={() => toggleTag(tag)}
+                      className="text-sm"
+                    >
+                      {tag}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="comment">Comentario público (opcional)</Label>
+                <Textarea 
+                  id="comment" 
+                  placeholder="Cuéntanos cómo ha ido el paseo..."
+                  className="min-h-20 text-base"
+                  defaultValue="Lucía ha sido genial con Lucas. Muy puntual y se nota que ama a los perros."
+                />
+              </div>
+              
+              <Button 
+                variant="terracotta" 
+                size="lg" 
+                className="w-full"
+                onClick={() => navigateTo('owner-home')}
+              >
+                Publicar valoración
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -684,6 +818,7 @@ const DemoApp: React.FC<DemoAppProps> = () => {
       case 'accept-request': return <AcceptRequestScreen />;
       case 'walk-progress': return <WalkProgressScreen />;
       case 'walk-complete': return <WalkCompleteScreen />;
+      case 'review': return <ReviewScreen />;
       default: return <WelcomeScreen />;
     }
   };
