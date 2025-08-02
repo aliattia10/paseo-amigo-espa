@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, Clock, CheckCircle, Camera, ArrowLeft, Send, User, Dog, Home, Luggage, Star } from 'lucide-react';
+import { Heart, MapPin, Clock, CheckCircle, Camera, ArrowLeft, Send, User, Dog, Home, Star } from 'lucide-react';
 import appLogo from '@/assets/app-logo.png';
 import lucasDog from '@/assets/lucas-dog.jpg';
 import luciaProfile from '@/assets/lucia-profile.jpg';
@@ -408,10 +408,10 @@ const DemoApp: React.FC<DemoAppProps> = () => {
             <Button 
               variant="terracotta" 
               size="xl" 
-              className="w-full justify-start"
+              className="w-full justify-start h-16"
               onClick={() => navigateTo('chat')}
             >
-              <Clock className="mr-3 w-5 h-5" />
+              <Clock className="mr-3 w-5 h-5 flex-shrink-0" />
               <div className="text-left">
                 <div className="font-semibold">Solicitar un Paseo</div>
                 <div className="text-sm opacity-75">30-60 minutos</div>
@@ -421,28 +421,16 @@ const DemoApp: React.FC<DemoAppProps> = () => {
             <Button 
               variant="warm" 
               size="xl" 
-              className="w-full justify-start"
+              className="w-full justify-start h-16"
             >
-              <Home className="mr-3 w-5 h-5" />
+              <Home className="mr-3 w-5 h-5 flex-shrink-0" />
               <div className="text-left">
                 <div className="font-semibold">Solicitar Cuidado por Horas</div>
                 <div className="text-sm opacity-75">Cuidado en tu casa</div>
               </div>
             </Button>
             
-            <Button 
-              variant="outline" 
-              size="xl" 
-              className="w-full justify-start"
-            >
-              <Luggage className="mr-3 w-5 h-5" />
-              <div className="text-left">
-                <div className="font-semibold">Solicitar Alojamiento</div>
-                <div className="text-sm opacity-75">Estancia nocturna</div>
-              </div>
-            </Button>
-            
-            <div className="text-center text-sm text-muted-foreground mt-4">
+            <div className="text-center text-sm text-muted-foreground mt-6">
               <p>Lucía recibirá tu solicitud y podrá responder directamente</p>
             </div>
           </CardContent>
