@@ -1,34 +1,59 @@
-import DemoApp from "@/components/DemoApp";
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import AuthPage from '@/components/AuthPage';
+import MainApp from '@/components/MainApp';
+import type { User, Session } from '@supabase/supabase-js';
 
 const Index = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-warm-text mb-4">¿Damos un Paseo?</h1>
-          <p className="text-xl text-muted-foreground mb-2">
-            Demo Interactivo - App de Compañía Canina
-          </p>
-          <p className="text-lg text-muted-foreground">
-            Conectando dueños y compañeros de perros en toda España
-          </p>
-        </div>
-        
-        {/* Demo Container */}
-        <div className="flex justify-center">
-          <DemoApp />
-        </div>
-        
-        {/* Instructions */}
-        <div className="mt-8 text-center">
-          <p className="text-muted-foreground">
-            💡 Navega por la demo tocando los botones para ver el flujo completo de la aplicación
-          </p>
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuthSuccess = () => {
+    // Auth state will be updated by the listener
+  };
+
+  const handleSignOut = () => {
+    setUser(null);
+    setSession(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-warm-bg flex items-center justify-center">
+        <div className="animate-pulse text-center">
+          <div className="w-16 h-16 bg-terracotta rounded-full mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!user || !session) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  return <MainApp user={user} session={session} onSignOut={handleSignOut} />;
 };
 
 export default Index;
