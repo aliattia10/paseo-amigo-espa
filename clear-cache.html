@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - Paseo</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+</head>
+<body>
+    <div style="padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Cache Cleared!</h1>
+        <p>The browser cache has been cleared. You can now:</p>
+        <ol>
+            <li>Close this tab</li>
+            <li>Go back to the password reset page</li>
+            <li>Hard refresh the page (Ctrl+Shift+R or Cmd+Shift+R)</li>
+            <li>Try the password reset again</li>
+        </ol>
+        <p><strong>Note:</strong> The timeout errors should now be resolved!</p>
+    </div>
+    
+    <script>
+        // Clear various caches
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                for (let name of names) {
+                    caches.delete(name);
+                }
+            });
+        }
+        
+        // Clear localStorage
+        localStorage.clear();
+        
+        // Clear sessionStorage
+        sessionStorage.clear();
+        
+        console.log('Cache cleared successfully!');
+    </script>
+</body>
+</html>

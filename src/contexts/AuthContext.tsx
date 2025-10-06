@@ -37,21 +37,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Get initial session
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log('AuthContext: Getting initial session...');
+        
+        // Get session without timeout to prevent hanging issues
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+        console.log('AuthContext: Session data:', session);
+        
         if (session?.user) {
+          console.log('AuthContext: User found:', session.user.id);
           setCurrentUser(session.user);
           try {
+            console.log('AuthContext: Fetching user profile...');
             const profile = await getUser(session.user.id);
+            console.log('AuthContext: Profile data:', profile);
             setUserProfile(profile);
           } catch (error) {
             console.error('Error fetching user profile:', error);
             // If profile doesn't exist, set userProfile to null but don't fail
             setUserProfile(null);
           }
+        } else {
+          console.log('AuthContext: No user found in session');
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
+        // If there's an error, set loading to false anyway to prevent infinite loading
+        setCurrentUser(null);
+        setUserProfile(null);
       } finally {
+        console.log('AuthContext: Setting loading to false');
         setLoading(false);
       }
     };

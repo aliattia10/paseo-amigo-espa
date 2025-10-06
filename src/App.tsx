@@ -25,7 +25,10 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
   
+  console.log('ProtectedRoute:', { currentUser: !!currentUser, loading });
+  
   if (loading) {
+    console.log('ProtectedRoute: Still loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center">
         <div className="text-center">
@@ -36,6 +39,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
+  console.log('ProtectedRoute: Loading complete, currentUser:', !!currentUser);
   return currentUser ? <>{children}</> : <Navigate to="/auth" />;
 };
 
