@@ -1,5 +1,23 @@
--- Paseo Amigo España - Database Schema
+-- Paseo Amigo España - Database Schema (Fixed Version)
 -- PostgreSQL/Supabase compatible schema
+
+-- Drop existing tables if they exist (in correct order due to foreign keys)
+DROP TABLE IF EXISTS geo_points CASCADE;
+DROP TABLE IF EXISTS walk_sessions CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS chat_messages CASCADE;
+DROP TABLE IF EXISTS walk_requests CASCADE;
+DROP TABLE IF EXISTS user_subscriptions CASCADE;
+DROP TABLE IF EXISTS payment_methods CASCADE;
+DROP TABLE IF EXISTS subscription_plans CASCADE;
+DROP TABLE IF EXISTS walker_profiles CASCADE;
+DROP TABLE IF EXISTS dogs CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- Drop existing functions and triggers
+DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
+DROP FUNCTION IF EXISTS update_walker_rating() CASCADE;
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -8,7 +26,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
 
 -- Users table
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -22,7 +40,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Dogs table
-CREATE TABLE IF NOT EXISTS dogs (
+CREATE TABLE dogs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
@@ -35,7 +53,7 @@ CREATE TABLE IF NOT EXISTS dogs (
 );
 
 -- Walker profiles table
-CREATE TABLE IF NOT EXISTS walker_profiles (
+CREATE TABLE walker_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     bio TEXT NOT NULL,
@@ -51,15 +69,15 @@ CREATE TABLE IF NOT EXISTS walker_profiles (
 );
 
 -- Walk requests table
-CREATE TABLE IF NOT EXISTS walk_requests (
+CREATE TABLE walk_requests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     walker_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     dog_id UUID NOT NULL REFERENCES dogs(id) ON DELETE CASCADE,
     service_type VARCHAR(20) CHECK (service_type IN ('walk', 'care')) NOT NULL,
     duration INTEGER NOT NULL, -- in minutes
-    date DATE NOT NULL,
-    time TIME NOT NULL,
+    walk_date DATE NOT NULL, -- renamed from 'date' to avoid conflicts
+    walk_time TIME NOT NULL, -- renamed from 'time' to avoid conflicts
     location TEXT NOT NULL,
     notes TEXT,
     status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'in-progress', 'completed', 'cancelled')) DEFAULT 'pending',
@@ -69,7 +87,7 @@ CREATE TABLE IF NOT EXISTS walk_requests (
 );
 
 -- Chat messages table
-CREATE TABLE IF NOT EXISTS chat_messages (
+CREATE TABLE chat_messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     request_id UUID NOT NULL REFERENCES walk_requests(id) ON DELETE CASCADE,
     sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -78,7 +96,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 
 -- Reviews table
-CREATE TABLE IF NOT EXISTS reviews (
+CREATE TABLE reviews (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     walk_request_id UUID NOT NULL REFERENCES walk_requests(id) ON DELETE CASCADE,
     reviewer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -90,7 +108,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 -- Subscription plans table
-CREATE TABLE IF NOT EXISTS subscription_plans (
+CREATE TABLE subscription_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
@@ -103,7 +121,7 @@ CREATE TABLE IF NOT EXISTS subscription_plans (
 );
 
 -- User subscriptions table
-CREATE TABLE IF NOT EXISTS user_subscriptions (
+CREATE TABLE user_subscriptions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     plan_id UUID NOT NULL REFERENCES subscription_plans(id) ON DELETE CASCADE,
@@ -117,7 +135,7 @@ CREATE TABLE IF NOT EXISTS user_subscriptions (
 );
 
 -- Payment methods table
-CREATE TABLE IF NOT EXISTS payment_methods (
+CREATE TABLE payment_methods (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     stripe_payment_method_id VARCHAR(255) NOT NULL,
@@ -131,7 +149,7 @@ CREATE TABLE IF NOT EXISTS payment_methods (
 );
 
 -- Walk sessions table (for tracking active walks)
-CREATE TABLE IF NOT EXISTS walk_sessions (
+CREATE TABLE walk_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     walk_request_id UUID NOT NULL REFERENCES walk_requests(id) ON DELETE CASCADE,
     start_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -143,7 +161,7 @@ CREATE TABLE IF NOT EXISTS walk_sessions (
 );
 
 -- Geo points table (for tracking walk routes)
-CREATE TABLE IF NOT EXISTS geo_points (
+CREATE TABLE geo_points (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     session_id UUID NOT NULL REFERENCES walk_sessions(id) ON DELETE CASCADE,
     latitude DECIMAL(10,8) NOT NULL,
@@ -152,7 +170,7 @@ CREATE TABLE IF NOT EXISTS geo_points (
 );
 
 -- Notifications table
-CREATE TABLE IF NOT EXISTS notifications (
+CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -163,24 +181,24 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 -- Indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_city ON users(city);
-CREATE INDEX IF NOT EXISTS idx_users_user_type ON users(user_type);
-CREATE INDEX IF NOT EXISTS idx_dogs_owner_id ON dogs(owner_id);
-CREATE INDEX IF NOT EXISTS idx_walker_profiles_user_id ON walker_profiles(user_id);
-CREATE INDEX IF NOT EXISTS idx_walker_profiles_verified ON walker_profiles(verified);
-CREATE INDEX IF NOT EXISTS idx_walk_requests_owner_id ON walk_requests(owner_id);
-CREATE INDEX IF NOT EXISTS idx_walk_requests_walker_id ON walk_requests(walker_id);
-CREATE INDEX IF NOT EXISTS idx_walk_requests_status ON walk_requests(status);
-CREATE INDEX IF NOT EXISTS idx_walk_requests_date ON walk_requests(date);
-CREATE INDEX IF NOT EXISTS idx_chat_messages_request_id ON chat_messages(request_id);
-CREATE INDEX IF NOT EXISTS idx_reviews_reviewed_id ON reviews(reviewed_id);
-CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user_id ON user_subscriptions(user_id);
-CREATE INDEX IF NOT EXISTS idx_payment_methods_user_id ON payment_methods(user_id);
-CREATE INDEX IF NOT EXISTS idx_walk_sessions_walk_request_id ON walk_sessions(walk_request_id);
-CREATE INDEX IF NOT EXISTS idx_geo_points_session_id ON geo_points(session_id);
-CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_city ON users(city);
+CREATE INDEX idx_users_user_type ON users(user_type);
+CREATE INDEX idx_dogs_owner_id ON dogs(owner_id);
+CREATE INDEX idx_walker_profiles_user_id ON walker_profiles(user_id);
+CREATE INDEX idx_walker_profiles_verified ON walker_profiles(verified);
+CREATE INDEX idx_walk_requests_owner_id ON walk_requests(owner_id);
+CREATE INDEX idx_walk_requests_walker_id ON walk_requests(walker_id);
+CREATE INDEX idx_walk_requests_status ON walk_requests(status);
+CREATE INDEX idx_walk_requests_date ON walk_requests(walk_date);
+CREATE INDEX idx_chat_messages_request_id ON chat_messages(request_id);
+CREATE INDEX idx_reviews_reviewed_id ON reviews(reviewed_id);
+CREATE INDEX idx_user_subscriptions_user_id ON user_subscriptions(user_id);
+CREATE INDEX idx_payment_methods_user_id ON payment_methods(user_id);
+CREATE INDEX idx_walk_sessions_walk_request_id ON walk_sessions(walk_request_id);
+CREATE INDEX idx_geo_points_session_id ON geo_points(session_id);
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_notifications_read ON notifications(read);
 
 -- Functions for updating timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()

@@ -156,8 +156,8 @@ export interface Database {
           dog_id: string;
           service_type: 'walk' | 'care';
           duration: number;
-          date: string;
-          time: string;
+          walk_date: string;
+          walk_time: string;
           location: string;
           notes?: string;
           status: 'pending' | 'accepted' | 'in-progress' | 'completed' | 'cancelled';
@@ -172,8 +172,8 @@ export interface Database {
           dog_id: string;
           service_type: 'walk' | 'care';
           duration: number;
-          date: string;
-          time: string;
+          walk_date: string;
+          walk_time: string;
           location: string;
           notes?: string;
           status?: 'pending' | 'accepted' | 'in-progress' | 'completed' | 'cancelled';
