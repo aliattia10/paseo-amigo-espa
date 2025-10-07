@@ -26,9 +26,7 @@ type Screen =
   | 'walk-complete'
   | 'review';
 
-interface DemoAppProps {}
-
-const DemoApp: React.FC<DemoAppProps> = () => {
+const DemoApp: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('welcome');
   const [userType, setUserType] = useState<'owner' | 'walker' | null>(null);
 

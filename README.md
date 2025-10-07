@@ -1,73 +1,178 @@
-# Welcome to your Lovable project
+# 🐕 Paseo - Encuentra el paseador perfecto para tu perro
 
-## Project info
+Una aplicación moderna para conectar dueños de perros con paseadores profesionales en España. Construida con React, TypeScript, Supabase y Tailwind CSS.
 
-**URL**: https://lovable.dev/projects/035bec49-c65e-46ce-84a7-903a93d559bc
+## Features
 
-## How can I edit this code?
+- 🔐 **Authentication System** - Secure user registration and login with Supabase Auth
+- 🐕 **Dog Owner Dashboard** - Manage your dogs and find walkers
+- 🚶 **Walker Dashboard** - Accept walk requests and manage availability
+- 💬 **Real-time Messaging** - Instant chat between owners and walkers with Supabase subscriptions
+- 📱 **Responsive Design** - Works perfectly on desktop and mobile
+- ⭐ **Rating System** - Rate and review walkers with detailed feedback
+- 🗺️ **Location-based Matching** - Find walkers near you
+- 🎨 **Beautiful UI** - Spanish-inspired warm Mediterranean design
+- 🔄 **Real-time Updates** - Live notifications and updates
+- 💳 **Payment Integration Ready** - Structured for payment processing
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI**: Tailwind CSS + shadcn/ui
+- **Backend**: Supabase (PostgreSQL + Auth + Real-time + Storage)
+- **State Management**: React Query + Context API
+- **Routing**: React Router DOM
+- **Deployment**: Netlify
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/035bec49-c65e-46ce-84a7-903a93d559bc) and start prompting.
+## Quick Start
 
-Changes made via Lovable will be committed automatically to this repo.
+### 1. Clone the Repository
 
-**Use your preferred IDE**
+```bash
+git clone <repository-url>
+cd paseo
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 2. Install Dependencies
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+npm install
+```
 
-Follow these steps:
+### 3. Supabase Setup
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. **Create a Supabase Project**
+   - Go to [Supabase Console](https://supabase.com)
+   - Create a new project
+   - Wait for the project to be ready
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. **Set up Database Schema**
+   - Go to the SQL Editor in your Supabase dashboard
+   - Run the SQL script from `DEPLOYMENT.md` to create all tables and policies
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. **Get Supabase Configuration**
+   - Go to Settings > API in your Supabase dashboard
+   - Copy the Project URL and anon public key
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+4. **Update Environment Variables**
+   - Create a `.env` file in the root directory
+   - Add your Supabase credentials:
+
+```env
+VITE_SUPABASE_URL=your-supabase-project-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+### 4. Run the Development Server
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/
+│   ├── auth/           # Authentication components
+│   ├── dashboard/      # Dashboard components
+│   ├── messaging/      # Real-time messaging components
+│   └── ui/            # Reusable UI components
+├── contexts/           # React contexts
+├── hooks/             # Custom hooks
+├── lib/               # Supabase configuration and services
+├── pages/             # Page components
+├── types/             # TypeScript type definitions
+└── assets/            # Static assets
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Database Schema
 
-## What technologies are used for this project?
+### Tables
 
-This project is built with:
+- **users**: User profiles and authentication data
+- **dogs**: Dog profiles linked to owners
+- **walker_profiles**: Walker-specific profile information
+- **walk_requests**: Walk booking requests
+- **chat_messages**: Real-time chat messages
+- **reviews**: User reviews and ratings
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+All tables include Row Level Security (RLS) policies for data protection.
 
-## How can I deploy this project?
+## Available Scripts
 
-Simply open [Lovable](https://lovable.dev/projects/035bec49-c65e-46ce-84a7-903a93d559bc) and click on Share -> Publish.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-## Can I connect a custom domain to my Lovable project?
+## Environment Variables
 
-Yes, you can!
+Create a `.env` file in the root directory:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```env
+VITE_SUPABASE_URL=your-supabase-project-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🚀 Deployment
+
+### Netlify (Recommended)
+
+Paseo is optimized for deployment on Netlify with automatic builds and deployments.
+
+**Quick Deploy:**
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/your-username/paseo)
+
+**Manual Deployment:**
+1. **Connect to GitHub**
+   - Push your code to GitHub
+   - Connect your repository to Netlify
+
+2. **Set Environment Variables**
+   - Add your Supabase credentials in Netlify dashboard
+
+3. **Deploy**
+   - Netlify will automatically build and deploy your site
+
+For detailed deployment instructions, see [NETLIFY_DEPLOYMENT.md](./NETLIFY_DEPLOYMENT.md).
+
+### Manual Deployment
+
+1. Build the project:
+```bash
+npm run build
+```
+
+2. Deploy the `dist` folder to any static hosting service
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support, email support@paseo.es or create an issue in this repository.
+
+## 🌟 Features Highlights
+
+- 🎯 **Smart Matching**: AI-powered matching between dog owners and walkers
+- 💬 **Real-time Chat**: Instant messaging with walk tracking
+- 💳 **Secure Payments**: Stripe integration for safe transactions
+- 📱 **Mobile-First**: Optimized for mobile devices
+- 🌍 **Spanish Market**: Built specifically for the Spanish market
+- ⚡ **Fast & Reliable**: Built with modern web technologies
+
+---
+
+**¡Haz que tu perro disfrute de paseos increíbles!** 🐕✨
