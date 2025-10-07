@@ -1,0 +1,855 @@
+From f6661f947f6346a62542d8f1eda0acb62d2ada65 Mon Sep 17 00:00:00 2001
+From: aliattia10 <your-email@example.com>
+Date: Tue, 7 Oct 2025 02:36:23 +0200
+Subject: [PATCH] Major fixes: Login redirect, profile creation, Tinder-like
+ discovery, onboarding flow, and UI improvements
+
+---
+ src/App.tsx                                 | 230 ++++++++++++++---
+ src/components/dashboard/HomePage.tsx       | 263 ++++++++++++++++++++
+ src/components/dashboard/OwnerDashboard.tsx |  19 +-
+ src/contexts/AuthContext.tsx                |  50 +++-
+ src/lib/supabase-services.ts                | 134 ++++++----
+ 5 files changed, 607 insertions(+), 89 deletions(-)
+ create mode 100644 src/components/dashboard/HomePage.tsx
+
+diff --git a/src/App.tsx b/src/App.tsx
+index ff9e267..bf197e2 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,6 +1,7 @@
+ import { Toaster } from "@/components/ui/toaster";
+ import { Toaster as Sonner } from "@/components/ui/sonner";
+ import { TooltipProvider } from "@/components/ui/tooltip";
++import { Button } from "@/components/ui/button";
+ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+@@ -17,9 +18,198 @@ import NotFound from "./pages/NotFound";
+ import AuthCallback from "./pages/AuthCallback";
+ import ResetPassword from "./pages/ResetPassword";
+ import { useState } from "react";
++import { useAuth } from "@/contexts/AuthContext";
++import { createUser } from "@/lib/supabase-services";
++import { useToast } from "@/hooks/use-toast";
+ 
+ const queryClient = new QueryClient();
+ 
++// Onboarding Flow Component
++const OnboardingFlow = () => {
++  const { currentUser, signIn } = useAuth();
++  const { toast } = useToast();
++  const [step, setStep] = useState(1);
++  const [loading, setLoading] = useState(false);
++  const [formData, setFormData] = useState({
++    name: '',
++    phone: '',
++    city: '',
++    postalCode: '',
++    userType: 'owner' as 'owner' | 'walker'
++  });
++
++  const handleCreateProfile = async () => {
++    if (!currentUser || !formData.name || !formData.phone || !formData.city) {
++      toast({
++        title: "Error",
++        description: "Por favor, completa todos los campos obligatorios",
++        variant: "destructive",
++      });
++      return;
++    }
++
++    setLoading(true);
++    try {
++      console.log('Creating profile for user:', currentUser.id);
++      console.log('Profile data:', formData);
++      
++      await createUser(currentUser.id, {
++        name: formData.name,
++        email: currentUser.email || '',
++        phone: formData.phone,
++        city: formData.city,
++        postalCode: formData.postalCode,
++        userType: formData.userType,
++      });
++      
++      console.log('Profile created successfully');
++      
++      toast({
++        title: "¡Perfil creado!",
++        description: "Tu perfil se ha creado exitosamente",
++      });
++      
++      // Wait a moment for the database to update, then refresh auth context
++      setTimeout(() => {
++        window.location.reload();
++      }, 1000);
++      
++    } catch (error) {
++      console.error('Error creating profile:', error);
++      toast({
++        title: "Error",
++        description: `No se pudo crear el perfil: ${error instanceof Error ? error.message : 'Error desconocido'}`,
++        variant: "destructive",
++      });
++    } finally {
++      setLoading(false);
++    }
++  };
++
++  if (step === 1) {
++    return (
++      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
++        <div className="w-full max-w-md">
++          <div className="bg-white rounded-lg shadow-lg p-8">
++            <div className="text-center mb-8">
++              <div className="w-20 h-20 bg-terracotta rounded-full flex items-center justify-center mx-auto mb-4">
++                <span className="text-white text-3xl">🐕</span>
++              </div>
++              <h1 className="text-3xl font-bold text-neutral-text mb-2">
++                ¡Bienvenido a Paseo!
++              </h1>
++              <p className="text-muted-foreground">
++                Completa tu perfil para comenzar a conectar con perros y paseadores
++              </p>
++            </div>
++
++            <div className="space-y-6">
++              <div>
++                <label className="block text-sm font-medium text-neutral-text mb-2">
++                  Nombre completo *
++                </label>
++                <input
++                  type="text"
++                  value={formData.name}
++                  onChange={(e) => setFormData({...formData, name: e.target.value})}
++                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
++                  placeholder="Tu nombre completo"
++                />
++              </div>
++
++              <div>
++                <label className="block text-sm font-medium text-neutral-text mb-2">
++                  Teléfono *
++                </label>
++                <input
++                  type="tel"
++                  value={formData.phone}
++                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
++                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
++                  placeholder="+34 123 456 789"
++                />
++              </div>
++
++              <div>
++                <label className="block text-sm font-medium text-neutral-text mb-2">
++                  Ciudad *
++                </label>
++                <input
++                  type="text"
++                  value={formData.city}
++                  onChange={(e) => setFormData({...formData, city: e.target.value})}
++                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
++                  placeholder="Madrid, Barcelona, Valencia..."
++                />
++              </div>
++
++              <div>
++                <label className="block text-sm font-medium text-neutral-text mb-2">
++                  Código postal
++                </label>
++                <input
++                  type="text"
++                  value={formData.postalCode}
++                  onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
++                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
++                  placeholder="28001"
++                />
++              </div>
++
++              <div>
++                <label className="block text-sm font-medium text-neutral-text mb-3">
++                  ¿Qué quieres hacer en Paseo? *
++                </label>
++                <div className="space-y-3">
++                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
++                    <input
++                      type="radio"
++                      name="userType"
++                      value="owner"
++                      checked={formData.userType === 'owner'}
++                      onChange={(e) => setFormData({...formData, userType: e.target.value as 'owner' | 'walker'})}
++                      className="mr-3"
++                    />
++                    <div>
++                      <div className="font-medium">🐕 Dueño de perro</div>
++                      <div className="text-sm text-muted-foreground">Buscar paseadores para mi perro</div>
++                    </div>
++                  </label>
++                  
++                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
++                    <input
++                      type="radio"
++                      name="userType"
++                      value="walker"
++                      checked={formData.userType === 'walker'}
++                      onChange={(e) => setFormData({...formData, userType: e.target.value as 'owner' | 'walker'})}
++                      className="mr-3"
++                    />
++                    <div>
++                      <div className="font-medium">🚶‍♀️ Paseador</div>
++                      <div className="text-sm text-muted-foreground">Ofrecer servicios de paseo</div>
++                    </div>
++                  </label>
++                </div>
++              </div>
++
++              <Button
++                onClick={handleCreateProfile}
++                disabled={loading || !formData.name || !formData.phone || !formData.city}
++                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
++              >
++                {loading ? "Creando perfil..." : "Crear perfil"}
++              </Button>
++            </div>
++          </div>
++        </div>
++      </div>
++    );
++  }
++
++  return null;
++};
++
+ // Protected Route Component
+ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+   const { currentUser, loading } = useAuth();
+@@ -44,46 +234,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+ 
+ // Dashboard Router Component
+ const DashboardRouter = () => {
+-  const { userProfile, currentUser, logout } = useAuth();
+-  
+-  // If user is authenticated but doesn't have a profile, show a message
+-  if (currentUser && !userProfile) {
+-    const handleLogout = async () => {
+-      try {
+-        await logout();
+-        window.location.href = '/auth';
+-      } catch (error) {
+-        console.error('Error logging out:', error);
+-        window.location.href = '/auth';
+-      }
+-    };
+-
+-    return (
+-      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center">
+-        <div className="text-center max-w-md mx-auto p-6">
+-          <div className="w-16 h-16 bg-terracotta rounded-full flex items-center justify-center mx-auto mb-4">
+-            <span className="text-white text-2xl">!</span>
+-          </div>
+-          <h2 className="text-2xl font-bold text-neutral-text mb-4">Perfil Incompleto</h2>
+-          <p className="text-muted-foreground mb-6">
+-            Tu cuenta existe pero no se pudo cargar tu perfil. Por favor, cierra sesión e inicia sesión nuevamente.
+-          </p>
+-          <Button 
+-            onClick={handleLogout}
+-            className="bg-terracotta hover:bg-terracotta/90"
+-          >
+-            Cerrar Sesión
+-          </Button>
+-        </div>
+-      </div>
+-    );
+-  }
++  const { userProfile, currentUser } = useAuth();
+   
+   // If no user at all, redirect to auth
+   if (!currentUser) {
+     return <Navigate to="/auth" />;
+   }
+   
++  // If user exists but no profile, show onboarding flow
++  if (!userProfile) {
++    return <OnboardingFlow />;
++  }
++  
+   return userProfile.userType === 'owner' ? <OwnerDashboard /> : <WalkerDashboard />;
+ };
+ 
+diff --git a/src/components/dashboard/HomePage.tsx b/src/components/dashboard/HomePage.tsx
+new file mode 100644
+index 0000000..863c6c1
+--- /dev/null
++++ b/src/components/dashboard/HomePage.tsx
+@@ -0,0 +1,263 @@
++import React, { useState, useEffect } from 'react';
++import { Button } from "@/components/ui/button";
++import { Card, CardContent } from "@/components/ui/card";
++import { Badge } from "@/components/ui/badge";
++import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
++import { useAuth } from '@/contexts/AuthContext';
++import { getNearbyWalkers } from '@/lib/supabase-services';
++import { useToast } from '@/hooks/use-toast';
++import { Heart, X, MapPin, Clock, Star, Phone, MessageCircle, Filter, User } from 'lucide-react';
++import { useNavigate } from 'react-router-dom';
++import type { WalkerProfile } from '@/types';
++
++const HomePage: React.FC = () => {
++  const { userProfile, logout } = useAuth();
++  const { toast } = useToast();
++  const navigate = useNavigate();
++  const [walkers, setWalkers] = useState<WalkerProfile[]>([]);
++  const [currentIndex, setCurrentIndex] = useState(0);
++  const [loading, setLoading] = useState(true);
++
++  useEffect(() => {
++    const loadWalkers = async () => {
++      if (!userProfile) return;
++      
++      try {
++        const walkersData = await getNearbyWalkers(userProfile.city);
++        setWalkers(walkersData);
++      } catch (error) {
++        console.error('Error loading walkers:', error);
++        toast({
++          title: "Error",
++          description: "No se pudieron cargar los paseadores cercanos.",
++          variant: "destructive",
++        });
++      } finally {
++        setLoading(false);
++      }
++    };
++
++    loadWalkers();
++  }, [userProfile, toast]);
++
++  const handleLike = () => {
++    const currentWalker = walkers[currentIndex];
++    if (currentWalker) {
++      toast({
++        title: "¡Me gusta! ❤️",
++        description: `Te gusta ${currentWalker.user_id}`,
++      });
++      nextWalker();
++    }
++  };
++
++  const handlePass = () => {
++    nextWalker();
++  };
++
++  const nextWalker = () => {
++    if (currentIndex < walkers.length - 1) {
++      setCurrentIndex(currentIndex + 1);
++    } else {
++      // No more walkers, show end message
++      toast({
++        title: "¡Eso es todo! 🎉",
++        description: "Has visto todos los paseadores disponibles en tu área.",
++      });
++    }
++  };
++
++  const handleContact = (walkerId: string) => {
++    // Navigate to messaging or contact form
++    navigate('/messages');
++  };
++
++  if (loading) {
++    return (
++      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center">
++        <div className="text-center">
++          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terracotta mx-auto mb-4"></div>
++          <p className="text-muted-foreground">Buscando paseadores cercanos...</p>
++        </div>
++      </div>
++    );
++  }
++
++  if (walkers.length === 0) {
++    return (
++      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
++        <Card className="w-full max-w-md">
++          <CardContent className="p-8 text-center">
++            <div className="w-16 h-16 bg-terracotta rounded-full flex items-center justify-center mx-auto mb-4">
++              <span className="text-white text-2xl">🐕</span>
++            </div>
++            <h2 className="text-2xl font-bold text-neutral-text mb-4">
++              No hay paseadores disponibles
++            </h2>
++            <p className="text-muted-foreground mb-6">
++              No encontramos paseadores en tu área. Intenta más tarde o expande tu búsqueda.
++            </p>
++            <Button 
++              onClick={() => window.location.reload()}
++              className="bg-terracotta hover:bg-terracotta/90"
++            >
++              Intentar de nuevo
++            </Button>
++          </CardContent>
++        </Card>
++      </div>
++    );
++  }
++
++  if (currentIndex >= walkers.length) {
++    return (
++      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
++        <Card className="w-full max-w-md">
++          <CardContent className="p-8 text-center">
++            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
++              <span className="text-white text-2xl">🎉</span>
++            </div>
++            <h2 className="text-2xl font-bold text-neutral-text mb-4">
++              ¡Has visto todos!
++            </h2>
++            <p className="text-muted-foreground mb-6">
++              Has revisado todos los paseadores disponibles en tu área. Vuelve más tarde para ver nuevos perfiles.
++            </p>
++            <div className="space-y-3">
++              <Button 
++                onClick={() => setCurrentIndex(0)}
++                className="w-full bg-terracotta hover:bg-terracotta/90"
++              >
++                Ver de nuevo
++              </Button>
++              <Button 
++                onClick={() => navigate('/dashboard')}
++                variant="outline"
++                className="w-full"
++              >
++                Ir al dashboard
++              </Button>
++            </div>
++          </CardContent>
++        </Card>
++      </div>
++    );
++  }
++
++  const currentWalker = walkers[currentIndex];
++
++  return (
++    <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light">
++      {/* Header */}
++      <div className="bg-white shadow-sm border-b">
++        <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
++          <h1 className="text-xl font-bold text-neutral-text">🐕 Paseadores</h1>
++          <div className="flex items-center space-x-2">
++            <Button variant="ghost" size="sm">
++              <Filter className="h-5 w-5" />
++            </Button>
++            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
++              <User className="h-5 w-5" />
++            </Button>
++          </div>
++        </div>
++      </div>
++
++      {/* Card Stack */}
++      <div className="max-w-md mx-auto px-4 py-6">
++        <div className="relative h-[600px]">
++          <Card className="absolute inset-0 shadow-lg border-0 overflow-hidden">
++            <CardContent className="p-0 h-full">
++              {/* Walker Image */}
++              <div className="h-3/5 bg-gradient-to-br from-blue-400 to-purple-500 relative">
++                <div className="absolute inset-0 bg-black/20"></div>
++                <div className="absolute top-4 right-4">
++                  <Badge className="bg-white/90 text-black">
++                    {currentWalker.rating} ⭐
++                  </Badge>
++                </div>
++              </div>
++
++              {/* Walker Info */}
++              <div className="h-2/5 p-6 bg-white">
++                <div className="flex items-start justify-between mb-3">
++                  <div>
++                    <h2 className="text-2xl font-bold text-neutral-text">
++                      Paseador {currentIndex + 1}
++                    </h2>
++                    <p className="text-muted-foreground">{currentWalker.bio}</p>
++                  </div>
++                  <Badge variant="secondary">
++                    €{currentWalker.hourlyRate}/h
++                  </Badge>
++                </div>
++
++                <div className="space-y-2 mb-4">
++                  <div className="flex items-center text-sm text-muted-foreground">
++                    <Star className="h-4 w-4 mr-2" />
++                    {currentWalker.totalWalks} paseos realizados
++                  </div>
++                  <div className="flex items-center text-sm text-muted-foreground">
++                    <Clock className="h-4 w-4 mr-2" />
++                    {currentWalker.experience}
++                  </div>
++                </div>
++
++                <div className="flex flex-wrap gap-2 mb-4">
++                  {currentWalker.tags.slice(0, 3).map((tag, index) => (
++                    <Badge key={index} variant="outline" className="text-xs">
++                      {tag}
++                    </Badge>
++                  ))}
++                </div>
++              </div>
++            </CardContent>
++          </Card>
++        </div>
++
++        {/* Action Buttons */}
++        <div className="flex items-center justify-center space-x-8 mt-8">
++          <Button
++            onClick={handlePass}
++            size="lg"
++            variant="outline"
++            className="w-16 h-16 rounded-full border-2 border-red-300 hover:bg-red-50"
++          >
++            <X className="h-8 w-8 text-red-500" />
++          </Button>
++          
++          <Button
++            onClick={handleContact}
++            size="lg"
++            className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600"
++          >
++            <MessageCircle className="h-8 w-8 text-white" />
++          </Button>
++          
++          <Button
++            onClick={handleLike}
++            size="lg"
++            className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600"
++          >
++            <Heart className="h-8 w-8 text-white" />
++          </Button>
++        </div>
++
++        {/* Progress */}
++        <div className="mt-6 text-center">
++          <p className="text-sm text-muted-foreground">
++            {currentIndex + 1} de {walkers.length} paseadores
++          </p>
++          <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
++            <div 
++              className="bg-terracotta h-2 rounded-full transition-all duration-300"
++              style={{ width: `${((currentIndex + 1) / walkers.length) * 100}%` }}
++            ></div>
++          </div>
++        </div>
++      </div>
++    </div>
++  );
++};
++
++export default HomePage;
+diff --git a/src/components/dashboard/OwnerDashboard.tsx b/src/components/dashboard/OwnerDashboard.tsx
+index 83009f2..7787c1a 100644
+--- a/src/components/dashboard/OwnerDashboard.tsx
++++ b/src/components/dashboard/OwnerDashboard.tsx
+@@ -6,9 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+ import { useAuth } from '@/contexts/AuthContext';
+ import { getDogsByOwner, getWalkRequestsByOwner } from '@/lib/supabase-services';
+ import { useToast } from '@/hooks/use-toast';
+-import { Heart, MapPin, Clock, Plus, LogOut, User, Settings, MessageCircle, Crown } from 'lucide-react';
++import { Heart, MapPin, Clock, Plus, LogOut, User, Settings, MessageCircle, Crown, Search } from 'lucide-react';
+ import { useNavigate } from 'react-router-dom';
+ import type { Dog, WalkRequest } from '@/types';
++import HomePage from './HomePage';
+ 
+ const OwnerDashboard: React.FC = () => {
+   const { userProfile, logout } = useAuth();
+@@ -17,6 +18,7 @@ const OwnerDashboard: React.FC = () => {
+   const [dogs, setDogs] = useState<Dog[]>([]);
+   const [recentWalks, setRecentWalks] = useState<WalkRequest[]>([]);
+   const [loading, setLoading] = useState(true);
++  const [currentView, setCurrentView] = useState<'dashboard' | 'home'>('home');
+ 
+   useEffect(() => {
+     const loadData = async () => {
+@@ -41,8 +43,11 @@ const OwnerDashboard: React.FC = () => {
+       }
+     };
+ 
+-    loadData();
+-  }, [userProfile, toast]);
++    // Only load data when in dashboard view
++    if (currentView === 'dashboard') {
++      loadData();
++    }
++  }, [userProfile, toast, currentView]);
+ 
+   const handleLogout = async () => {
+     try {
+@@ -71,6 +76,11 @@ const OwnerDashboard: React.FC = () => {
+     );
+   }
+ 
++  // Show HomePage (Tinder-like) by default
++  if (currentView === 'home') {
++    return <HomePage />;
++  }
++
+   return (
+     <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light">
+       {/* Header */}
+@@ -91,6 +101,9 @@ const OwnerDashboard: React.FC = () => {
+               </div>
+             </div>
+             <div className="flex items-center gap-2">
++              <Button variant="ghost" size="icon" onClick={() => setCurrentView('home')}>
++                <Search className="w-4 h-4" />
++              </Button>
+               <Button variant="ghost" size="icon" onClick={() => navigate('/messages')}>
+                 <MessageCircle className="w-4 h-4" />
+               </Button>
+diff --git a/src/contexts/AuthContext.tsx b/src/contexts/AuthContext.tsx
+index caf979d..a297bcc 100644
+--- a/src/contexts/AuthContext.tsx
++++ b/src/contexts/AuthContext.tsx
+@@ -34,6 +34,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+   const [loading, setLoading] = useState(true);
+ 
+   useEffect(() => {
++    // Set a global timeout to prevent infinite loading
++    const globalTimeout = setTimeout(() => {
++      console.warn('AuthContext: Global timeout reached, forcing loading to false');
++      setLoading(false);
++    }, 15000); // 15 seconds max
++
+     // Get initial session
+     const getInitialSession = async () => {
+       try {
+@@ -53,12 +59,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+           setCurrentUser(session.user);
+           try {
+             console.log('AuthContext: Fetching user profile...');
+-            const profile = await getUser(session.user.id);
++            
++            // Add timeout for getUser to prevent hanging
++            const profilePromise = getUser(session.user.id);
++            const timeoutPromise = new Promise((_, reject) => 
++              setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
++            );
++            
++            const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
+             console.log('AuthContext: Profile data:', profile);
+             setUserProfile(profile);
+           } catch (error) {
+             console.error('Error fetching user profile:', error);
+-            // If profile doesn't exist, set userProfile to null but don't fail
++            // If profile doesn't exist or times out, set userProfile to null but don't fail
+             setUserProfile(null);
+           }
+         } else {
+@@ -72,6 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+       } finally {
+         console.log('AuthContext: Setting loading to false');
+         setLoading(false);
++        clearTimeout(globalTimeout);
+       }
+     };
+ 
+@@ -79,16 +93,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+ 
+     // Listen for auth changes
+     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
++      console.log('AuthContext: Auth state change:', event, session?.user?.id);
+       setCurrentUser(session?.user ?? null);
+       
+       if (session?.user) {
+         try {
+-          const profile = await getUser(session.user.id);
++          console.log('AuthContext: Fetching user profile in auth state change...');
++          
++          // Add timeout for getUser to prevent hanging
++          const profilePromise = getUser(session.user.id);
++          const timeoutPromise = new Promise((_, reject) => 
++            setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
++          );
++          
++          const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
++          console.log('AuthContext: Profile data in auth state change:', profile);
+           setUserProfile(profile);
++          
++          // Redirect to dashboard after successful login
++          if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
++            console.log('AuthContext: Redirecting to dashboard after sign in');
++            setTimeout(() => {
++              window.location.href = '/dashboard';
++            }, 500);
++          }
+         } catch (error) {
+-          console.error('Error fetching user profile:', error);
+-          // If profile doesn't exist, set userProfile to null but don't fail
++          console.error('Error fetching user profile in auth state change:', error);
++          // If profile doesn't exist or times out, set userProfile to null but don't fail
+           setUserProfile(null);
++          
++          // Still redirect to dashboard even if profile fetch fails
++          if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
++            console.log('AuthContext: Redirecting to dashboard after sign in (profile fetch failed)');
++            setTimeout(() => {
++              window.location.href = '/dashboard';
++            }, 500);
++          }
+         }
+       } else {
+         setUserProfile(null);
+diff --git a/src/lib/supabase-services.ts b/src/lib/supabase-services.ts
+index 7263fb0..17e6d13 100644
+--- a/src/lib/supabase-services.ts
++++ b/src/lib/supabase-services.ts
+@@ -4,59 +4,99 @@ import type { Tables, InsertTables, UpdateTables } from './supabase';
+ 
+ // User Services
+ export const createUser = async (userId: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {
+-  // Try to get session, but don't fail if it's not available
+-  const { data: { session } } = await supabase.auth.getSession();
+-  
+-  if (!session) {
+-    console.log('No active session, proceeding with user creation anyway');
+-  }
+-
+-  const { data, error } = await supabase
+-    .from('users')
+-    .insert({
+-      id: userId,
+-      name: userData.name,
+-      email: userData.email,
+-      phone: userData.phone,
+-      city: userData.city,
+-      postal_code: userData.postalCode,
+-      user_type: userData.userType,
+-      profile_image: userData.profileImage,
+-    })
+-    .select()
+-    .single();
+-
+-  if (error) {
+-    console.error('Create user error:', error);
++  try {
++    console.log('createUser: Starting user creation for ID:', userId);
++    console.log('createUser: User data:', userData);
++    
++    // Try to get session, but don't fail if it's not available
++    const { data: { session } } = await supabase.auth.getSession();
++    
++    if (!session) {
++      console.log('createUser: No active session, proceeding with user creation anyway');
++    } else {
++      console.log('createUser: Active session found for user:', session.user.id);
++    }
++
++    const { data, error } = await supabase
++      .from('users')
++      .insert({
++        id: userId,
++        name: userData.name,
++        email: userData.email,
++        phone: userData.phone,
++        city: userData.city,
++        postal_code: userData.postalCode,
++        user_type: userData.userType,
++        profile_image: userData.profileImage,
++      })
++      .select()
++      .single();
++
++    if (error) {
++      console.error('createUser: Database error:', error);
++      
++      // Handle specific error cases
++      if (error.code === '23505') {
++        console.log('createUser: User already exists, this is OK');
++        return userId; // User already exists, return the ID
++      }
++      
++      if (error.code === '42501') {
++        throw new Error('No tienes permisos para crear este perfil. Contacta al soporte.');
++      }
++      
++      throw error;
++    }
++    
++    console.log('createUser: User created successfully:', data);
++    return data.id;
++  } catch (error) {
++    console.error('createUser: Unexpected error:', error);
+     throw error;
+   }
+-  return data.id;
+ };
+ 
+ export const getUser = async (userId: string): Promise<User | null> => {
+-  const { data, error } = await supabase
+-    .from('users')
+-    .select('*')
+-    .eq('id', userId)
+-    .single();
+-
+-  if (error) {
+-    if (error.code === 'PGRST116') return null; // No rows returned
+-    throw error;
++  try {
++    console.log('getUser: Fetching user with ID:', userId);
++    
++    const { data, error } = await supabase
++      .from('users')
++      .select('*')
++      .eq('id', userId)
++      .single();
++
++    if (error) {
++      console.error('getUser: Error fetching user:', error);
++      if (error.code === 'PGRST116') {
++        console.log('getUser: No user found with ID:', userId);
++        return null; // No rows returned
++      }
++      // For 406 errors or other issues, return null instead of throwing
++      if (error.code === '406' || error.status === 406) {
++        console.warn('getUser: 406 error - possibly RLS issue, returning null');
++        return null;
++      }
++      throw error;
++    }
++
++    console.log('getUser: Successfully fetched user:', data);
++    return {
++      id: data.id,
++      name: data.name,
++      email: data.email,
++      phone: data.phone,
++      city: data.city,
++      postalCode: data.postal_code,
++      userType: data.user_type,
++      profileImage: data.profile_image,
++      createdAt: new Date(data.created_at),
++      updatedAt: new Date(data.updated_at),
++    };
++  } catch (error) {
++    console.error('getUser: Unexpected error:', error);
++    return null; // Return null instead of throwing to prevent app crash
+   }
+-
+-  return {
+-    id: data.id,
+-    name: data.name,
+-    email: data.email,
+-    phone: data.phone,
+-    city: data.city,
+-    postalCode: data.postal_code,
+-    userType: data.user_type,
+-    profileImage: data.profile_image,
+-    createdAt: new Date(data.created_at),
+-    updatedAt: new Date(data.updated_at),
+-  };
+ };
+ 
+ export const updateUser = async (userId: string, userData: Partial<User>) => {
+-- 
+2.49.0.windows.1
+
