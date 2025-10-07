@@ -4,59 +4,99 @@ import type { Tables, InsertTables, UpdateTables } from './supabase';
 
 // User Services
 export const createUser = async (userId: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {
-  // Try to get session, but don't fail if it's not available
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (!session) {
-    console.log('No active session, proceeding with user creation anyway');
-  }
+  try {
+    console.log('createUser: Starting user creation for ID:', userId);
+    console.log('createUser: User data:', userData);
+    
+    // Try to get session, but don't fail if it's not available
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      console.log('createUser: No active session, proceeding with user creation anyway');
+    } else {
+      console.log('createUser: Active session found for user:', session.user.id);
+    }
 
-  const { data, error } = await supabase
-    .from('users')
-    .insert({
-      id: userId,
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone,
-      city: userData.city,
-      postal_code: userData.postalCode,
-      user_type: userData.userType,
-      profile_image: userData.profileImage,
-    })
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        id: userId,
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        city: userData.city,
+        postal_code: userData.postalCode,
+        user_type: userData.userType,
+        profile_image: userData.profileImage,
+      })
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Create user error:', error);
+    if (error) {
+      console.error('createUser: Database error:', error);
+      
+      // Handle specific error cases
+      if (error.code === '23505') {
+        console.log('createUser: User already exists, this is OK');
+        return userId; // User already exists, return the ID
+      }
+      
+      if (error.code === '42501') {
+        throw new Error('No tienes permisos para crear este perfil. Contacta al soporte.');
+      }
+      
+      throw error;
+    }
+    
+    console.log('createUser: User created successfully:', data);
+    return data.id;
+  } catch (error) {
+    console.error('createUser: Unexpected error:', error);
     throw error;
   }
-  return data.id;
 };
 
 export const getUser = async (userId: string): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  try {
+    console.log('getUser: Fetching user with ID:', userId);
+    
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-  if (error) {
-    if (error.code === 'PGRST116') return null; // No rows returned
-    throw error;
+    if (error) {
+      console.error('getUser: Error fetching user:', error);
+      if (error.code === 'PGRST116') {
+        console.log('getUser: No user found with ID:', userId);
+        return null; // No rows returned
+      }
+      // For 406 errors or other issues, return null instead of throwing
+      if (error.code === '406' || error.status === 406) {
+        console.warn('getUser: 406 error - possibly RLS issue, returning null');
+        return null;
+      }
+      throw error;
+    }
+
+    console.log('getUser: Successfully fetched user:', data);
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      city: data.city,
+      postalCode: data.postal_code,
+      userType: data.user_type,
+      profileImage: data.profile_image,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+    };
+  } catch (error) {
+    console.error('getUser: Unexpected error:', error);
+    return null; // Return null instead of throwing to prevent app crash
   }
-
-  return {
-    id: data.id,
-    name: data.name,
-    email: data.email,
-    phone: data.phone,
-    city: data.city,
-    postalCode: data.postal_code,
-    userType: data.user_type,
-    profileImage: data.profile_image,
-    createdAt: new Date(data.created_at),
-    updatedAt: new Date(data.updated_at),
-  };
 };
 
 export const updateUser = async (userId: string, userData: Partial<User>) => {

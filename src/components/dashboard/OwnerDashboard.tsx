@@ -6,9 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from '@/contexts/AuthContext';
 import { getDogsByOwner, getWalkRequestsByOwner } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MapPin, Clock, Plus, LogOut, User, Settings, MessageCircle, Crown } from 'lucide-react';
+import { Heart, MapPin, Clock, Plus, LogOut, User, Settings, MessageCircle, Crown, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Dog, WalkRequest } from '@/types';
+import HomePage from './HomePage';
 
 const OwnerDashboard: React.FC = () => {
   const { userProfile, logout } = useAuth();
@@ -17,6 +18,7 @@ const OwnerDashboard: React.FC = () => {
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [recentWalks, setRecentWalks] = useState<WalkRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'home'>('home');
 
   useEffect(() => {
     const loadData = async () => {
@@ -41,8 +43,11 @@ const OwnerDashboard: React.FC = () => {
       }
     };
 
-    loadData();
-  }, [userProfile, toast]);
+    // Only load data when in dashboard view
+    if (currentView === 'dashboard') {
+      loadData();
+    }
+  }, [userProfile, toast, currentView]);
 
   const handleLogout = async () => {
     try {
@@ -71,6 +76,11 @@ const OwnerDashboard: React.FC = () => {
     );
   }
 
+  // Show HomePage (Tinder-like) by default
+  if (currentView === 'home') {
+    return <HomePage />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light">
       {/* Header */}
@@ -91,6 +101,9 @@ const OwnerDashboard: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => setCurrentView('home')}>
+                <Search className="w-4 h-4" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => navigate('/messages')}>
                 <MessageCircle className="w-4 h-4" />
               </Button>

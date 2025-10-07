@@ -34,6 +34,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set a global timeout to prevent infinite loading
+    const globalTimeout = setTimeout(() => {
+      console.warn('AuthContext: Global timeout reached, forcing loading to false');
+      setLoading(false);
+    }, 15000); // 15 seconds max
+
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -53,12 +59,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setCurrentUser(session.user);
           try {
             console.log('AuthContext: Fetching user profile...');
-            const profile = await getUser(session.user.id);
+            
+            // Add timeout for getUser to prevent hanging
+            const profilePromise = getUser(session.user.id);
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+            );
+            
+            const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
             console.log('AuthContext: Profile data:', profile);
             setUserProfile(profile);
           } catch (error) {
             console.error('Error fetching user profile:', error);
-            // If profile doesn't exist, set userProfile to null but don't fail
+            // If profile doesn't exist or times out, set userProfile to null but don't fail
             setUserProfile(null);
           }
         } else {
@@ -72,6 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } finally {
         console.log('AuthContext: Setting loading to false');
         setLoading(false);
+        clearTimeout(globalTimeout);
       }
     };
 
@@ -79,16 +93,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('AuthContext: Auth state change:', event, session?.user?.id);
       setCurrentUser(session?.user ?? null);
       
       if (session?.user) {
         try {
-          const profile = await getUser(session.user.id);
+          console.log('AuthContext: Fetching user profile in auth state change...');
+          
+          // Add timeout for getUser to prevent hanging
+          const profilePromise = getUser(session.user.id);
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+          );
+          
+          const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
+          console.log('AuthContext: Profile data in auth state change:', profile);
           setUserProfile(profile);
+          
+          // Redirect to dashboard after successful login
+          if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
+            console.log('AuthContext: Redirecting to dashboard after sign in');
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 500);
+          }
         } catch (error) {
-          console.error('Error fetching user profile:', error);
-          // If profile doesn't exist, set userProfile to null but don't fail
+          console.error('Error fetching user profile in auth state change:', error);
+          // If profile doesn't exist or times out, set userProfile to null but don't fail
           setUserProfile(null);
+          
+          // Still redirect to dashboard even if profile fetch fails
+          if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
+            console.log('AuthContext: Redirecting to dashboard after sign in (profile fetch failed)');
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 500);
+          }
         }
       } else {
         setUserProfile(null);
