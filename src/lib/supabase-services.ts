@@ -233,7 +233,14 @@ export const getWalkerProfile = async (userId: string): Promise<WalkerProfile | 
 export const getNearbyWalkers = async (city: string): Promise<WalkerProfile[]> => {
   const { data, error } = await supabase
     .from('walker_profiles')
-    .select('*')
+    .select(`
+      *,
+      users:user_id (
+        name,
+        city,
+        profile_image
+      )
+    `)
     .eq('verified', true)
     .order('rating', { ascending: false });
 
@@ -242,6 +249,9 @@ export const getNearbyWalkers = async (city: string): Promise<WalkerProfile[]> =
   return data.map(profile => ({
     id: profile.id,
     userId: profile.user_id,
+    userName: profile.users?.name || 'Unknown',
+    userCity: profile.users?.city || city,
+    userImage: profile.users?.profile_image,
     bio: profile.bio,
     experience: profile.experience,
     hourlyRate: profile.hourly_rate,
@@ -265,8 +275,8 @@ export const createWalkRequest = async (requestData: Omit<WalkRequest, 'id' | 'c
       dog_id: requestData.dogId,
       service_type: requestData.serviceType,
       duration: requestData.duration,
-      date: requestData.date.toISOString(),
-      time: requestData.time,
+      walk_date: requestData.date.toISOString().split('T')[0],
+      walk_time: requestData.time,
       location: requestData.location,
       notes: requestData.notes,
       status: requestData.status,
@@ -295,8 +305,8 @@ export const getWalkRequestsByOwner = async (ownerId: string): Promise<WalkReque
     dogId: request.dog_id,
     serviceType: request.service_type,
     duration: request.duration,
-    date: new Date(request.date),
-    time: request.time,
+    date: new Date(request.walk_date),
+    time: request.walk_time,
     location: request.location,
     notes: request.notes,
     status: request.status,
@@ -322,8 +332,8 @@ export const getWalkRequestsByWalker = async (walkerId: string): Promise<WalkReq
     dogId: request.dog_id,
     serviceType: request.service_type,
     duration: request.duration,
-    date: new Date(request.date),
-    time: request.time,
+    date: new Date(request.walk_date),
+    time: request.walk_time,
     location: request.location,
     notes: request.notes,
     status: request.status,
@@ -335,15 +345,15 @@ export const getWalkRequestsByWalker = async (walkerId: string): Promise<WalkReq
 
 export const updateWalkRequest = async (requestId: string, requestData: Partial<WalkRequest>) => {
   const updateData: any = {};
-  
+
   if (requestData.status) updateData.status = requestData.status;
   if (requestData.notes) updateData.notes = requestData.notes;
   if (requestData.price) updateData.price = requestData.price;
   if (requestData.duration) updateData.duration = requestData.duration;
-  if (requestData.date) updateData.date = requestData.date.toISOString();
-  if (requestData.time) updateData.time = requestData.time;
+  if (requestData.date) updateData.walk_date = requestData.date.toISOString().split('T')[0];
+  if (requestData.time) updateData.walk_time = requestData.time;
   if (requestData.location) updateData.location = requestData.location;
-  
+
   updateData.updated_at = new Date().toISOString();
 
   const { error } = await supabase

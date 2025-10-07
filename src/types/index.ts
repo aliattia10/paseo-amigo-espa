@@ -31,6 +31,9 @@ export interface Dog {
 export interface WalkerProfile {
   id: string;
   userId: string;
+  userName?: string;
+  userCity?: string;
+  userImage?: string;
   bio: string;
   experience: string;
   hourlyRate: number;
