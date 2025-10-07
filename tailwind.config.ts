@@ -52,22 +52,22 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Spanish app theme colors
-				terracotta: {
-					DEFAULT: 'hsl(var(--terracotta))',
-					light: 'hsl(var(--terracotta-light))'
+				// Minimalistic app theme colors
+				primary: {
+					DEFAULT: 'hsl(var(--primary-blue))',
+					light: 'hsl(var(--primary-blue-light))'
 				},
-				mediterranean: {
-					DEFAULT: 'hsl(var(--mediterranean-blue))',
-					light: 'hsl(var(--mediterranean-blue-light))'
+				secondary: {
+					DEFAULT: 'hsl(var(--secondary-gray))',
+					light: 'hsl(var(--secondary-gray-light))'
 				},
-				sunny: {
-					DEFAULT: 'hsl(var(--sunny-yellow))',
-					light: 'hsl(var(--sunny-yellow-light))'
+				accent: {
+					DEFAULT: 'hsl(var(--accent-green))',
+					light: 'hsl(var(--accent-green-light))'
 				},
-				warm: {
-					bg: 'hsl(var(--warm-bg))',
-					text: 'hsl(var(--warm-text))'
+				neutral: {
+					bg: 'hsl(var(--neutral-bg))',
+					text: 'hsl(var(--neutral-text))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',

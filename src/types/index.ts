@@ -11,7 +11,6 @@ export interface User {
   city: string;
   postalCode: string;
   userType: 'owner' | 'walker';
-  userType: UserType;
   profileImage?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -56,7 +55,6 @@ export interface WalkRequest {
   location: string;
   notes?: string;
   status: 'pending' | 'accepted' | 'in-progress' | 'completed' | 'cancelled';
-  status: 'pending' | 'accepted' | 'in-progress' | 'completed' | 'canceled';
   price: number;
   createdAt: Date;
   updatedAt: Date;

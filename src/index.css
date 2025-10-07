@@ -8,47 +8,47 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Spanish-inspired warm Mediterranean palette */
-    --background: 45 35% 98%;
-    --foreground: 25 25% 15%;
+    /* Minimalistic modern palette */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
 
-    --card: 45 30% 96%;
-    --card-foreground: 25 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
 
-    --popover: 45 30% 96%;
-    --popover-foreground: 25 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
 
-    /* Warm terracotta primary */
-    --primary: 15 55% 55%;
-    --primary-foreground: 45 35% 98%;
+    /* Clean blue primary */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Soft Mediterranean blue secondary */
-    --secondary: 200 35% 85%;
-    --secondary-foreground: 25 25% 15%;
+    /* Light gray secondary */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
 
-    --muted: 45 25% 92%;
-    --muted-foreground: 25 15% 45%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Sunny yellow accent */
-    --accent: 45 85% 75%;
-    --accent-foreground: 25 25% 15%;
+    /* Subtle accent */
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
 
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 45 35% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 45 20% 88%;
-    --input: 45 20% 88%;
-    --ring: 15 55% 55%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 221 83% 53%;
 
-    /* App-specific colors */
-    --terracotta: 15 55% 55%;
-    --terracotta-light: 15 40% 70%;
-    --mediterranean-blue: 200 45% 65%;
-    --mediterranean-blue-light: 200 35% 85%;
-    --sunny-yellow: 45 85% 75%;
-    --sunny-yellow-light: 45 70% 85%;
-    --warm-bg: 45 35% 98%;
-    --warm-text: 25 25% 15%;
+    /* App-specific minimalistic colors */
+    --primary-blue: 221 83% 53%;
+    --primary-blue-light: 221 83% 63%;
+    --secondary-gray: 0 0% 96%;
+    --secondary-gray-light: 0 0% 98%;
+    --accent-green: 142 76% 36%;
+    --accent-green-light: 142 76% 46%;
+    --neutral-bg: 0 0% 100%;
+    --neutral-text: 0 0% 9%;
 
     --radius: 0.5rem;
 
@@ -116,4 +116,61 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer components {
+  /* Minimalistic design utilities */
+  .btn-primary {
+    @apply bg-primary hover:bg-primary/90 text-white font-medium px-6 py-2 rounded-lg transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary/80 text-neutral-text font-medium px-6 py-2 rounded-lg transition-colors;
+  }
+
+  .btn-outline {
+    @apply border border-border hover:bg-secondary text-neutral-text font-medium px-6 py-2 rounded-lg transition-colors;
+  }
+
+  /* Clean card styles */
+  .card-minimal {
+    @apply bg-white rounded-lg border border-border shadow-sm;
+  }
+
+  /* Typography improvements */
+  .heading-1 {
+    @apply text-4xl lg:text-5xl font-bold text-neutral-text leading-tight;
+  }
+
+  .heading-2 {
+    @apply text-3xl font-bold text-neutral-text;
+  }
+
+  .heading-3 {
+    @apply text-lg font-semibold text-neutral-text;
+  }
+
+  .body-large {
+    @apply text-lg text-muted-foreground leading-relaxed;
+  }
+
+  .body-regular {
+    @apply text-base text-muted-foreground;
+  }
+}
+
+/* Responsive image optimizations */
+img {
+  @apply max-w-full h-auto;
+}
+
+/* Enhanced focus states for accessibility */
+button:focus-visible,
+a:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }

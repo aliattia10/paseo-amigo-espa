@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { createUser, getUser } from '@/lib/supabase-services';
+import { signUpWithProfile } from '@/lib/auth-api';
 import type { User } from '@/types';
 
 interface AuthContextType {
@@ -9,7 +10,7 @@ interface AuthContextType {
   userProfile: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  signUp: (email: string, password: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => Promise<{ success: boolean; user: SupabaseUser | null }>;
   logout: () => Promise<void>;
 }
 
@@ -35,17 +36,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setCurrentUser(session.user);
-        try {
-          const profile = await getUser(session.user.id);
-          setUserProfile(profile);
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setCurrentUser(session.user);
+          try {
+            const profile = await getUser(session.user.id);
+            setUserProfile(profile);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            // If profile doesn't exist, set userProfile to null but don't fail
+            setUserProfile(null);
+          }
         }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getInitialSession();
@@ -60,6 +68,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUserProfile(profile);
         } catch (error) {
           console.error('Error fetching user profile:', error);
+          // If profile doesn't exist, set userProfile to null but don't fail
+          setUserProfile(null);
         }
       } else {
         setUserProfile(null);
@@ -85,19 +95,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUp = async (email: string, password: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+      // Use the new signUpWithProfile function
+      const result = await signUpWithProfile(email, password, {
+        name: userData.name,
+        phone: userData.phone,
+        city: userData.city,
+        postalCode: userData.postalCode,
+        userType: userData.userType,
       });
       
-      if (error) throw error;
-      if (!data.user) throw new Error('No user returned from signup');
-      
-      await createUser(data.user.id, {
-        ...userData,
-        email
-      });
+      // If profile creation failed but auth user was created, that's still a success
+      // The user can sign in and we can try to create the profile later
+      return result;
     } catch (error) {
+      // If the error is about profile creation but auth user was created, 
+      // we should still consider it a success
+      if (error instanceof Error && error.message.includes('profile')) {
+        console.warn('Profile creation failed, but auth user was created');
+        return { success: true, user: null };
+      }
       throw error;
     }
   };

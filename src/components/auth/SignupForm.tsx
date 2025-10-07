@@ -5,7 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthWithRetry } from '@/hooks/useAuthWithRetry';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
+import { LanguageSelector } from '@/components/ui/language-selector';
 import { Loader2 } from 'lucide-react';
 import type { User } from '@/types';
 
@@ -14,6 +17,7 @@ interface SignupFormProps {
 }
 
 const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -26,6 +30,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
   });
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
+  const { signUpWithRetry, loading: retryLoading } = useAuthWithRetry();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,8 +38,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
     
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Error",
-        description: "Las contraseñas no coinciden.",
+        title: t('common.error'),
+        description: t('auth.passwordsDontMatch'),
         variant: "destructive",
       });
       return;
@@ -52,16 +57,40 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
         userType: formData.userType
       };
 
-      await signUp(formData.email, formData.password, userData);
+      // Try the retry approach first
+      try {
+        await signUpWithRetry(formData.email, formData.password, userData);
+        
+        toast({
+          title: t('auth.accountCreated'),
+          description: t('auth.accountCreatedSuccess'),
+        });
+      } catch (retryError: any) {
+        // If retry fails, fall back to original method
+        console.log('Retry method failed, trying original method:', retryError);
+        await signUp(formData.email, formData.password, userData);
+        
+        toast({
+          title: t('auth.accountCreated'),
+          description: t('auth.accountCreatedSuccess'),
+        });
+      }
+    } catch (error: any) {
+      // Handle specific error types
+      let errorTitle = t('auth.signupError');
+      let errorDescription = error.message || t('auth.tryAgain');
+      
+      if (error.message.includes('rate limit') || error.message.includes('For security purposes')) {
+        errorTitle = t('auth.rateLimitTitle');
+        errorDescription = t('auth.rateLimitMessage');
+      } else if (error.message.includes('already registered')) {
+        errorTitle = t('auth.emailExistsTitle');
+        errorDescription = t('auth.emailExistsMessage');
+      }
       
       toast({
-        title: "¡Cuenta creada!",
-        description: "Tu cuenta ha sido creada exitosamente.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error al crear cuenta",
-        description: error.message || "Por favor, intenta de nuevo.",
+        title: errorTitle,
+        description: errorDescription,
         variant: "destructive",
       });
     } finally {
@@ -76,106 +105,109 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <h2 className="text-2xl font-bold text-center">Crear Cuenta</h2>
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-2xl font-bold text-center flex-1">{t('auth.createAccount')}</h2>
+          <LanguageSelector />
+        </div>
         <p className="text-center text-muted-foreground">
-          Únete a ¿Damos un Paseo?
+          {t('app.description')}
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Nombre completo</Label>
+            <Label htmlFor="name">{t('auth.name')}</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Tu nombre completo"
+              placeholder={t('auth.name')}
               required
             />
           </div>
           
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t('auth.email')}
               required
             />
           </div>
           
           <div>
-            <Label htmlFor="phone">Teléfono</Label>
+            <Label htmlFor="phone">{t('auth.phone')}</Label>
             <Input
               id="phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => handleInputChange('phone', e.target.value)}
-              placeholder="600 123 456"
+              placeholder={t('auth.phone')}
               required
             />
           </div>
           
           <div>
-            <Label htmlFor="city">Ciudad</Label>
+            <Label htmlFor="city">{t('auth.city')}</Label>
             <Input
               id="city"
               value={formData.city}
               onChange={(e) => handleInputChange('city', e.target.value)}
-              placeholder="Madrid"
+              placeholder={t('auth.city')}
               required
             />
           </div>
           
           <div>
-            <Label htmlFor="postalCode">Código Postal</Label>
+            <Label htmlFor="postalCode">{t('auth.postalCode')}</Label>
             <Input
               id="postalCode"
               value={formData.postalCode}
               onChange={(e) => handleInputChange('postalCode', e.target.value)}
-              placeholder="28010"
+              placeholder={t('auth.postalCode')}
               required
             />
           </div>
           
           <div>
-            <Label htmlFor="userType">Tipo de usuario</Label>
+            <Label htmlFor="userType">{t('auth.userType')}</Label>
             <Select
               value={formData.userType}
               onValueChange={(value) => handleInputChange('userType', value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona tu tipo de usuario" />
+                <SelectValue placeholder={t('auth.userType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="owner">Soy dueño de un perro</SelectItem>
-                <SelectItem value="walker">Quiero dar paseos</SelectItem>
+                <SelectItem value="owner">{t('auth.dogOwner')}</SelectItem>
+                <SelectItem value="walker">{t('auth.wantToWalk')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <div>
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">{t('auth.password')}</Label>
             <Input
               id="password"
               type="password"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
-              placeholder="Mínimo 6 caracteres"
+              placeholder={t('auth.password')}
               required
             />
           </div>
           
           <div>
-            <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+            <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
               value={formData.confirmPassword}
               onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-              placeholder="Repite tu contraseña"
+              placeholder={t('auth.confirmPassword')}
               required
             />
           </div>
@@ -183,21 +215,21 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading}
+            disabled={loading || retryLoading}
           >
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Crear Cuenta
+            {(loading || retryLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t('auth.createAccount')}
           </Button>
         </form>
         
         <div className="mt-4 text-center">
           <p className="text-sm text-muted-foreground">
-            ¿Ya tienes cuenta?{' '}
+            {t('auth.alreadyHaveAccount')}{' '}
             <button
               onClick={onSwitchToLogin}
               className="text-terracotta hover:underline"
             >
-              Inicia sesión aquí
+              {t('auth.login')}
             </button>
           </p>
         </div>

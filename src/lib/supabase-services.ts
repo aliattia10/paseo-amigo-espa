@@ -4,6 +4,13 @@ import type { Tables, InsertTables, UpdateTables } from './supabase';
 
 // User Services
 export const createUser = async (userId: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {
+  // Try to get session, but don't fail if it's not available
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session) {
+    console.log('No active session, proceeding with user creation anyway');
+  }
+
   const { data, error } = await supabase
     .from('users')
     .insert({
@@ -19,7 +26,10 @@ export const createUser = async (userId: string, userData: Omit<User, 'id' | 'cr
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Create user error:', error);
+    throw error;
+  }
   return data.id;
 };
 

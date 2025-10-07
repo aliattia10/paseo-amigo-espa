@@ -1,15 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase configuration from environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://zxbfygofxxmfivddwdqt.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4YmZ5Z29meHhtZml2ZGR3ZHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNjkyNTAsImV4cCI6MjA3MzY0NTI1MH0.6V11hebajJyNKKEeI0MqcoG8n2Hc0Rli8SoUpstm-C4';
 
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'pkce'
   }
 });
 

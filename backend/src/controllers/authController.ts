@@ -23,15 +23,26 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Use Supabase Auth to create the user first
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true
+    });
 
-    // Create user in Supabase Auth (this would typically be done through Supabase Auth)
-    // For now, we'll create the user directly in our users table
-    const { data: user, error } = await supabase
+    if (authError) {
+      throw authError;
+    }
+
+    if (!authData.user) {
+      throw new Error('No user returned from auth creation');
+    }
+
+    // Now create the user profile using the admin client (bypasses RLS)
+    const { data: user, error: userError } = await supabaseAdmin
       .from('users')
       .insert({
+        id: authData.user.id,
         name,
         email,
         phone,
@@ -42,8 +53,10 @@ export const register = async (req: Request, res: Response) => {
       .select()
       .single();
 
-    if (error) {
-      throw error;
+    if (userError) {
+      // If user creation fails, clean up the auth user
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      throw userError;
     }
 
     // Generate JWT token
