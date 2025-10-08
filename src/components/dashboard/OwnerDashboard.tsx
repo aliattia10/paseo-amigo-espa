@@ -17,21 +17,22 @@ const OwnerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [recentWalks, setRecentWalks] = useState<WalkRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currentView, setCurrentView] = useState<'dashboard' | 'home'>('home');
 
   useEffect(() => {
     const loadData = async () => {
       if (!userProfile) return;
-      
+
+      setLoading(true);
       try {
         const [dogsData, walksData] = await Promise.all([
           getDogsByOwner(userProfile.id),
           getWalkRequestsByOwner(userProfile.id)
         ]);
-        
+
         setDogs(dogsData);
-        setRecentWalks(walksData.slice(0, 3)); // Show only 3 recent walks
+        setRecentWalks(walksData.slice(0, 3));
       } catch (error) {
         toast({
           title: "Error",
@@ -43,7 +44,6 @@ const OwnerDashboard: React.FC = () => {
       }
     };
 
-    // Only load data when in dashboard view
     if (currentView === 'dashboard') {
       loadData();
     }

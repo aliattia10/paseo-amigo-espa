@@ -45,7 +45,7 @@ const HomePage: React.FC = () => {
     if (currentWalker) {
       toast({
         title: "¡Me gusta! ❤️",
-        description: `Te gusta ${currentWalker.user_id}`,
+        description: `Te gusta ${currentWalker.userName || 'este paseador'}`,
       });
       nextWalker();
     }
@@ -183,7 +183,7 @@ const HomePage: React.FC = () => {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h2 className="text-2xl font-bold text-neutral-text">
-                      Paseador {currentIndex + 1}
+                      {currentWalker.userName || `Paseador ${currentIndex + 1}`}
                     </h2>
                     <p className="text-muted-foreground">{currentWalker.bio}</p>
                   </div>
