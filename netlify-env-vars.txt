@@ -1,0 +1,9 @@
+# Environment Variables for Netlify Deployment
+# Copy these into Netlify Dashboard → Site Settings → Environment Variables
+
+VITE_SUPABASE_URL=https://zxbfygofxxmfivddwdqt.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4YmZ5Z29meHhtZml2ZGR3ZHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNjkyNTAsImV4cCI6MjA3MzY0NTI1MH0.6V11hebajJyNKKEeI0MqcoG8n2Hc0Rli8SoUpstm-C4
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_51Mv1dLAKjpyONsXT2WTBK9ad3XZpt9Kt9ZF3RDEjW41yoF0pF4d4mbw1MgzHcSPjkrR1awfkJl99tO8vxaQgke2e005JajbdVi
+VITE_APP_NAME=Paseo
+VITE_APP_DESCRIPTION=Encuentra el paseador perfecto para tu perro
+VITE_APP_URL=https://your-site-name.netlify.app
