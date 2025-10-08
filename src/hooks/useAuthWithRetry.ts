@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { createUser } from '@/lib/supabase-services';
 import type { User } from '@/types';
 

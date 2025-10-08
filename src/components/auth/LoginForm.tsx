@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/ui/language-selector';
 import { Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginFormProps {
   onSwitchToSignup: () => void;

@@ -1,5 +1,5 @@
 // Direct API calls to handle authentication with proper permissions
-import { supabase } from './supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export const createUserProfile = async (userData: {
   id: string;

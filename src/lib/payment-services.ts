@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '@/integrations/supabase/client';
 import type { SubscriptionPlan, UserSubscription, PaymentMethod } from '@/types';
 
 // Subscription Plan Services

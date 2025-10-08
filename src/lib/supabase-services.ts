@@ -1,6 +1,6 @@
-import { supabase } from './supabase';
+import { supabase } from '@/integrations/supabase/client';
 import type { User, Dog, WalkerProfile, WalkRequest, ChatMessage, Review } from '@/types';
-import type { Tables, InsertTables, UpdateTables } from './supabase';
+import type { Database } from '@/integrations/supabase/types';
 
 // User Services
 export const createUser = async (userId: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {

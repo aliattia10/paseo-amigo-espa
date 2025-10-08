@@ -19,7 +19,6 @@ import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,33 +26,88 @@ const queryClient = new QueryClient();
 
 // Onboarding Flow Component
 const OnboardingFlow = () => {
-  const { currentUser, signIn } = useAuth();
+  const { currentUser } = useAuth();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    // Basic profile data
     name: '',
     phone: '',
     city: '',
     postalCode: '',
-    userType: 'owner' as 'owner' | 'walker'
+    userType: 'owner' as 'owner' | 'walker',
+    // Dog data (for owners)
+    dogs: [] as Array<{
+      name: string;
+      age: string;
+      breed: string;
+      notes: string;
+      imageFile?: File;
+    }>,
+    // Walker data (for walkers)
+    bio: '',
+    experience: '',
+    hourlyRate: 15,
+    availability: [] as string[],
+    tags: [] as string[],
   });
 
-  const handleCreateProfile = async () => {
-    if (!currentUser || !formData.name || !formData.phone || !formData.city) {
-      toast({
-        title: "Error",
-        description: "Por favor, completa todos los campos obligatorios",
-        variant: "destructive",
-      });
-      return;
+  const handleNext = () => {
+    if (step === 1) {
+      if (!formData.name || !formData.phone || !formData.city) {
+        toast({
+          title: "Error",
+          description: "Por favor, completa todos los campos obligatorios",
+          variant: "destructive",
+        });
+        return;
+      }
+      // If user is an owner, add a default dog entry
+      if (formData.userType === 'owner' && formData.dogs.length === 0) {
+        setFormData({
+          ...formData,
+          dogs: [{ name: '', age: '', breed: '', notes: '' }]
+        });
+      }
     }
+    setStep(step + 1);
+  };
+
+  const handlePrev = () => {
+    setStep(step - 1);
+  };
+
+  const addDog = () => {
+    setFormData({
+      ...formData,
+      dogs: [...formData.dogs, { name: '', age: '', breed: '', notes: '' }]
+    });
+  };
+
+  const updateDog = (index: number, field: string, value: string | File) => {
+    const updatedDogs = [...formData.dogs];
+    if (field === 'imageFile') {
+      updatedDogs[index].imageFile = value as File;
+    } else {
+      updatedDogs[index] = { ...updatedDogs[index], [field]: value };
+    }
+    setFormData({ ...formData, dogs: updatedDogs });
+  };
+
+  const removeDog = (index: number) => {
+    setFormData({
+      ...formData,
+      dogs: formData.dogs.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleCreateProfile = async () => {
+    if (!currentUser) return;
 
     setLoading(true);
     try {
-      console.log('Creating profile for user:', currentUser.id);
-      console.log('Profile data:', formData);
-      
+      // Create user profile
       await createUser(currentUser.id, {
         name: formData.name,
         email: currentUser.email || '',
@@ -62,19 +116,57 @@ const OnboardingFlow = () => {
         postalCode: formData.postalCode,
         userType: formData.userType,
       });
-      
-      console.log('Profile created successfully');
-      
+
+      // Create dogs for owners
+      if (formData.userType === 'owner' && formData.dogs.length > 0) {
+        for (const dog of formData.dogs) {
+          if (dog.name && dog.age) {
+            let imageUrl = '';
+            if (dog.imageFile) {
+              // Upload image to Supabase storage
+              const { uploadImage } = await import('@/lib/supabase-services');
+              imageUrl = await uploadImage(dog.imageFile, `dogs/${currentUser.id}/${Date.now()}-${dog.name}.jpg`);
+            }
+            
+            const { createDog } = await import('@/lib/supabase-services');
+            await createDog({
+              ownerId: currentUser.id,
+              name: dog.name,
+              age: dog.age,
+              breed: dog.breed,
+              notes: dog.notes,
+              imageUrl,
+            });
+          }
+        }
+      }
+
+      // Create walker profile for walkers
+      if (formData.userType === 'walker') {
+        const { createWalkerProfile } = await import('@/lib/supabase-services');
+        await createWalkerProfile({
+          userId: currentUser.id,
+          bio: formData.bio,
+          experience: formData.experience,
+          hourlyRate: formData.hourlyRate,
+          availability: formData.availability,
+          rating: 0,
+          totalWalks: 0,
+          verified: false,
+          tags: formData.tags,
+        });
+      }
+
       toast({
         title: "¡Perfil creado!",
         description: "Tu perfil se ha creado exitosamente",
       });
-      
-      // Wait a moment for the database to update, then refresh auth context
+
+      // Refresh the page to reload auth context
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-      
+
     } catch (error) {
       console.error('Error creating profile:', error);
       toast({
@@ -87,6 +179,7 @@ const OnboardingFlow = () => {
     }
   };
 
+  // Step 1: Basic Profile Information
   if (step === 1) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
@@ -195,12 +288,275 @@ const OnboardingFlow = () => {
               </div>
 
               <Button
-                onClick={handleCreateProfile}
-                disabled={loading || !formData.name || !formData.phone || !formData.city}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                onClick={handleNext}
+                disabled={!formData.name || !formData.phone || !formData.city}
+                className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
               >
-                {loading ? "Creando perfil..." : "Crear perfil"}
+                Continuar
               </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 2: Dog Information (for owners)
+  if (step === 2 && formData.userType === 'owner') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-neutral-text mb-2">
+                Cuéntanos sobre tu perro
+              </h1>
+              <p className="text-muted-foreground">
+                Añade la información de tu perro para encontrar el paseador perfecto
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {formData.dogs.map((dog, index) => (
+                <div key={index} className="border rounded-lg p-6 bg-gray-50">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold">Perro {index + 1}</h3>
+                    {formData.dogs.length > 1 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeDog(index)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Eliminar
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-text mb-2">
+                        Nombre del perro *
+                      </label>
+                      <input
+                        type="text"
+                        value={dog.name}
+                        onChange={(e) => updateDog(index, 'name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+                        placeholder="Nombre de tu perro"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-text mb-2">
+                        Edad *
+                      </label>
+                      <input
+                        type="text"
+                        value={dog.age}
+                        onChange={(e) => updateDog(index, 'age', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+                        placeholder="Ej: 2 años, 6 meses"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-text mb-2">
+                        Raza
+                      </label>
+                      <input
+                        type="text"
+                        value={dog.breed}
+                        onChange={(e) => updateDog(index, 'breed', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+                        placeholder="Labrador, Golden Retriever..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-text mb-2">
+                        Foto del perro
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) updateDog(index, 'imageFile', file);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-neutral-text mb-2">
+                        Notas especiales
+                      </label>
+                      <textarea
+                        value={dog.notes}
+                        onChange={(e) => updateDog(index, 'notes', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+                        placeholder="Información importante sobre el comportamiento, necesidades especiales, etc."
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <Button
+                onClick={addDog}
+                variant="outline"
+                className="w-full border-dashed border-2 border-gray-300 hover:border-terracotta"
+              >
+                + Añadir otro perro
+              </Button>
+
+              <div className="flex gap-4">
+                <Button
+                  onClick={handlePrev}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Anterior
+                </Button>
+                <Button
+                  onClick={handleCreateProfile}
+                  disabled={loading || formData.dogs.length === 0 || formData.dogs.some(dog => !dog.name || !dog.age)}
+                  className="flex-1 bg-terracotta hover:bg-terracotta/90 text-white"
+                >
+                  {loading ? "Creando perfil..." : "Finalizar"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 2: Walker Profile (for walkers)
+  if (step === 2 && formData.userType === 'walker') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-neutral-text mb-2">
+                Crea tu perfil de paseador
+              </h1>
+              <p className="text-muted-foreground">
+                Cuéntanos sobre tu experiencia para conectar con dueños de perros
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-neutral-text mb-2">
+                  Biografía *
+                </label>
+                <textarea
+                  value={formData.bio}
+                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+                  placeholder="Cuéntanos sobre ti, tu amor por los perros y por qué serías un gran paseador..."
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-text mb-2">
+                  Experiencia *
+                </label>
+                <textarea
+                  value={formData.experience}
+                  onChange={(e) => setFormData({...formData, experience: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+                  placeholder="Describe tu experiencia con perros, cursos, certificaciones, etc."
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-text mb-2">
+                  Tarifa por hora (€) *
+                </label>
+                <input
+                  type="number"
+                  value={formData.hourlyRate}
+                  onChange={(e) => setFormData({...formData, hourlyRate: parseInt(e.target.value) || 15})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-terracotta"
+                  min="5"
+                  max="50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-text mb-2">
+                  Disponibilidad *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((day) => (
+                    <label key={day} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.availability.includes(day)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({...formData, availability: [...formData.availability, day]});
+                          } else {
+                            setFormData({...formData, availability: formData.availability.filter(d => d !== day)});
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      {day}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-text mb-2">
+                  Especialidades
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Perros grandes', 'Perros pequeños', 'Cachorros', 'Perros mayores', 'Entrenamiento básico', 'Ejercicio intenso'].map((tag) => (
+                    <label key={tag} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.tags.includes(tag)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({...formData, tags: [...formData.tags, tag]});
+                          } else {
+                            setFormData({...formData, tags: formData.tags.filter(t => t !== tag)});
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      {tag}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button
+                  onClick={handlePrev}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Anterior
+                </Button>
+                <Button
+                  onClick={handleCreateProfile}
+                  disabled={loading || !formData.bio || !formData.experience || formData.availability.length === 0}
+                  className="flex-1 bg-terracotta hover:bg-terracotta/90 text-white"
+                >
+                  {loading ? "Creando perfil..." : "Finalizar"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
