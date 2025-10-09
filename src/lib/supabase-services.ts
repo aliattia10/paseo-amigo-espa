@@ -8,26 +8,15 @@ export const createUser = async (userId: string, userData: Omit<User, 'id' | 'cr
     console.log('createUser: Starting user creation for ID:', userId);
     console.log('createUser: User data:', userData);
     
-    // Try to get session, but don't fail if it's not available
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      console.log('createUser: No active session, proceeding with user creation anyway');
-    } else {
-      console.log('createUser: Active session found for user:', session.user.id);
-    }
-
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .insert({
-        id: userId,
+        user_id: userId,
         name: userData.name,
-        email: userData.email,
-        phone: userData.phone,
         city: userData.city,
         postal_code: userData.postalCode,
+        phone: userData.phone,
         user_type: userData.userType,
-        profile_image: userData.profileImage,
       })
       .select()
       .single();
@@ -35,10 +24,9 @@ export const createUser = async (userId: string, userData: Omit<User, 'id' | 'cr
     if (error) {
       console.error('createUser: Database error:', error);
       
-      // Handle specific error cases
       if (error.code === '23505') {
         console.log('createUser: User already exists, this is OK');
-        return userId; // User already exists, return the ID
+        return userId;
       }
       
       if (error.code === '42501') {
@@ -61,34 +49,30 @@ export const getUser = async (userId: string): Promise<User | null> => {
     console.log('getUser: Fetching user with ID:', userId);
     
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     if (error) {
       console.error('getUser: Error fetching user:', error);
       if (error.code === 'PGRST116') {
         console.log('getUser: No user found with ID:', userId);
-        return null; // No rows returned
-      }
-      // For 406 errors or other issues, return null instead of throwing
-      if (error.code === '406' || error.status === 406) {
-        console.warn('getUser: 406 error - possibly RLS issue, returning null');
         return null;
       }
+      return null;
       throw error;
     }
 
     console.log('getUser: Successfully fetched user:', data);
     return {
-      id: data.id,
+      id: data.user_id,
       name: data.name,
-      email: data.email,
+      email: '', // Not stored in profiles
       phone: data.phone,
       city: data.city,
       postalCode: data.postal_code,
-      userType: data.user_type,
+      userType: data.user_type as 'owner' | 'walker',
       profileImage: data.profile_image,
       bio: data.bio,
       experience: data.experience || 0,
@@ -104,7 +88,7 @@ export const getUser = async (userId: string): Promise<User | null> => {
     };
   } catch (error) {
     console.error('getUser: Unexpected error:', error);
-    return null; // Return null instead of throwing to prevent app crash
+    return null;
   }
 };
 
@@ -112,19 +96,17 @@ export const updateUser = async (userId: string, userData: Partial<User>) => {
   const updateData: any = {};
   
   if (userData.name) updateData.name = userData.name;
-  if (userData.email) updateData.email = userData.email;
   if (userData.phone) updateData.phone = userData.phone;
   if (userData.city) updateData.city = userData.city;
   if (userData.postalCode) updateData.postal_code = userData.postalCode;
   if (userData.userType) updateData.user_type = userData.userType;
-  if (userData.profileImage) updateData.profile_image = userData.profileImage;
   
   updateData.updated_at = new Date().toISOString();
 
   const { error } = await supabase
-    .from('users')
+    .from('profiles')
     .update(updateData)
-    .eq('id', userId);
+    .eq('user_id', userId);
 
   if (error) throw error;
 };
@@ -136,10 +118,10 @@ export const createDog = async (dogData: Omit<Dog, 'id' | 'createdAt' | 'updated
     .insert({
       owner_id: dogData.ownerId,
       name: dogData.name,
-      age: dogData.age,
+      age_years: parseInt(dogData.age) || 1,
       breed: dogData.breed,
-      notes: dogData.notes,
-      image_url: dogData.imageUrl,
+      special_notes: dogData.notes,
+      photo_url: dogData.imageUrl,
     })
     .select()
     .single();
@@ -161,10 +143,10 @@ export const getDogsByOwner = async (ownerId: string): Promise<Dog[]> => {
     id: dog.id,
     ownerId: dog.owner_id,
     name: dog.name,
-    age: dog.age,
-    breed: dog.breed,
-    notes: dog.notes,
-    imageUrl: dog.image_url,
+    age: `${dog.age_years} años`,
+    breed: dog.breed || '',
+    notes: dog.special_notes || '',
+    imageUrl: dog.photo_url || undefined,
     createdAt: new Date(dog.created_at),
     updatedAt: new Date(dog.updated_at),
   }));
@@ -174,10 +156,10 @@ export const updateDog = async (dogId: string, dogData: Partial<Dog>) => {
   const updateData: any = {};
   
   if (dogData.name) updateData.name = dogData.name;
-  if (dogData.age) updateData.age = dogData.age;
+  if (dogData.age) updateData.age_years = parseInt(dogData.age) || 1;
   if (dogData.breed) updateData.breed = dogData.breed;
-  if (dogData.notes) updateData.notes = dogData.notes;
-  if (dogData.imageUrl) updateData.image_url = dogData.imageUrl;
+  if (dogData.notes) updateData.special_notes = dogData.notes;
+  if (dogData.imageUrl) updateData.photo_url = dogData.imageUrl;
   
   updateData.updated_at = new Date().toISOString();
 
@@ -244,10 +226,9 @@ export const getNearbyWalkers = async (city: string): Promise<WalkerProfile[]> =
     .from('walker_profiles')
     .select(`
       *,
-      users:user_id (
+      profiles:user_id (
         name,
-        city,
-        profile_image
+        city
       )
     `)
     .eq('verified', true)
@@ -255,12 +236,12 @@ export const getNearbyWalkers = async (city: string): Promise<WalkerProfile[]> =
 
   if (error) throw error;
 
-  return data.map(profile => ({
+  return data.map((profile: any) => ({
     id: profile.id,
     userId: profile.user_id,
-    userName: profile.users?.name || 'Unknown',
-    userCity: profile.users?.city || city,
-    userImage: profile.users?.profile_image,
+    userName: profile.profiles?.name || 'Unknown',
+    userCity: profile.profiles?.city || city,
+    userImage: undefined,
     bio: profile.bio,
     experience: profile.experience,
     hourlyRate: profile.hourly_rate,
