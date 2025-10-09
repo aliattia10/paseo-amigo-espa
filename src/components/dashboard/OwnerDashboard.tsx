@@ -6,10 +6,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from '@/contexts/AuthContext';
 import { getDogsByOwner, getWalkRequestsByOwner } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MapPin, Clock, Plus, LogOut, User, Settings, MessageCircle, Crown, Search } from 'lucide-react';
+import { Heart, MapPin, Clock, Plus, LogOut, User, Settings, MessageCircle, Crown, Search, ArrowLeftRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Dog, WalkRequest } from '@/types';
 import HomePage from './HomePage';
+import RoleSwitch from '@/components/ui/RoleSwitch';
+import DogManagement from '@/components/dog/DogManagement';
+import WalkerProfile from '@/components/walker/WalkerProfile';
 
 const OwnerDashboard: React.FC = () => {
   const { userProfile, logout } = useAuth();
@@ -18,7 +21,7 @@ const OwnerDashboard: React.FC = () => {
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [recentWalks, setRecentWalks] = useState<WalkRequest[]>([]);
   const [loading, setLoading] = useState(false);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'home'>('home');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'home' | 'role-switch' | 'dogs' | 'walker-profile'>('home' as const);
 
   useEffect(() => {
     const loadData = async () => {
@@ -81,6 +84,25 @@ const OwnerDashboard: React.FC = () => {
     return <HomePage />;
   }
 
+  // Show Role Switch component
+  if (currentView === 'role-switch') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
+        <RoleSwitch onRoleChange={() => setCurrentView('home')} />
+      </div>
+    );
+  }
+
+  // Show Dog Management component
+  if (currentView === 'dogs') {
+    return <DogManagement />;
+  }
+
+  // Show Walker Profile component
+  if (currentView === 'walker-profile') {
+    return <WalkerProfile />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light">
       {/* Header */}
@@ -101,19 +123,47 @@ const OwnerDashboard: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={() => setCurrentView('home')}>
+              <Button 
+                variant={currentView === 'home' ? 'default' : 'ghost'} 
+                size="icon" 
+                onClick={() => setCurrentView('home')}
+                title="Buscar"
+              >
                 <Search className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => navigate('/messages')}>
+              {userProfile?.userType === 'owner' && (
+                <Button 
+                  variant={currentView === 'dogs' ? 'default' : 'ghost'} 
+                  size="icon" 
+                  onClick={() => setCurrentView('dogs')}
+                  title="Mis Perros"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              )}
+              {userProfile?.userType === 'walker' && (
+                <Button 
+                  variant={currentView === 'walker-profile' ? 'default' : 'ghost'} 
+                  size="icon" 
+                  onClick={() => setCurrentView('walker-profile')}
+                  title="Mi Perfil"
+                >
+                  <User className="w-4 h-4" />
+                </Button>
+              )}
+              <Button variant="ghost" size="icon" onClick={() => setCurrentView('role-switch')} title="Cambiar Rol">
+                <ArrowLeftRight className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/messages')} title="Mensajes">
                 <MessageCircle className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => navigate('/subscription')}>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/subscription')} title="Suscripción">
                 <Crown className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" title="Configuración">
                 <Settings className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <Button variant="ghost" size="icon" onClick={handleLogout} title="Cerrar Sesión">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>

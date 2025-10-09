@@ -90,6 +90,15 @@ export const getUser = async (userId: string): Promise<User | null> => {
       postalCode: data.postal_code,
       userType: data.user_type,
       profileImage: data.profile_image,
+      bio: data.bio,
+      experience: data.experience || 0,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      hourlyRate: data.hourly_rate,
+      availability: data.availability || [],
+      rating: data.rating || 0,
+      totalWalks: data.total_walks || 0,
+      verified: data.verified || false,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
     };
@@ -263,6 +272,78 @@ export const getNearbyWalkers = async (city: string): Promise<WalkerProfile[]> =
     createdAt: new Date(profile.created_at),
     updatedAt: new Date(profile.updated_at),
   }));
+};
+
+// New proximity-based matching functions
+export const getNearbyUsers = async (
+  latitude: number, 
+  longitude: number, 
+  targetRole: 'owner' | 'walker',
+  maxDistanceKm: number = 50,
+  limit: number = 20
+): Promise<User[]> => {
+  try {
+    const { data, error } = await supabase.rpc('get_nearby_users', {
+      user_lat: latitude,
+      user_lon: longitude,
+      target_role: targetRole,
+      max_distance_km: maxDistanceKm,
+      limit_count: limit
+    });
+
+    if (error) throw error;
+
+    return data.map((user: any) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: '',
+      city: '',
+      postalCode: '',
+      userType: user.user_type,
+      profileImage: user.profile_image,
+      bio: user.bio,
+      experience: user.experience || 0,
+      latitude: user.latitude,
+      longitude: user.longitude,
+      hourlyRate: user.hourly_rate,
+      availability: user.availability || [],
+      rating: user.rating || 0,
+      totalWalks: user.total_walks || 0,
+      verified: user.verified || false,
+      distanceKm: user.distance_km,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+  } catch (error) {
+    console.error('Error fetching nearby users:', error);
+    return [];
+  }
+};
+
+export const updateUserLocation = async (userId: string, latitude: number, longitude: number) => {
+  const { error } = await supabase
+    .from('users')
+    .update({ 
+      latitude, 
+      longitude,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', userId);
+
+  if (error) throw error;
+};
+
+export const switchUserRole = async (userId: string, newRole: 'owner' | 'walker') => {
+  const { error } = await supabase
+    .from('users')
+    .update({ 
+      user_type: newRole,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', userId);
+
+  if (error) throw error;
 };
 
 // Walk Request Services

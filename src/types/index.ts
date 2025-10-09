@@ -12,6 +12,16 @@ export interface User {
   postalCode: string;
   userType: 'owner' | 'walker';
   profileImage?: string;
+  bio?: string;
+  experience?: number;
+  latitude?: number;
+  longitude?: number;
+  hourlyRate?: number;
+  availability?: string[];
+  rating?: number;
+  totalWalks?: number;
+  verified?: boolean;
+  distanceKm?: number; // For proximity search results
   createdAt: Date;
   updatedAt: Date;
 }
