@@ -1344,7 +1344,6 @@ i18n
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
       lookupFromPathIndex: 0,
-      checkWhitelist: true,
     },
     
     supportedLngs: ['en', 'fr', 'de', 'es', 'pt', 'it', 'ru', 'pl'],

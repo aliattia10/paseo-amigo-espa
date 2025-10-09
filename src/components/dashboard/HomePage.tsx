@@ -227,7 +227,7 @@ const HomePage: React.FC = () => {
           </Button>
           
           <Button
-            onClick={handleContact}
+            onClick={() => handleContact(currentWalker.userId)}
             size="lg"
             className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600"
           >

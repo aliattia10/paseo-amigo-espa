@@ -14,16 +14,14 @@ export const createUserProfile = async (userData: {
   try {
     // Use a more direct approach - try to insert without RLS restrictions
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .insert({
-        id: userData.id,
+        user_id: userData.id,
         name: userData.name,
-        email: userData.email,
-        phone: userData.phone,
         city: userData.city,
         postal_code: userData.postalCode,
+        phone: userData.phone,
         user_type: userData.userType,
-        profile_image: userData.profileImage,
       })
       .select()
       .single();
