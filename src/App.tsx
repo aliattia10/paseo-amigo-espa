@@ -406,8 +406,7 @@ const OnboardingFlow = () => {
 
               <Button
                 onClick={addDog}
-                variant="outline"
-                className="w-full border-dashed border-2 border-gray-300 hover:border-terracotta"
+                className="w-full bg-white text-gray-800 border-2 border-gray-300 hover:bg-gray-100 hover:text-gray-900"
               >
                 + Añadir otro perro
               </Button>
@@ -415,8 +414,7 @@ const OnboardingFlow = () => {
               <div className="flex gap-4">
                 <Button
                   onClick={handlePrev}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 hover:text-gray-900"
                 >
                   Anterior
                 </Button>
@@ -544,8 +542,7 @@ const OnboardingFlow = () => {
               <div className="flex gap-4">
                 <Button
                   onClick={handlePrev}
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 hover:text-gray-900"
                 >
                   Anterior
                 </Button>
