@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import { useState } from "react";
+import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
 
@@ -606,16 +607,18 @@ const DashboardRouter = () => {
 // Auth Component
 const AuthComponent = () => {
   const [isLogin, setIsLogin] = useState(true);
-  // Read ?mode=signup from URL so external links can open signup directly
+  const location = useLocation();
+
+  // Use react-router location so query params are reliable in SPA
   React.useEffect(() => {
     try {
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(location.search);
       const mode = params.get('mode');
-      if (mode === 'signup') setIsLogin(false);
+      setIsLogin(mode !== 'signup');
     } catch (e) {
       // ignore
     }
-  }, []);
+  }, [location.search]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
