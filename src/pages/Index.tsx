@@ -18,7 +18,8 @@ const Index = () => {
   }
 
   if (!currentUser) {
-    return <Navigate to="/auth" replace />;
+    // Redirect unauthenticated users to signup by default
+    return <Navigate to="/auth?mode=signup" replace />;
   }
 
   return <OnboardingRouter />;

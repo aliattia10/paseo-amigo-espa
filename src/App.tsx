@@ -606,7 +606,17 @@ const DashboardRouter = () => {
 // Auth Component
 const AuthComponent = () => {
   const [isLogin, setIsLogin] = useState(true);
-  
+  // Read ?mode=signup from URL so external links can open signup directly
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get('mode');
+      if (mode === 'signup') setIsLogin(false);
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
       <div className="w-full max-w-md">

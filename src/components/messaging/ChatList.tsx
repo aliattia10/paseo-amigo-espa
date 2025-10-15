@@ -29,9 +29,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
           ? await getWalkRequestsByOwner(userProfile.id)
           : await getWalkRequestsByWalker(userProfile.id);
         
-        // Filter requests that have been accepted or are in progress
+        // Filter requests that are relevant for chat. Include 'pending' so owners and walkers can
+        // message each other before a request is accepted.
         const activeRequests = requests.filter(
-          request => request.status === 'accepted' || request.status === 'in-progress'
+          request => ['pending', 'accepted', 'in-progress'].includes(request.status)
         );
         
         setWalkRequests(activeRequests);
