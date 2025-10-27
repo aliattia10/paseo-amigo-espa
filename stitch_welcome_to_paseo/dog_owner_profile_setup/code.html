@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Profile - Dog Sitter App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#4A90E2", // warm, inviting blue
+              "secondary": "#F5A623", // soft orange/coral
+              "background-light": "#F2F2F7",
+              "background-dark": "#1C1C1E",
+              "text-primary-light": "#1C1C1E",
+              "text-primary-dark": "#F2F2F7",
+              "text-secondary-light": "#8E8E93",
+              "text-secondary-dark": "#8E8E93",
+              "border-light": "#E5E5EA",
+              "border-dark": "#3A3A3C",
+              "card-light": "#FFFFFF",
+              "card-dark": "#2C2C2E",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.75rem", // 12px
+                "lg": "1rem", // 16px
+                "xl": "1.5rem", // 24px
+                "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm p-4 pb-2 justify-between border-b border-border-light dark:border-border-dark">
+<button class="text-text-primary-light dark:text-text-primary-dark flex size-10 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-text-primary-light dark:text-text-primary-dark text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Edit Profile</h1>
+<div class="w-10"></div> <!-- Spacer -->
+</header>
+<main class="flex-grow">
+<!-- Profile Header -->
+<div class="flex p-4 @container pt-6">
+<div class="flex w-full flex-col gap-4 items-center">
+<div class="flex gap-4 flex-col items-center">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-white dark:border-card-dark shadow-md" data-alt="A person's profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmjrjpt_VzUq21XLfuy1ABpnjHSJQhzheFlk3TwoLk_mzw0HxQVgQ0pTcRbHWRdhl9hyEWhOzl9y5EHIjnFazSt9PdM-0EWgrbDYQCSmClpRyBCLhGb_7t4G5nYYMI818gFBeejd5HNP67yd6hYW2NIyLUpBsz-z4OXWfhSaQ7ppqqghbJeZDEKS9n7JavuRPzh-gwNXGb6iW_CGb2vDdn8ImCh3JBN25ibdFnSkIjRLHp4alim7NWjy_KCSBzt2ZaD2-RaZewGds");'></div>
+<button class="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-lg">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Tabs -->
+<div class="pb-3 sticky top-[60px] z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="flex border-b border-border-light dark:border-border-dark px-4 justify-between">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-text-primary-light dark:text-text-primary-dark pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Your Profile</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-secondary-light dark:text-text-secondary-dark pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Your Dog(s)</p>
+</a>
+</div>
+</div>
+<!-- Form Content: Your Profile -->
+<div class="flex flex-col gap-1 px-4 py-3">
+<!-- Full Name TextField -->
+<div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-text-primary-light dark:text-text-primary-dark text-base font-medium leading-normal pb-2">Full Name</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary h-14 placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark p-[15px] text-base font-normal leading-normal" placeholder="Enter your full name" value="Alex Martinez"/>
+</label>
+</div>
+<!-- Bio TextField -->
+<div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-text-primary-light dark:text-text-primary-dark text-base font-medium leading-normal pb-2">Bio</p>
+<textarea class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary min-h-36 placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark p-[15px] text-base font-normal leading-normal" placeholder="Tell us about you and your home environment"></textarea>
+</label>
+</div>
+<!-- Location TextField -->
+<div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-text-primary-light dark:text-text-primary-dark text-base font-medium leading-normal pb-2">Location</p>
+<div class="relative">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary h-14 placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark p-[15px] pl-12 text-base font-normal leading-normal" placeholder="City or Neighborhood" value="Greenwood, Seattle"/>
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">location_on</span>
+</div>
+</label>
+</div>
+<!-- Phone Number TextField -->
+<div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-text-primary-light dark:text-text-primary-dark text-base font-medium leading-normal pb-2">Phone</p>
+<div class="relative">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary h-14 placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark p-[15px] pl-12 text-base font-normal leading-normal" placeholder="(123) 456-7890" type="tel" value=""/>
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">call</span>
+</div>
+</label>
+</div>
+<!-- Email TextField -->
+<div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-text-primary-light dark:text-text-primary-dark text-base font-medium leading-normal pb-2">Email</p>
+<div class="relative">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark focus:border-primary h-14 placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark p-[15px] pl-12 text-base font-normal leading-normal" placeholder="your.email@example.com" type="email" value="alex.martinez@email.com"/>
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">mail</span>
+</div>
+</label>
+</div>
+</div>
+</main>
+<!-- Bottom CTA -->
+<footer class="sticky bottom-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm p-4 pt-2 border-t border-border-light dark:border-border-dark">
+<button class="flex w-full items-center justify-center rounded-xl bg-primary px-6 py-4 text-base font-bold text-white shadow-lg transition-transform duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98]">Save Profile</button>
+</footer>
+</div>
+</body></html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Find a Sitter</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#4A90E2",
+              "secondary": "#F5A623",
+              "background-light": "#F2F2F7",
+              "background-dark": "#1C1C1E",
+              "text-primary-light": "#1C1C1E",
+              "text-primary-dark": "#F2F2F7",
+              "text-secondary-light": "#8E8E93",
+              "text-secondary-dark": "#8E8E93",
+              "border-light": "#E5E5EA",
+              "border-dark": "#3A3A3C",
+              "card-light": "#FFFFFF",
+              "card-dark": "#2C2C2E",
+              "primary-bg-light": "#D8E7F9",
+              "primary-bg-dark": "rgba(74, 144, 226, 0.2)",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden text-text-primary-light dark:text-text-primary-dark">
+<main class="flex-1 pb-28">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between bg-background-light dark:bg-background-dark">
+<h1 class="text-2xl font-bold leading-tight tracking-tight">Find a Sitter</h1>
+<button class="flex size-10 items-center justify-center rounded-full bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark" style="font-size: 24px;">tune</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="px-4 py-3">
+<label class="flex flex-col min-w-40 h-14 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-primary flex border-none bg-card-light dark:bg-card-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined" style="font-size: 24px;">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-0 border-none bg-card-light dark:bg-card-dark focus:border-none h-full placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark px-4 pl-2 text-base font-normal leading-normal" placeholder="Search by name, location..." value=""/>
+</div>
+</label>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 p-3 pl-4 overflow-x-auto">
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary-bg-light dark:bg-primary-bg-dark pl-4 pr-2">
+<p class="text-primary text-sm font-medium leading-normal">Availability</p>
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">arrow_drop_down</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-card-light dark:bg-card-dark pl-4 pr-2 border border-border-light dark:border-border-dark">
+<p class="text-text-primary-light dark:text-text-primary-dark text-sm font-medium leading-normal">Distance</p>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark" style="font-size: 20px;">arrow_drop_down</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-card-light dark:bg-card-dark pl-4 pr-2 border border-border-light dark:border-border-dark">
+<p class="text-text-primary-light dark:text-text-primary-dark text-sm font-medium leading-normal">Rates</p>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark" style="font-size: 20px;">arrow_drop_down</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-card-light dark:bg-card-dark pl-4 pr-2 border border-border-light dark:border-border-dark">
+<p class="text-text-primary-light dark:text-text-primary-dark text-sm font-medium leading-normal">Services</p>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark" style="font-size: 20px;">arrow_drop_down</span>
+</button>
+</div>
+<!-- Advanced Filters Section -->
+<div class="px-4 py-2">
+<h2 class="text-lg font-bold">Advanced Filters</h2>
+</div>
+<div class="flex flex-col p-4 pt-1 gap-3">
+<!-- Accordions -->
+<details class="flex flex-col rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-4 group" open="">
+<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-3">
+<p class="text-base font-medium">Availability</p>
+<span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="pb-4">
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-normal">A calendar will be displayed here.</p>
+</div>
+</details>
+<details class="flex flex-col rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-4 group">
+<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-3">
+<p class="text-base font-medium">Distance</p>
+<span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<!-- Slider Component -->
+<div class="relative flex w-full flex-col items-start justify-between gap-3 py-4 @container">
+<div class="flex h-8 w-full items-center">
+<input class="w-full h-1.5 bg-border-light dark:bg-border-dark rounded-full appearance-none cursor-pointer accent-primary" max="25" min="1" type="range" value="5"/>
+</div>
+<div class="flex justify-between w-full text-sm text-text-secondary-light dark:text-text-secondary-dark">
+<span>1 mi</span>
+<span>25 mi</span>
+</div>
+</div>
+</details>
+<details class="flex flex-col rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-4 group">
+<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-3">
+<p class="text-base font-medium">Services</p>
+<span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="flex flex-col gap-3 pb-4">
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="form-checkbox rounded border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark text-primary focus:ring-primary/50" type="checkbox"/>
+<span class="text-sm">Boarding</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="form-checkbox rounded border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark text-primary focus:ring-primary/50" type="checkbox"/>
+<span class="text-sm">Walking</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="form-checkbox rounded border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark text-primary focus:ring-primary/50" type="checkbox"/>
+<span class="text-sm">Day Care</span>
+</label>
+</div>
+</details>
+<details class="flex flex-col rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-4 group">
+<summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-3">
+<p class="text-base font-medium">Ratings</p>
+<span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="flex items-center gap-1 py-4">
+<span class="material-symbols-outlined text-secondary" style="font-size: 28px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-secondary" style="font-size: 28px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-secondary" style="font-size: 28px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-secondary" style="font-size: 28px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-text-secondary-light/50 dark:text-text-secondary-dark/50" style="font-size: 28px;">star</span>
+<p class="ml-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">4 stars &amp; up</p>
+</div>
+</details>
+</div>
+</main>
+<!-- Floating Action Button -->
+<div class="fixed bottom-24 right-4 z-10">
+<button class="flex items-center justify-center gap-2 h-14 w-auto px-6 bg-secondary text-white font-bold rounded-full shadow-lg hover:bg-opacity-90 transition-colors">
+                Apply Filters
+            </button>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 h-20 bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-sm border-t border-border-light dark:border-border-dark flex justify-around items-center">
+<a class="flex flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 24px;">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined" style="font-size: 24px;">chat_bubble</span>
+<span class="text-xs font-medium">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined" style="font-size: 24px;">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</nav>
+</div>
+</body></html>

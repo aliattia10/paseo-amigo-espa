@@ -20,11 +20,12 @@ const Index = () => {
   }
 
   if (!currentUser) {
-    // Redirect unauthenticated users to signup by default
-    return <Navigate to="/auth?mode=signup" replace />;
+    // Redirect unauthenticated users to welcome screen
+    return <Navigate to="/welcome" replace />;
   }
 
-  return <OnboardingRouter />;
+  // If user is logged in, redirect to dashboard
+  return <Navigate to="/dashboard" replace />;
 };
 
 export default Index;

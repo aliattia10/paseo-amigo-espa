@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chat with Sarah J.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "secondary": "#7ED321",
+            "background-light": "#F8F9FA",
+            "background-dark": "#1a1c1e",
+            "text-light": "#495057",
+            "text-dark": "#E9ECEF",
+            "incoming-bubble-light": "#E9ECEF",
+            "incoming-bubble-dark": "#2c2e30",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+    .material-symbols-filled {
+      font-variation-settings:
+        'FILL' 1,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center gap-2 p-4 pb-3 border-b border-incoming-bubble-light dark:border-incoming-bubble-dark/50 bg-background-light dark:bg-background-dark fixed top-0 left-0 right-0 z-10">
+<button>
+<span class="material-symbols-outlined text-text-light dark:text-text-dark text-2xl">arrow_back</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0" data-alt="Profile picture of Sarah J." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB4ees8Q5OPMDCLX69IQvX2feZ7AkHoCKsIfV5AFGeuYpHopa4ghm2LMod-QwupSz-2wSHL7tOExEV-a3vFwkBkGharUSfAkInh7AjZ7a7AL2-EQ9l9AJZqtHkI9i_vXWbvYrUPKliaT7WL4GIn4SuMu5-j-jrnipnP-sKK_D2duaPv7aG8iyTNSbFyZieEZ6qk5eDrvHqG9Y75yeK_YEAfs-P4ozf3m4WkQyZ16nWTemHRCoVaLa8ejQ9BqgTZ_YvYmGBQ0IREWA8");'></div>
+<h2 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] flex-1">Sarah J.</h2>
+</div>
+<!-- Chat Area -->
+<div class="flex-1 overflow-y-auto pb-4 pt-[84px]">
+<!-- Timestamp -->
+<div class="flex justify-center my-4">
+<span class="text-xs text-text-light/70 dark:text-text-dark/70 bg-incoming-bubble-light dark:bg-incoming-bubble-dark px-3 py-1 rounded-full">Today</span>
+</div>
+<!-- Incoming Message -->
+<div class="flex items-end gap-3 p-4 pt-0">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0" data-alt="Profile picture of Sarah J." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA796c54eEhPB2KwM1beeE2lQIeS7wl0m8VCEgzoWJDoVIZEreubwyT68GFv-cnEKFm5kaPxekiQ6F4NFh4By79qnGFL-faHpIpW4CwNa7QFECYbMoJ1pvW6IyaMCphKFa5mSyfAwIBMfLkK58BoIYpLFtsIwHPN2Vgp0lcDqNheFLfu7Ky9ja8nvWHr3Z0fGDO3B3ASbCJAsoi7gl5GhVryjm5amBD1o2muEi8ITIrUfDe2BO9-ia5R7EeStbAnnmMmRryW9OslSk");'></div>
+<div class="flex flex-1 flex-col gap-1 items-start">
+<p class="text-base font-normal leading-normal flex max-w-[360px] rounded-xl rounded-bl-none px-4 py-3 bg-incoming-bubble-light dark:bg-incoming-bubble-dark text-text-light dark:text-text-dark">
+            Hi Alex! Yes, I'd love to watch Winston next weekend. Does Saturday morning work for you?
+          </p>
+<span class="text-xs text-text-light/70 dark:text-text-dark/70 ml-1">10:15 AM</span>
+</div>
+</div>
+<!-- Outgoing Message -->
+<div class="flex items-end gap-3 p-4 pt-0 justify-end">
+<div class="flex flex-1 flex-col gap-1 items-end">
+<p class="text-base font-normal leading-normal flex max-w-[360px] rounded-xl rounded-br-none px-4 py-3 bg-primary text-white">
+            That's great! Saturday morning works perfectly. I can drop him off around 9 AM.
+          </p>
+<span class="text-xs text-text-light/70 dark:text-text-dark/70 mr-1">10:16 AM</span>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0" data-alt="Profile picture of Alex T." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCLSVmJZ5Hcu-Mbs9V6kiF6Ul-6Bv56oXGLc3pgHJGFYYwaPg6f0dYlzyCYJrmY5VqdP4PJnSApH8kkMp9Ncbu1C5Ouo9-l4iQMYTRoljQcVdSUgN0Mh4SDS9-kYI_P3D-UlXeCuOfOw1qWMWwka7cwIp58Vo1v2v0cy6lnPp8GR8sS3i_jYycD0UYcKVnur_PrnmJcqPI9Sd8_aAJucq4EWr9V62wm31yw5Uh6lK5XV2k5LlPf4p_mAlq3kD6DiThfIvY72S9LBos");'></div>
+</div>
+<!-- Incoming Message -->
+<div class="flex items-end gap-3 p-4 pt-0">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0" data-alt="Profile picture of Sarah J." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCAYk4X4YjcoPiuHLWIsmTnUI5XOy62aILQ3JI4aSx5vq_tRC8nvu5-qL_qf7IGRN93ow8Dr-YK2wr7Z794XRfM2HAVOSlqV8fvUrENzmoesDKsKrWWZpoL_ew1bJ74rkk_UY1KqG72HfliJvu650JNEERMkQip3fDgGtcPjKUcIrxxHepLOE1KgTJnOjQDDfFMOGIzcHeyDBALmpANXS2UdJTaLCufMHtrOSiaQt6z5QQhmWjf9o8kRiahoJ7qFhYxX4YHg2caeB8");'></div>
+<div class="flex flex-1 flex-col gap-1 items-start">
+<p class="text-base font-normal leading-normal flex max-w-[360px] rounded-xl rounded-bl-none px-4 py-3 bg-incoming-bubble-light dark:bg-incoming-bubble-dark text-text-light dark:text-text-dark">
+            Sounds perfect! Just send over the booking request when you're ready.
+          </p>
+<span class="text-xs text-text-light/70 dark:text-text-dark/70 ml-1">10:17 AM</span>
+</div>
+</div>
+<!-- Booking Card -->
+<div class="p-4 pt-2">
+<div class="flex flex-col items-stretch justify-start rounded-xl bg-incoming-bubble-light dark:bg-incoming-bubble-dark border border-secondary/50 dark:border-secondary/30 p-4">
+<div class="flex flex-col items-stretch justify-center gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-xl">event_available</span>
+<p class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em]">Booking Request: Pending</p>
+</div>
+<div class="flex flex-col gap-1 pl-1">
+<p class="text-text-light/80 dark:text-text-dark/80 text-base font-normal leading-normal"><strong>Date:</strong> Sat, Oct 26</p>
+<p class="text-text-light/80 dark:text-text-dark/80 text-base font-normal leading-normal"><strong>Time:</strong> 9:00 AM - 5:00 PM (8 hours)</p>
+<p class="text-text-light/80 dark:text-text-dark/80 text-base font-normal leading-normal"><strong>Rate:</strong> $80.00</p>
+<p class="text-text-light/80 dark:text-text-dark/80 text-base font-normal leading-normal"><strong>Pet:</strong> Winston, Golden Retriever</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Composer / Input Area -->
+<div class="bg-background-light dark:bg-background-dark py-3 px-4 flex flex-col gap-2 border-t border-incoming-bubble-light dark:border-incoming-bubble-dark/50">
+<div class="flex items-center gap-3">
+<label class="flex flex-col min-w-40 h-12 flex-1">
+<div class="flex w-full flex-1 items-stretch rounded-full h-full">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-full text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-incoming-bubble-light dark:bg-incoming-bubble-dark h-full placeholder:text-text-light/60 dark:placeholder:text-text-dark/60 px-5 text-base font-normal leading-normal" placeholder="Message Sarah..." value=""/>
+</div>
+</label>
+<button class="flex min-w-[48px] max-w-[48px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 w-12 bg-primary text-white text-2xl">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-4 bg-primary/20 dark:bg-primary/30 text-primary text-base font-semibold leading-normal">
+<span class="material-symbols-outlined mr-2">calendar_month</span>
+<span class="truncate">Request to Book</span>
+</button>
+</div>
+<!-- Global Navigation Bar -->
+<div class="flex items-center justify-around bg-background-light dark:bg-background-dark p-2 border-t border-incoming-bubble-light dark:border-incoming-bubble-dark/50">
+<a class="flex flex-col items-center gap-1 text-text-light/70 dark:text-text-dark/70 w-20" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary w-20" href="#">
+<span class="material-symbols-filled text-2xl">chat_bubble</span>
+<span class="text-xs font-bold">Messages</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-light/70 dark:text-text-dark/70 w-20" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+</div>
+</body></html>

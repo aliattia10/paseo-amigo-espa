@@ -20,6 +20,10 @@ import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import WelcomeScreen from "./components/welcome/WelcomeScreen";
+import RoleSelectionPage from "./pages/RoleSelectionPage";
+import NewHomePage from "./components/dashboard/NewHomePage";
+import NewProfilePage from "./components/profile/NewProfilePage";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
@@ -653,17 +657,30 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <Routes>
+                {/* Public Routes */}
                 <Route path="/" element={<Index />} />
+                <Route path="/welcome" element={<WelcomeScreen />} />
+                <Route path="/select-role" element={<RoleSelectionPage />} />
                 <Route path="/auth" element={<AuthNew />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                
+                {/* Protected Routes */}
                 <Route 
                   path="/dashboard" 
                   element={
                     <ProtectedRoute>
-                      <DashboardRouter />
+                      <NewHomePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/profile" 
+                  element={
+                    <ProtectedRoute>
+                      <NewProfilePage />
                     </ProtectedRoute>
                   } 
                 />
@@ -683,7 +700,8 @@ const App = () => (
                     </ProtectedRoute>
                   } 
                 />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                
+                {/* Catch-all route - must be last */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
