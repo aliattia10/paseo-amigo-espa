@@ -21,13 +21,14 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ onSelectRole }) => {
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-role-background-light dark:bg-role-background-dark group/design-root overflow-x-hidden font-display">
-      {/* HeaderImage */}
-      <div className="@container">
-        <div className="@[480px]:px-4 @[480px]:py-3 p-0">
+      {/* HeaderImage - Optimized for all screen sizes */}
+      <div className="w-full max-w-screen-lg mx-auto">
+        <div className="px-0 md:px-4 py-0 md:py-3">
           <div 
-            className="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden min-h-[320px] sm:min-h-[400px] @[480px]:rounded-xl"
+            className="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden h-[280px] md:h-[350px] lg:h-[400px] md:rounded-xl"
             style={{
-              backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuD93viIT4Ghhf1VG1D8PYYwYimCdpsbpjM9NS7k6ZnaPGsxj6E-yWvM_UrLx8ujZUCh-u5R-e73W_azi9i7Ufn2NVv3a7Wfv4HOUAbE333PbSDN8ep0DlTkPbQzDVYPXfyYD8jSm021R29NvDACtGT_BfxzBosbmk66FNPzpFmXotU1RZ1gIVJp4B371n7Q_Gb7C4CdBm2pfIqnF-fB0gGhsGQ_nIilKq7o0J0PErXbxcQxtfeDeJk4ac4v59_7f4yapDiCSsFhaqU")'
+              backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuD93viIT4Ghhf1VG1D8PYYwYimCdpsbpjM9NS7k6ZnaPGsxj6E-yWvM_UrLx8ujZUCh-u5R-e73W_azi9i7Ufn2NVv3a7Wfv4HOUAbE333PbSDN8ep0DlTkPbQzDVYPXfyYD8jSm021R29NvDACtGT_BfxzBosbmk66FNPzpFmXotU1RZ1gIVJp4B371n7Q_Gb7C4CdBm2pfIqnF-fB0gGhsGQ_nIilKq7o0J0PErXbxcQxtfeDeJk4ac4v59_7f4yapDiCSsFhaqU")',
+              backgroundPosition: 'center 30%'
             }}
           ></div>
         </div>
@@ -35,7 +36,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ onSelectRole }) => {
 
       {/* HeadlineText */}
       <h1 className="text-role-text-light dark:text-role-text-dark tracking-tight text-[32px] font-bold leading-tight px-4 text-center pb-3 pt-6">
-        {t('auth.joinOurPack')}
+        Join our pack. Are you a...
       </h1>
 
       {/* ButtonGroup */}
@@ -43,27 +44,27 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ onSelectRole }) => {
         <div className="flex flex-1 gap-4 max-w-[480px] flex-col items-stretch px-4 py-3">
           <button
             onClick={() => handleRoleSelect('owner')}
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-auto px-5 py-4 bg-role-primary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] w-full flex-col gap-1 text-center"
+            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-auto px-5 py-4 bg-role-primary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] w-full flex-col gap-1 text-center hover:opacity-90 transition-opacity"
           >
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined">pets</span>
-              <span className="truncate text-lg">{t('auth.dogOwner')}</span>
+              <span className="truncate text-lg">Dog Owner</span>
             </div>
             <p className="text-sm font-normal text-role-background-dark/80">
-              {t('auth.findTrustedSitters')}
+              Find trusted sitters for your best friend.
             </p>
           </button>
 
           <button
             onClick={() => handleRoleSelect('walker')}
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-auto px-5 py-4 bg-role-button-secondary dark:bg-role-button-secondary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] w-full flex-col gap-1 text-center"
+            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-auto px-5 py-4 bg-role-button-secondary dark:bg-role-button-secondary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] w-full flex-col gap-1 text-center hover:opacity-90 transition-opacity"
           >
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined">school</span>
-              <span className="truncate text-lg">{t('auth.sitter')}</span>
+              <span className="truncate text-lg">Sitter</span>
             </div>
             <p className="text-sm font-normal text-role-background-dark/80">
-              {t('auth.earnMoneyLoving')}
+              Earn money doing what you love.
             </p>
           </button>
         </div>
@@ -71,7 +72,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ onSelectRole }) => {
 
       {/* MetaText */}
       <p className="text-role-text-light/70 dark:text-role-text-dark/70 text-sm font-normal leading-normal pb-6 pt-3 px-4 text-center">
-        {t('auth.alreadyHaveAccount')} <button onClick={handleSignIn} className="font-bold underline text-role-primary">{t('auth.signIn')}</button>
+        Already have an account? <button onClick={handleSignIn} className="font-bold underline text-role-primary">Sign In</button>
       </p>
 
       {/* Footer with Logo */}
