@@ -15,10 +15,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0 }) 
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-10 bg-card-light/90 dark:bg-card-dark/90 border-t border-border-light dark:border-border-dark backdrop-blur-sm">
-      <div className="flex justify-around items-center h-16 px-4 max-w-md mx-auto">
+      <div className="flex justify-around items-center h-16 px-2 max-w-md mx-auto">
         <button 
           onClick={() => navigate('/dashboard')} 
-          className={`flex flex-col items-center justify-center ${
+          className={`flex flex-col items-center justify-center p-2 ${
             isActive('/dashboard') 
               ? 'text-home-primary' 
               : 'text-text-secondary-light dark:text-text-secondary-dark'
@@ -37,14 +37,14 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0 }) 
 
         <button 
           onClick={() => navigate('/messages')} 
-          className={`flex flex-col items-center justify-center relative ${
+          className={`flex flex-col items-center justify-center relative p-2 ${
             isActive('/messages') 
               ? 'text-home-primary' 
               : 'text-text-secondary-light dark:text-text-secondary-dark'
           }`}
         >
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+            <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold text-[10px]">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -60,8 +60,28 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0 }) 
         </button>
 
         <button 
+          onClick={() => navigate('/notifications')} 
+          className={`flex flex-col items-center justify-center relative p-2 ${
+            isActive('/notifications') 
+              ? 'text-home-primary' 
+              : 'text-text-secondary-light dark:text-text-secondary-dark'
+          }`}
+        >
+          <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+          <span 
+            className="material-symbols-outlined text-2xl"
+            style={isActive('/notifications') ? { fontVariationSettings: '"FILL" 1' } : {}}
+          >
+            notifications
+          </span>
+          <span className={`text-xs ${isActive('/notifications') ? 'font-bold' : 'font-medium'}`}>
+            Notifications
+          </span>
+        </button>
+
+        <button 
           onClick={() => navigate('/profile')} 
-          className={`flex flex-col items-center justify-center ${
+          className={`flex flex-col items-center justify-center p-2 ${
             isActive('/profile') 
               ? 'text-home-primary' 
               : 'text-text-secondary-light dark:text-text-secondary-dark'

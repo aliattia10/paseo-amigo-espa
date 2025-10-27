@@ -29,7 +29,13 @@ const NewProfilePage: React.FC = () => {
         <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-text-primary-light dark:text-text-primary-dark">
           {t('nav.profile')}
         </h2>
-        <div className="flex w-12 items-center justify-end">
+        <div className="flex gap-2 items-center justify-end">
+          <button onClick={() => navigate('/notifications')} className="relative">
+            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
+              notifications
+            </span>
+            <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+          </button>
           <button onClick={handleLogout}>
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
               logout

@@ -63,9 +63,9 @@ const NewHomePage: React.FC = () => {
   const currentProfile = profiles[currentIndex];
 
   return (
-    <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden max-w-md mx-auto border-x border-gray-200 dark:border-gray-800">
+    <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden bg-home-background-light dark:bg-home-background-dark">
       {/* Top App Bar */}
-      <header className="flex items-center bg-home-background-light dark:bg-home-background-dark p-4 pb-2 justify-between shrink-0">
+      <header className="flex items-center bg-home-background-light dark:bg-home-background-dark p-4 pb-2 justify-between shrink-0 max-w-md mx-auto w-full">
         <div className="flex size-12 shrink-0 items-center justify-start">
           <span className="material-symbols-outlined text-3xl text-home-primary">pets</span>
         </div>
@@ -80,8 +80,8 @@ const NewHomePage: React.FC = () => {
       </header>
 
       {/* Main Content: Card Stack */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4 pt-2 overflow-hidden">
-        <div className="relative w-full h-full flex items-center justify-center">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 pt-2 overflow-hidden max-w-md mx-auto w-full">
+        <div className="relative w-full max-w-[400px] h-[600px] flex items-center justify-center">
           {/* Background Card 2 */}
           <div className="absolute w-[90%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-md transform scale-95 -translate-y-4"></div>
           
@@ -123,7 +123,7 @@ const NewHomePage: React.FC = () => {
       </main>
 
       {/* Action Buttons */}
-      <div className="flex flex-shrink-0 gap-4 flex-wrap px-4 py-4 justify-center items-center bg-home-background-light dark:bg-home-background-dark">
+      <div className="flex flex-shrink-0 gap-4 flex-wrap px-4 py-4 justify-center items-center bg-home-background-light dark:bg-home-background-dark max-w-md mx-auto w-full">
         <button 
           onClick={handlePass}
           className="flex min-w-0 max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-red-500 shadow-md hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors"

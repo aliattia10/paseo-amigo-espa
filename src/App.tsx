@@ -24,6 +24,8 @@ import WelcomeScreen from "./components/welcome/WelcomeScreen";
 import RoleSelectionPage from "./pages/RoleSelectionPage";
 import NewHomePage from "./components/dashboard/NewHomePage";
 import NewProfilePage from "./components/profile/NewProfilePage";
+import NotificationsPage from "./pages/NotificationsPage";
+import ProfileEditPage from "./pages/ProfileEditPage";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
@@ -681,6 +683,22 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <NewProfilePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/profile/edit" 
+                  element={
+                    <ProtectedRoute>
+                      <ProfileEditPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/notifications" 
+                  element={
+                    <ProtectedRoute>
+                      <NotificationsPage />
                     </ProtectedRoute>
                   } 
                 />
