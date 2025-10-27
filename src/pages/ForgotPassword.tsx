@@ -6,11 +6,14 @@ import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 const ForgotPassword: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -20,8 +23,8 @@ const ForgotPassword: React.FC = () => {
     
     if (!email.trim()) {
       toast({
-        title: "Error",
-        description: "Por favor ingresa tu correo electrónico",
+        title: t('common.error'),
+        description: t('auth.enterEmailFirst'),
         variant: "destructive",
       });
       return;
@@ -37,13 +40,13 @@ const ForgotPassword: React.FC = () => {
 
       setEmailSent(true);
       toast({
-        title: "Correo enviado",
-        description: "Revisa tu bandeja de entrada para restablecer tu contraseña",
+        title: t('auth.resetPasswordSent'),
+        description: t('auth.checkEmailForReset'),
       });
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "No se pudo enviar el correo de recuperación",
+        title: t('common.error'),
+        description: error.message || t('auth.resetPasswordError'),
         variant: "destructive",
       });
     } finally {
@@ -63,14 +66,15 @@ const ForgotPassword: React.FC = () => {
               className="gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Volver
+              {t('common.back')}
             </Button>
+            <LanguageSwitcher />
           </div>
-          <CardTitle className="text-2xl text-center">¿Olvidaste tu contraseña?</CardTitle>
+          <CardTitle className="text-2xl text-center">{t('auth.forgotPassword')}</CardTitle>
           <CardDescription className="text-center">
             {emailSent 
-              ? "Te hemos enviado un enlace de recuperación"
-              : "Ingresa tu correo para recibir un enlace de recuperación"
+              ? t('auth.resetPasswordSent')
+              : t('auth.sendResetLink')
             }
           </CardDescription>
         </CardHeader>
@@ -83,28 +87,28 @@ const ForgotPassword: React.FC = () => {
                 </div>
               </div>
               <p className="text-muted-foreground">
-                Hemos enviado un enlace de recuperación a <strong>{email}</strong>
+                {t('auth.checkEmailForReset')} <strong>{email}</strong>
               </p>
               <p className="text-sm text-muted-foreground">
-                Si no ves el correo, revisa tu carpeta de spam
+                {t('auth.checkEmailForReset')}
               </p>
               <Button 
                 onClick={() => navigate('/auth?mode=login')}
                 className="w-full bg-terracotta hover:bg-terracotta/90"
               >
-                Ir a inicio de sesión
+                {t('auth.login')}
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Correo electrónico</Label>
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="tu@email.com"
+                    placeholder={t('auth.email')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
@@ -118,7 +122,7 @@ const ForgotPassword: React.FC = () => {
                 className="w-full bg-terracotta hover:bg-terracotta/90"
                 disabled={loading}
               >
-                {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+                {loading ? t('common.loading') : t('auth.sendResetLink')}
               </Button>
             </form>
           )}

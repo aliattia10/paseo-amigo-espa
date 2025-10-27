@@ -3,18 +3,21 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from 'react-i18next';
 import RoleSelection from '@/components/auth/RoleSelection';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 const AuthNew = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const mode = searchParams.get('mode') || 'login';
-  
+
   const [step, setStep] = useState<'role' | 'form'>('role');
   const [selectedRole, setSelectedRole] = useState<'owner' | 'walker' | 'both' | null>(null);
   const [loading, setLoading] = useState(false);
-  
+
   // Form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -96,9 +99,11 @@ const AuthNew = () => {
           </button>
         </div>
         <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-role-text-light dark:text-role-text-dark">
-          {mode === 'login' ? 'Sign In' : 'Create Account'}
+          {mode === 'login' ? t('auth.login') : t('auth.createAccount')}
         </h2>
-        <div className="flex w-12 items-center justify-end"></div>
+        <div className="flex w-12 items-center justify-end">
+          <LanguageSwitcher />
+        </div>
       </div>
 
       {/* Form Content */}
@@ -110,14 +115,14 @@ const AuthNew = () => {
                 <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
                   <div className="p-4">
                     <label className="flex flex-col gap-2">
-                      <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">Name</span>
+                      <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">{t('auth.name')}</span>
                       <Input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
                         className="rounded-lg border-border-light dark:border-border-dark"
-                        placeholder="Your full name"
+                        placeholder={t('auth.name')}
                       />
                     </label>
                   </div>
@@ -126,25 +131,25 @@ const AuthNew = () => {
                 <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
                   <div className="p-4 grid grid-cols-2 gap-4">
                     <label className="flex flex-col gap-2">
-                      <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">City</span>
+                      <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">{t('auth.city')}</span>
                       <Input
                         type="text"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         required
                         className="rounded-lg border-border-light dark:border-border-dark"
-                        placeholder="Your city"
+                        placeholder={t('auth.city')}
                       />
                     </label>
                     <label className="flex flex-col gap-2">
-                      <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">Postal Code</span>
+                      <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">{t('auth.postalCode')}</span>
                       <Input
                         type="text"
                         value={postalCode}
                         onChange={(e) => setPostalCode(e.target.value)}
                         required
                         className="rounded-lg border-border-light dark:border-border-dark"
-                        placeholder="Postal code"
+                        placeholder={t('auth.postalCode')}
                       />
                     </label>
                   </div>
@@ -153,14 +158,14 @@ const AuthNew = () => {
                 <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
                   <div className="p-4">
                     <label className="flex flex-col gap-2">
-                      <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">Phone</span>
+                      <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">{t('auth.phone')}</span>
                       <Input
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         required
                         className="rounded-lg border-border-light dark:border-border-dark"
-                        placeholder="Your phone number"
+                        placeholder={t('auth.phone')}
                       />
                     </label>
                   </div>
@@ -171,7 +176,7 @@ const AuthNew = () => {
             <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
               <div className="p-4">
                 <label className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">Email</span>
+                  <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">{t('auth.email')}</span>
                   <Input
                     type="email"
                     value={email}
@@ -187,7 +192,7 @@ const AuthNew = () => {
             <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
               <div className="p-4">
                 <label className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">Password</span>
+                  <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">{t('auth.password')}</span>
                   <Input
                     type="password"
                     value={password}
@@ -205,19 +210,33 @@ const AuthNew = () => {
               disabled={loading}
               className="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-role-primary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] mt-6"
             >
-              {loading ? 'Loading...' : mode === 'login' ? 'Sign In' : 'Create Account'}
+              {loading ? t('common.loading') : mode === 'login' ? t('auth.login') : t('auth.createAccount')}
             </button>
 
-            <p className="text-role-text-light/70 dark:text-role-text-dark/70 text-sm text-center mt-4">
-              {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
-              <button
-                type="button"
-                onClick={() => navigate(`/auth?mode=${mode === 'login' ? 'signup' : 'login'}`)}
-                className="font-bold underline text-role-primary"
-              >
-                {mode === 'login' ? 'Sign Up' : 'Sign In'}
-              </button>
-            </p>
+            <div className="space-y-2 mt-4">
+              <p className="text-role-text-light/70 dark:text-role-text-dark/70 text-sm text-center">
+                {mode === 'login' ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}
+                <button
+                  type="button"
+                  onClick={() => navigate(`/auth?mode=${mode === 'login' ? 'signup' : 'login'}`)}
+                  className="font-bold underline text-role-primary ml-1"
+                >
+                  {mode === 'login' ? t('auth.signup') : t('auth.login')}
+                </button>
+              </p>
+
+              {mode === 'login' && (
+                <p className="text-role-text-light/70 dark:text-role-text-dark/70 text-sm text-center">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/forgot-password')}
+                    className="font-bold underline text-role-primary"
+                  >
+                    {t('auth.forgotPassword')}
+                  </button>
+                </p>
+              )}
+            </div>
           </form>
         </div>
       </main>
