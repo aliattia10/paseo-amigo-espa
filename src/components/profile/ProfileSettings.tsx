@@ -115,35 +115,40 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="min-h-screen bg-stitch-bg-light p-4 overflow-y-auto pb-24">
-      <div className="max-w-2xl mx-auto">
-        <Card className="shadow-xl border-0 rounded-3xl">
-          <CardHeader className="border-b border-stitch-border-light">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl font-bold text-stitch-text-primary-light font-display">
-                {t('dashboard.editProfile')}
-              </CardTitle>
-              <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl">
-                <span className="material-symbols-outlined">close</span>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-text-primary-light dark:text-text-primary-dark">
+      {/* Top App Bar */}
+      <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
+        <div className="flex size-12 shrink-0 items-center justify-start">
+          <button onClick={onClose}>
+            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">arrow_back</span>
+          </button>
+        </div>
+        <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Profile</h2>
+        <div className="flex w-12 items-center justify-end">
+          <button onClick={onClose}>
+            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">close</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="flex-1 pb-24">
+        {/* Profile Header */}
+        <div className="flex p-4 @container">
+          <div className="flex w-full flex-col gap-4 items-center">
+            <form onSubmit={handleSubmit} className="w-full max-w-[480px] space-y-4">
               {/* Profile Image */}
-              <div className="flex flex-col items-center space-y-4">
+              <div className="flex flex-col items-center gap-4">
                 <div className="relative">
-                  <Avatar className="w-36 h-36 ring-4 ring-stitch-primary shadow-lg rounded-3xl">
-                    <AvatarImage src={imagePreview || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-stitch-primary to-stitch-secondary text-white text-4xl rounded-3xl">
-                      {formData.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div 
+                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md"
+                    style={{ backgroundImage: imagePreview ? `url("${imagePreview}")` : 'none', backgroundColor: imagePreview ? 'transparent' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                  />
                   <label
                     htmlFor="profile-image"
-                    className="absolute bottom-0 right-0 bg-stitch-primary hover:bg-stitch-primary/90 text-white p-3 rounded-2xl cursor-pointer shadow-lg transition-colors"
+                    className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg cursor-pointer hover:bg-primary/90 transition-colors"
                   >
-                    <span className="material-symbols-outlined">photo_camera</span>
+                    <span className="material-symbols-outlined text-lg">edit</span>
                     <input
                       id="profile-image"
                       type="file"
@@ -153,130 +158,116 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onClose }) => {
                     />
                   </label>
                 </div>
-                <p className="text-sm text-stitch-text-secondary-light text-center">
-                  Click the camera icon to change your photo
-                </p>
+                <div className="flex flex-col items-center justify-center text-center">
+                  <p className="text-[22px] font-bold leading-tight tracking-[-0.015em]">{formData.name || 'Your Name'}</p>
+                  <p className="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">{formData.city || 'Your City'}</p>
+                </div>
               </div>
 
-              {/* Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="flex items-center gap-2 text-stitch-text-primary-light font-medium">
-                  <span className="material-symbols-outlined text-base">person</span>
-                  {t('auth.name')}
-                </Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="text-lg rounded-2xl border-stitch-border-light focus:border-stitch-primary"
-                />
-              </div>
+              {/* Information Cards/Sections */}
+              <div className="flex flex-col gap-4 w-full">
+                {/* Account Management List */}
+                <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
+                  <ul className="divide-y divide-border-light dark:divide-border-dark">
+                    <li className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-4 flex-1">
+                        <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">person</span>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          required
+                          placeholder={t('auth.name')}
+                          className="border-0 focus-visible:ring-0 font-medium"
+                        />
+                      </div>
+                    </li>
+                    <li className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-4 flex-1">
+                        <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">mail</span>
+                        <Input
+                          type="email"
+                          value={formData.email}
+                          disabled
+                          className="border-0 focus-visible:ring-0 bg-transparent"
+                        />
+                      </div>
+                    </li>
+                    <li className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-4 flex-1">
+                        <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">phone</span>
+                        <Input
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          required
+                          placeholder={t('auth.phone')}
+                          className="border-0 focus-visible:ring-0 font-medium"
+                        />
+                      </div>
+                    </li>
+                    <li className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-4 flex-1">
+                        <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">location_on</span>
+                        <Input
+                          value={formData.city}
+                          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                          required
+                          placeholder={t('auth.city')}
+                          className="border-0 focus-visible:ring-0 font-medium"
+                        />
+                      </div>
+                    </li>
+                    <li className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-4 flex-1">
+                        <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">location_city</span>
+                        <Input
+                          value={formData.postalCode}
+                          onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                          required
+                          placeholder={t('auth.postalCode')}
+                          className="border-0 focus-visible:ring-0 font-medium"
+                        />
+                      </div>
+                    </li>
+                  </ul>
+                </div>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2 text-stitch-text-primary-light font-medium">
-                  <span className="material-symbols-outlined text-base">mail</span>
-                  {t('auth.email')}
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  disabled
-                  className="text-lg bg-stitch-bg-light rounded-2xl"
-                />
-                <p className="text-xs text-stitch-text-secondary-light">
-                  Email cannot be changed
-                </p>
-              </div>
+                {/* Bio Section */}
+                <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+                  <h3 className="text-lg font-bold mb-3">Bio</h3>
+                  <Textarea
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    rows={4}
+                    placeholder="Tell others about yourself..."
+                    className="border-border-light dark:border-border-dark rounded-lg resize-none"
+                  />
+                </div>
 
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2 text-stitch-text-primary-light font-medium">
-                  <span className="material-symbols-outlined text-base">phone</span>
-                  {t('auth.phone')}
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  className="text-lg rounded-2xl border-stitch-border-light focus:border-stitch-primary"
-                />
-              </div>
-
-              {/* City */}
-              <div className="space-y-2">
-                <Label htmlFor="city" className="flex items-center gap-2 text-stitch-text-primary-light font-medium">
-                  <span className="material-symbols-outlined text-base">location_on</span>
-                  {t('auth.city')}
-                </Label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  required
-                  className="text-lg rounded-2xl border-stitch-border-light focus:border-stitch-primary"
-                />
-              </div>
-
-              {/* Postal Code */}
-              <div className="space-y-2">
-                <Label htmlFor="postalCode" className="text-stitch-text-primary-light font-medium">
-                  {t('auth.postalCode')}
-                </Label>
-                <Input
-                  id="postalCode"
-                  value={formData.postalCode}
-                  onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                  required
-                  className="text-lg rounded-2xl border-stitch-border-light focus:border-stitch-primary"
-                />
-              </div>
-
-              {/* Bio */}
-              <div className="space-y-2">
-                <Label htmlFor="bio" className="text-stitch-text-primary-light font-medium">
-                  Bio
-                </Label>
-                <Textarea
-                  id="bio"
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  rows={4}
-                  placeholder="Tell others about yourself..."
-                  className="text-lg resize-none rounded-2xl border-stitch-border-light focus:border-stitch-primary"
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  className="flex-1 rounded-2xl"
-                  disabled={loading}
-                >
-                  {t('common.cancel')}
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-gradient-to-r from-stitch-primary to-stitch-secondary hover:from-stitch-primary/90 hover:to-stitch-secondary/90 text-white rounded-2xl shadow-md"
-                  disabled={loading}
-                >
-                  <span className="material-symbols-outlined mr-2">save</span>
-                  {loading ? 'Saving...' : t('common.save')}
-                </Button>
+                {/* Action Buttons */}
+                <div className="flex w-full max-w-[480px] gap-3">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={loading}
+                    className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] flex-1"
+                  >
+                    <span className="truncate">{t('common.cancel')}</span>
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] flex-1"
+                  >
+                    <span className="truncate">{loading ? 'Saving...' : t('common.save')}</span>
+                  </button>
+                </div>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

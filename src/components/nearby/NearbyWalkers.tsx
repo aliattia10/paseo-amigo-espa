@@ -138,23 +138,52 @@ const NearbyWalkers: React.FC<NearbyWalkersProps> = ({ onMatch }) => {
   }
 
   return (
-    <div className="min-h-screen bg-stitch-bg-light p-4 pb-24">
+    <div className="min-h-screen bg-background-light dark:bg-background-dark p-4 pb-24">
       <div className="max-w-lg mx-auto">
-        {/* Header with Filter Chips */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-stitch-text-primary-light flex items-center gap-3 font-display">
-              <span className="material-symbols-outlined text-stitch-primary text-4xl" style={{ fontVariationSettings: '"FILL" 1, "wght" 600' }}>location_on</span>
-              {t('nav.nearby')}
-            </h1>
-            <p className="text-stitch-text-secondary-light mt-1">
-              {walkers.length - currentIndex} walkers in your area
-            </p>
-          </div>
-          <Button variant="outline" size="icon" className="rounded-xl">
-            <span className="material-symbols-outlined">tune</span>
-          </Button>
+        {/* Top App Bar */}
+        <div className="flex items-center p-4 pb-2 justify-between bg-background-light dark:bg-background-dark mb-2">
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-text-primary-light dark:text-text-primary-dark">
+            {t('nav.nearby')}
+          </h1>
+          <button className="flex size-10 items-center justify-center rounded-full bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">tune</span>
+          </button>
         </div>
+
+        {/* Search Bar */}
+        <div className="px-4 py-3">
+          <label className="flex flex-col min-w-40 h-14 w-full">
+            <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
+              <div className="text-primary flex border-none bg-card-light dark:bg-card-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
+                <span className="material-symbols-outlined text-2xl">search</span>
+              </div>
+              <input 
+                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-0 border-none bg-card-light dark:bg-card-dark focus:border-none h-full placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark px-4 pl-2 text-base font-normal leading-normal" 
+                placeholder="Search by name, location..." 
+              />
+            </div>
+          </label>
+        </div>
+
+        {/* Filter Chips */}
+        <div className="flex gap-3 p-3 pl-4 overflow-x-auto">
+          <button className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary-bg-light dark:bg-primary-bg-dark pl-4 pr-2">
+            <p className="text-primary text-sm font-medium leading-normal">Availability</p>
+            <span className="material-symbols-outlined text-primary text-xl">arrow_drop_down</span>
+          </button>
+          <button className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-card-light dark:bg-card-dark pl-4 pr-2 border border-border-light dark:border-border-dark">
+            <p className="text-text-primary-light dark:text-text-primary-dark text-sm font-medium leading-normal">Distance</p>
+            <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark text-xl">arrow_drop_down</span>
+          </button>
+          <button className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-card-light dark:bg-card-dark pl-4 pr-2 border border-border-light dark:border-border-dark">
+            <p className="text-text-primary-light dark:text-text-primary-dark text-sm font-medium leading-normal">Rates</p>
+            <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark text-xl">arrow_drop_down</span>
+          </button>
+        </div>
+
+        <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm px-4 mb-4">
+          {walkers.length - currentIndex} walkers available
+        </p>
 
         {/* Walker Card */}
         <Card className="overflow-hidden shadow-2xl border-0 rounded-3xl">
