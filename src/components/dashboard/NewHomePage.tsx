@@ -6,16 +6,20 @@ import BottomNavigation from '@/components/ui/BottomNavigation';
 interface Profile {
   id: string;
   name: string;
-  age: number;
+  age?: number;
   distance: number;
   rating: number;
   imageUrl: string;
   bio?: string;
+  hourlyRate?: number;
+  type: 'dog' | 'walker';
 }
 
 const NewHomePage: React.FC = () => {
   const { t } = useTranslation();
-  const [profiles] = useState<Profile[]>([
+  
+  // Dog profiles for sitters to browse
+  const dogProfiles: Profile[] = [
     {
       id: '1',
       name: 'Max',
@@ -23,6 +27,7 @@ const NewHomePage: React.FC = () => {
       distance: 2,
       rating: 4.9,
       imageUrl: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800',
+      type: 'dog',
     },
     {
       id: '2',
@@ -31,6 +36,7 @@ const NewHomePage: React.FC = () => {
       distance: 1.5,
       rating: 4.8,
       imageUrl: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800',
+      type: 'dog',
     },
     {
       id: '3',
@@ -39,10 +45,58 @@ const NewHomePage: React.FC = () => {
       distance: 3,
       rating: 4.7,
       imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800',
+      type: 'dog',
     },
-  ]);
+  ];
+
+  // Walker profiles for dog owners to browse
+  const walkerProfiles: Profile[] = [
+    {
+      id: 'w1',
+      name: 'Sarah',
+      age: 28,
+      distance: 1.2,
+      rating: 4.9,
+      hourlyRate: 15,
+      imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
+      bio: 'Experienced dog walker with 5+ years',
+      type: 'walker',
+    },
+    {
+      id: 'w2',
+      name: 'Mike',
+      age: 32,
+      distance: 2.5,
+      rating: 4.8,
+      hourlyRate: 18,
+      imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+      bio: 'Professional pet care specialist',
+      type: 'walker',
+    },
+    {
+      id: 'w3',
+      name: 'Emma',
+      age: 25,
+      distance: 1.8,
+      rating: 5.0,
+      hourlyRate: 20,
+      imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800',
+      bio: 'Certified dog trainer and walker',
+      type: 'walker',
+    },
+  ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
+
+  // Get profiles based on user role
+  const profiles = userRole === 'owner' ? walkerProfiles : dogProfiles;
+
+  // Reset index when switching roles
+  const handleRoleChange = (role: 'owner' | 'sitter') => {
+    setUserRole(role);
+    setCurrentIndex(0);
+  };
 
   const navigate = useNavigate();
 
@@ -67,8 +121,6 @@ const NewHomePage: React.FC = () => {
 
   const currentProfile = profiles[currentIndex];
 
-  const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
-
   return (
     <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden bg-home-background-light dark:bg-home-background-dark">
       {/* Top App Bar */}
@@ -91,7 +143,7 @@ const NewHomePage: React.FC = () => {
         <div className="flex px-4 pb-3">
           <div className="flex h-10 flex-1 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-800 p-1">
             <button
-              onClick={() => setUserRole('owner')}
+              onClick={() => handleRoleChange('owner')}
               className={`flex h-full grow items-center justify-center overflow-hidden rounded-md px-4 text-sm font-medium transition-all ${
                 userRole === 'owner'
                   ? 'bg-white dark:bg-gray-700 text-home-primary shadow-sm'
@@ -99,10 +151,10 @@ const NewHomePage: React.FC = () => {
               }`}
             >
               <span className="material-symbols-outlined text-base mr-1">pets</span>
-              Dog Owner
+              Find Sitters
             </button>
             <button
-              onClick={() => setUserRole('sitter')}
+              onClick={() => handleRoleChange('sitter')}
               className={`flex h-full grow items-center justify-center overflow-hidden rounded-md px-4 text-sm font-medium transition-all ${
                 userRole === 'sitter'
                   ? 'bg-white dark:bg-gray-700 text-home-primary shadow-sm'
@@ -110,15 +162,15 @@ const NewHomePage: React.FC = () => {
               }`}
             >
               <span className="material-symbols-outlined text-base mr-1">school</span>
-              Sitter
+              Find Dogs
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Content: Card Stack */}
-      <main className="flex-1 flex flex-col items-center p-4 pt-2 overflow-hidden max-w-md mx-auto w-full">
-        <div className="relative w-full max-w-[400px] flex-1 max-h-[550px] flex items-center justify-center">
+      <main className="flex-1 flex flex-col items-center p-4 pt-0 overflow-hidden max-w-md mx-auto w-full">
+        <div className="relative w-full max-w-[400px] h-[450px] flex items-center justify-center">
           {/* Background Card 2 */}
           <div className="absolute w-[90%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-md transform scale-95 -translate-y-4"></div>
           
@@ -139,19 +191,33 @@ const NewHomePage: React.FC = () => {
                     {currentProfile.distance} miles away
                   </p>
                   <p className="text-white tracking-tight text-3xl font-bold leading-tight max-w-[440px]">
-                    {currentProfile.name}, {currentProfile.age}
+                    {currentProfile.name}{currentProfile.age ? `, ${currentProfile.age}` : ''}
                   </p>
-                  <div className="flex items-center gap-1">
-                    <span 
-                      className="material-symbols-outlined text-yellow-400" 
-                      style={{ fontVariationSettings: '"FILL" 1' }}
-                    >
-                      star
-                    </span>
-                    <p className="text-white text-lg font-medium leading-normal">
-                      {currentProfile.rating}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      <span 
+                        className="material-symbols-outlined text-yellow-400" 
+                        style={{ fontVariationSettings: '"FILL" 1' }}
+                      >
+                        star
+                      </span>
+                      <p className="text-white text-lg font-medium leading-normal">
+                        {currentProfile.rating}
+                      </p>
+                    </div>
+                    {currentProfile.hourlyRate && (
+                      <div className="bg-home-primary text-white px-3 py-1 rounded-full">
+                        <p className="text-base font-bold">
+                          ${currentProfile.hourlyRate}/hr
+                        </p>
+                      </div>
+                    )}
                   </div>
+                  {currentProfile.bio && (
+                    <p className="text-white text-sm bg-black/30 backdrop-blur-sm px-3 py-2 rounded-lg">
+                      {currentProfile.bio}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -160,7 +226,7 @@ const NewHomePage: React.FC = () => {
       </main>
 
       {/* Action Buttons - Positioned Higher */}
-      <div className="flex flex-shrink-0 gap-6 px-4 py-6 justify-center items-center bg-home-background-light dark:bg-home-background-dark max-w-md mx-auto w-full">
+      <div className="flex flex-shrink-0 gap-6 px-4 py-6 justify-center items-center bg-home-background-light dark:bg-home-background-dark max-w-md mx-auto w-full mb-4">
         <button 
           onClick={handlePass}
           className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-red-500 shadow-lg hover:bg-red-50 dark:hover:bg-red-900/50 transition-all hover:scale-110 active:scale-95"
