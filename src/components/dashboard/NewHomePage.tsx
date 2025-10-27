@@ -67,26 +67,58 @@ const NewHomePage: React.FC = () => {
 
   const currentProfile = profiles[currentIndex];
 
+  const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
+
   return (
     <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden bg-home-background-light dark:bg-home-background-dark">
       {/* Top App Bar */}
-      <header className="flex items-center bg-home-background-light dark:bg-home-background-dark p-4 pb-2 justify-between shrink-0 max-w-md mx-auto w-full">
-        <div className="flex size-12 shrink-0 items-center justify-start">
-          <span className="material-symbols-outlined text-3xl text-home-primary">pets</span>
+      <header className="flex flex-col bg-home-background-light dark:bg-home-background-dark shrink-0 max-w-md mx-auto w-full">
+        <div className="flex items-center p-4 pb-2 justify-between">
+          <div className="flex size-12 shrink-0 items-center justify-start">
+            <span className="material-symbols-outlined text-3xl text-home-primary">pets</span>
+          </div>
+          <h1 className="text-[#0e1b13] dark:text-gray-100 text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
+            Paseo
+          </h1>
+          <div className="flex w-12 items-center justify-end">
+            <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <span className="material-symbols-outlined">tune</span>
+            </button>
+          </div>
         </div>
-        <h1 className="text-[#0e1b13] dark:text-gray-100 text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
-          Paseo
-        </h1>
-        <div className="flex w-12 items-center justify-end">
-          <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-            <span className="material-symbols-outlined">tune</span>
-          </button>
+        
+        {/* Role Switcher */}
+        <div className="flex px-4 pb-3">
+          <div className="flex h-10 flex-1 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-800 p-1">
+            <button
+              onClick={() => setUserRole('owner')}
+              className={`flex h-full grow items-center justify-center overflow-hidden rounded-md px-4 text-sm font-medium transition-all ${
+                userRole === 'owner'
+                  ? 'bg-white dark:bg-gray-700 text-home-primary shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              <span className="material-symbols-outlined text-base mr-1">pets</span>
+              Dog Owner
+            </button>
+            <button
+              onClick={() => setUserRole('sitter')}
+              className={`flex h-full grow items-center justify-center overflow-hidden rounded-md px-4 text-sm font-medium transition-all ${
+                userRole === 'sitter'
+                  ? 'bg-white dark:bg-gray-700 text-home-primary shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              <span className="material-symbols-outlined text-base mr-1">school</span>
+              Sitter
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content: Card Stack */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4 pt-2 overflow-hidden max-w-md mx-auto w-full">
-        <div className="relative w-full max-w-[400px] h-[600px] flex items-center justify-center">
+      <main className="flex-1 flex flex-col items-center p-4 pt-2 overflow-hidden max-w-md mx-auto w-full">
+        <div className="relative w-full max-w-[400px] flex-1 max-h-[550px] flex items-center justify-center">
           {/* Background Card 2 */}
           <div className="absolute w-[90%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-md transform scale-95 -translate-y-4"></div>
           
@@ -127,27 +159,27 @@ const NewHomePage: React.FC = () => {
         </div>
       </main>
 
-      {/* Action Buttons */}
-      <div className="flex flex-shrink-0 gap-4 flex-wrap px-4 py-4 justify-center items-center bg-home-background-light dark:bg-home-background-dark max-w-md mx-auto w-full">
+      {/* Action Buttons - Positioned Higher */}
+      <div className="flex flex-shrink-0 gap-6 px-4 py-6 justify-center items-center bg-home-background-light dark:bg-home-background-dark max-w-md mx-auto w-full">
         <button 
           onClick={handlePass}
-          className="flex min-w-0 max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-red-500 shadow-md hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors"
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-red-500 shadow-lg hover:bg-red-50 dark:hover:bg-red-900/50 transition-all hover:scale-110 active:scale-95"
         >
-          <span className="material-symbols-outlined text-4xl">close</span>
+          <span className="material-symbols-outlined text-4xl font-bold">close</span>
         </button>
         
         <button 
           onClick={handleLike}
-          className="flex min-w-0 max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-20 w-20 bg-home-primary text-[#0e1b13] dark:text-black shadow-lg shadow-home-primary/30 hover:opacity-90 transition-opacity"
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-20 w-20 bg-home-primary text-white shadow-xl shadow-home-primary/40 hover:opacity-90 transition-all hover:scale-110 active:scale-95"
         >
-          <span className="material-symbols-outlined text-5xl">favorite</span>
+          <span className="material-symbols-outlined text-5xl font-bold">favorite</span>
         </button>
         
         <button 
           onClick={handleInfo}
-          className="flex min-w-0 max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-blue-500 shadow-md hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-colors"
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-blue-500 shadow-lg hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-all hover:scale-110 active:scale-95"
         >
-          <span className="material-symbols-outlined text-4xl">info</span>
+          <span className="material-symbols-outlined text-4xl font-bold">chat_bubble</span>
         </button>
       </div>
 
