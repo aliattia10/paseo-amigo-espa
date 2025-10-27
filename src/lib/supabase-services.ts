@@ -233,9 +233,24 @@ export const getNearbyWalkers = async (latitude: number, longitude: number, radi
   return [];
 };
 
-// Image Upload - Placeholder
-export const uploadImage = async (file: File, bucket: string = 'images') => {
-  // TODO: Implement image upload to Supabase Storage
-  throw new Error('Image upload not yet implemented');
+// Image Upload to Supabase Storage
+export const uploadImage = async (file: File, userId: string, folder: string = 'dogs'): Promise<string> => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${userId}/${folder}/${Math.random()}.${fileExt}`;
+  
+  const { data, error } = await supabase.storage
+    .from('images')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: true
+    });
+
+  if (error) throw error;
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('images')
+    .getPublicUrl(fileName);
+
+  return publicUrl;
 };
 

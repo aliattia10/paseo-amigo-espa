@@ -5,15 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from '@/contexts/AuthContext';
-import { createDog } from '@/lib/supabase-services';
+import { createDog, uploadImage } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Camera, Upload } from 'lucide-react';
 
 const DogProfileForm: React.FC = () => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -21,18 +24,38 @@ const DogProfileForm: React.FC = () => {
     notes: '',
   });
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
 
     setLoading(true);
     try {
+      let imageUrl = '';
+      
+      // Upload image if selected
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile, currentUser.id, 'dogs');
+      }
+
       await createDog({
         ownerId: currentUser.id,
         name: formData.name,
         age: formData.age,
         breed: formData.breed,
         notes: formData.notes,
+        imageUrl: imageUrl || undefined,
       });
 
       toast({
@@ -98,6 +121,28 @@ const DogProfileForm: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
                 placeholder="Ej: Golden Retriever"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Foto de tu perro</Label>
+              <div className="flex flex-col gap-4">
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="cursor-pointer"
+                />
+                {imagePreview && (
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">

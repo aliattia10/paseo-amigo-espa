@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from '@/contexts/AuthContext';
-import { getDogsByOwner, createDog, updateDog } from '@/lib/supabase-services';
+import { getDogsByOwner, createDog, updateDog, uploadImage } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Camera, Save, X, Dog as DogIcon } from 'lucide-react';
 import type { Dog } from '@/types';
@@ -19,6 +19,8 @@ const DogManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingDog, setEditingDog] = useState<Dog | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -55,8 +57,15 @@ const DogManagement: React.FC = () => {
     if (!userProfile) return;
 
     try {
+      let imageUrl = formData.imageUrl;
+
+      // Upload new image if selected
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile, userProfile.id, 'dogs');
+      }
+
       if (editingDog) {
-        await updateDog(editingDog.id, formData);
+        await updateDog(editingDog.id, { ...formData, imageUrl });
         toast({
           title: "Perro actualizado",
           description: "Los datos del perro se han actualizado correctamente.",
@@ -65,6 +74,7 @@ const DogManagement: React.FC = () => {
         await createDog({
           ...formData,
           ownerId: userProfile.id,
+          imageUrl,
         });
         toast({
           title: "Perro añadido",
@@ -74,6 +84,8 @@ const DogManagement: React.FC = () => {
 
       setShowForm(false);
       setEditingDog(null);
+      setImageFile(null);
+      setImagePreview(null);
       setFormData({ name: '', age: '', breed: '', notes: '', imageUrl: '' });
       loadDogs();
     } catch (error) {
@@ -95,23 +107,29 @@ const DogManagement: React.FC = () => {
       notes: dog.notes,
       imageUrl: dog.imageUrl || ''
     });
+    setImagePreview(dog.imageUrl || null);
+    setImageFile(null);
     setShowForm(true);
   };
 
   const handleCancel = () => {
     setShowForm(false);
     setEditingDog(null);
+    setImageFile(null);
+    setImagePreview(null);
     setFormData({ name: '', age: '', breed: '', notes: '', imageUrl: '' });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // In a real app, you would upload to Supabase Storage here
-    // For now, we'll just create a local URL
-    const imageUrl = URL.createObjectURL(file);
-    setFormData(prev => ({ ...prev, imageUrl }));
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   if (loading) {
@@ -201,28 +219,24 @@ const DogManagement: React.FC = () => {
 
                 <div>
                   <Label htmlFor="image">Foto del perro</Label>
-                  <div className="flex items-center gap-4">
+                  <div className="space-y-4">
                     <Input
                       id="image"
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
-                      className="flex-1"
+                      className="cursor-pointer"
                     />
-                    <Button type="button" variant="outline" size="sm">
-                      <Camera className="w-4 h-4 mr-2" />
-                      Subir
-                    </Button>
+                    {imagePreview && (
+                      <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
-                  {formData.imageUrl && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.imageUrl} 
-                        alt="Preview" 
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex gap-2">
