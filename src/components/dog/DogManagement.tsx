@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from '@/contexts/AuthContext';
 import { getDogsByOwner, createDog, updateDog } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Camera, Save, X, Dog } from 'lucide-react';
+import { Plus, Edit, Trash2, Camera, Save, X, Dog as DogIcon } from 'lucide-react';
 import type { Dog } from '@/types';
 
 const DogManagement: React.FC = () => {
@@ -245,7 +245,7 @@ const DogManagement: React.FC = () => {
           <Card>
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-terracotta rounded-full flex items-center justify-center mx-auto mb-4">
-                <Dog className="w-8 h-8 text-white" />
+                <DogIcon className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-2">No tienes perros registrados</h3>
               <p className="text-muted-foreground mb-4">

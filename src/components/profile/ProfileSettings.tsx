@@ -26,7 +26,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onClose }) => {
   
   const [formData, setFormData] = useState({
     name: userProfile?.name || '',
-    email: userProfile?.email || '',
+    email: '',
     phone: userProfile?.phone || '',
     city: userProfile?.city || '',
     postalCode: userProfile?.postalCode || '',
@@ -65,8 +65,8 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onClose }) => {
       }
 
       // Upload profile image if changed
-      let imageUrl = formData.profileImage;
-      if (imagePreview && imagePreview !== formData.profileImage) {
+      let imageUrl = imagePreview;
+      if (imagePreview && imagePreview !== userProfile?.profileImage) {
         const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
         const file = fileInput?.files?.[0];
         if (file) {

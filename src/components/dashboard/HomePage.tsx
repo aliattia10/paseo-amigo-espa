@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from '@/contexts/AuthContext';
 import { getNearbyUsers, updateUserLocation } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, X, MapPin, Clock, Star, Phone, MessageCircle, Filter, User, RefreshCw, Switch } from 'lucide-react';
+import { Heart, X, MapPin, Clock, Star, Phone, MessageCircle, Filter, User, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { User as UserType } from '@/types';
 
