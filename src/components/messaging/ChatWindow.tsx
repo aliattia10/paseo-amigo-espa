@@ -77,11 +77,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
 
     setSending(true);
     try {
-      await sendMessage({
-        requestId: walkRequest.id,
-        senderId: currentUser.id,
-        message: newMessage.trim(),
-      });
+      await sendMessage(
+        walkRequest.id,
+        currentUser.id,
+        newMessage.trim()
+      );
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);

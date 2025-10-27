@@ -54,9 +54,9 @@ const HomePage: React.FC = () => {
         // Show opposite role users
         const targetRole = userProfile.userType === 'owner' ? 'walker' : 'owner';
         const usersData = await getNearbyUsers(
+          targetRole,
           userLocation.latitude, 
           userLocation.longitude, 
-          targetRole, 
           maxDistance
         );
         setNearbyUsers(usersData);
