@@ -115,10 +115,10 @@ const HomePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center">
+      <div className="min-h-screen bg-stitch-bg-light flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terracotta mx-auto mb-4"></div>
-          <p className="text-muted-foreground">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stitch-primary mx-auto mb-4"></div>
+          <p className="text-stitch-text-secondary-light">
             {userProfile?.userType === 'owner' ? 'Buscando paseadores cercanos...' : 'Buscando dueños de perros cercanos...'}
           </p>
         </div>
@@ -128,26 +128,26 @@ const HomePage: React.FC = () => {
 
   if (nearbyUsers.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen bg-stitch-bg-light flex items-center justify-center p-4">
+        <Card className="w-full max-w-md rounded-3xl shadow-lg border-0">
           <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-terracotta rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-2xl">🐕</span>
+            <div className="w-20 h-20 bg-gradient-to-br from-stitch-primary to-stitch-secondary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-md">
+              <span className="material-symbols-outlined text-white text-5xl" style={{ fontVariationSettings: '"FILL" 1, "wght" 600' }}>pets</span>
             </div>
-            <h2 className="text-2xl font-bold text-neutral-text mb-4">
+            <h2 className="text-2xl font-bold text-stitch-text-primary-light mb-4 font-display">
               No hay usuarios disponibles
             </h2>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-stitch-text-secondary-light mb-6">
               {userProfile?.userType === 'owner' 
-                ? 'No encontramos paseadores en tu área. Intenta más tarde o expande tu búsqueda.'
-                : 'No encontramos dueños de perros en tu área. Intenta más tarde o expande tu búsqueda.'
+                ? 'No hay paseadores cerca de tu ubicación en este momento.'
+                : 'No hay dueños de perros cerca de tu ubicación en este momento.'
               }
             </p>
             <Button 
               onClick={refreshUsers}
-              className="bg-terracotta hover:bg-terracotta/90"
+              className="bg-gradient-to-r from-stitch-primary to-stitch-secondary hover:from-stitch-primary/90 hover:to-stitch-secondary/90 text-white rounded-2xl shadow-md"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <span className="material-symbols-outlined mr-2">refresh</span>
               Intentar de nuevo
             </Button>
           </CardContent>
@@ -158,29 +158,29 @@ const HomePage: React.FC = () => {
 
   if (currentIndex >= nearbyUsers.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen bg-stitch-bg-light flex items-center justify-center p-4">
+        <Card className="w-full max-w-md rounded-3xl shadow-lg border-0">
           <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-2xl">🎉</span>
+            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-md">
+              <span className="material-symbols-outlined text-white text-5xl" style={{ fontVariationSettings: '"FILL" 1, "wght" 600' }}>check_circle</span>
             </div>
-            <h2 className="text-2xl font-bold text-neutral-text mb-4">
+            <h2 className="text-2xl font-bold text-stitch-text-primary-light mb-4 font-display">
               ¡Has visto todos!
             </h2>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-stitch-text-secondary-light mb-6">
               Has revisado todos los usuarios disponibles en tu área. Vuelve más tarde para ver nuevos perfiles.
             </p>
             <div className="space-y-3">
               <Button 
                 onClick={() => setCurrentIndex(0)}
-                className="w-full bg-terracotta hover:bg-terracotta/90"
+                className="w-full bg-gradient-to-r from-stitch-primary to-stitch-secondary hover:from-stitch-primary/90 hover:to-stitch-secondary/90 text-white rounded-2xl shadow-md"
               >
                 Ver de nuevo
               </Button>
               <Button 
                 onClick={() => navigate('/dashboard')}
                 variant="outline"
-                className="w-full"
+                className="w-full rounded-2xl"
               >
                 Ir al dashboard
               </Button>
@@ -194,19 +194,22 @@ const HomePage: React.FC = () => {
   const currentUser = nearbyUsers[currentIndex];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light">
+    <div className="min-h-screen bg-stitch-bg-light">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-stitch-card-light shadow-md border-b border-stitch-border-light">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-neutral-text">
-            {userProfile?.userType === 'owner' ? '🐕 Paseadores' : '👨‍👩‍👧‍👦 Dueños'}
+          <h1 className="text-xl font-bold text-stitch-text-primary-light font-display flex items-center gap-2">
+            <span className="material-symbols-outlined text-stitch-primary" style={{ fontVariationSettings: '"FILL" 1, "wght" 600' }}>
+              {userProfile?.userType === 'owner' ? 'hiking' : 'pets'}
+            </span>
+            {userProfile?.userType === 'owner' ? 'Paseadores' : 'Dueños'}
           </h1>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" onClick={refreshUsers}>
-              <RefreshCw className="h-5 w-5" />
+          <div className="flex items-center space-x-1">
+            <Button variant="ghost" size="icon" onClick={refreshUsers} className="rounded-xl">
+              <span className="material-symbols-outlined">refresh</span>
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-              <User className="h-5 w-5" />
+            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="rounded-xl">
+              <span className="material-symbols-outlined">person</span>
             </Button>
           </div>
         </div>
@@ -215,26 +218,28 @@ const HomePage: React.FC = () => {
       {/* Card Stack */}
       <div className="max-w-md mx-auto px-4 py-6">
         <div className="relative h-[600px]">
-          <Card className="absolute inset-0 shadow-lg border-0 overflow-hidden">
+          <Card className="absolute inset-0 shadow-2xl border-0 overflow-hidden rounded-3xl">
             <CardContent className="p-0 h-full">
               {/* User Image */}
-              <div className="h-3/5 bg-gradient-to-br from-blue-400 to-purple-500 relative">
-                <div className="absolute inset-0 bg-black/20"></div>
+              <div className="h-3/5 bg-gradient-to-br from-stitch-primary to-stitch-secondary relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                 <div className="absolute top-4 right-4 flex flex-col gap-2">
-                  <Badge className="bg-white/90 text-black">
-                    {currentUser.rating || 0} ⭐
+                  <Badge className="bg-white/95 text-stitch-text-primary-light rounded-xl shadow-md border-0">
+                    <span className="material-symbols-outlined text-yellow-500 text-sm mr-1" style={{ fontVariationSettings: '"FILL" 1, "wght" 600' }}>star</span>
+                    {currentUser.rating || 0}
                   </Badge>
                   {currentUser.distanceKm && (
-                    <Badge variant="secondary" className="bg-white/90 text-black">
+                    <Badge className="bg-white/95 text-stitch-text-primary-light rounded-xl shadow-md border-0">
+                      <span className="material-symbols-outlined text-stitch-primary text-sm mr-1">location_on</span>
                       {Math.round(currentUser.distanceKm)} km
                     </Badge>
                   )}
                 </div>
                 {currentUser.profileImage && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Avatar className="w-32 h-32 border-4 border-white">
+                    <Avatar className="w-36 h-36 border-4 border-white shadow-xl rounded-3xl">
                       <AvatarImage src={currentUser.profileImage} />
-                      <AvatarFallback className="text-2xl">
+                      <AvatarFallback className="text-3xl font-bold rounded-3xl bg-gradient-to-br from-stitch-primary to-stitch-secondary text-white">
                         {currentUser.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
@@ -243,16 +248,16 @@ const HomePage: React.FC = () => {
               </div>
 
               {/* User Info */}
-              <div className="h-2/5 p-6 bg-white">
+              <div className="h-2/5 p-6 bg-stitch-card-light">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h2 className="text-2xl font-bold text-neutral-text">
+                    <h2 className="text-2xl font-bold text-stitch-text-primary-light font-display">
                       {currentUser.name}
                     </h2>
-                    <p className="text-muted-foreground">{currentUser.bio || 'Sin descripción'}</p>
+                    <p className="text-stitch-text-secondary-light text-sm mt-1">{currentUser.bio || 'Sin descripción'}</p>
                   </div>
                   {currentUser.userType === 'walker' && currentUser.hourlyRate && (
-                    <Badge variant="secondary">
+                    <Badge className="bg-green-100 text-green-800 border-0 rounded-xl">
                       €{currentUser.hourlyRate}/h
                     </Badge>
                   )}
@@ -261,19 +266,19 @@ const HomePage: React.FC = () => {
                 <div className="space-y-2 mb-4">
                   {currentUser.userType === 'walker' && (
                     <>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Star className="h-4 w-4 mr-2" />
+                      <div className="flex items-center text-sm text-stitch-text-secondary-light">
+                        <span className="material-symbols-outlined text-base mr-2">hiking</span>
                         {currentUser.totalWalks || 0} paseos realizados
                       </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4 mr-2" />
+                      <div className="flex items-center text-sm text-stitch-text-secondary-light">
+                        <span className="material-symbols-outlined text-base mr-2">schedule</span>
                         {currentUser.experience || 0} años de experiencia
                       </div>
                     </>
                   )}
                   {currentUser.userType === 'owner' && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-2" />
+                    <div className="flex items-center text-sm text-stitch-text-secondary-light">
+                      <span className="material-symbols-outlined text-base mr-2">location_on</span>
                       {currentUser.city}
                     </div>
                   )}
@@ -282,7 +287,7 @@ const HomePage: React.FC = () => {
                 {currentUser.availability && currentUser.availability.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {currentUser.availability.slice(0, 3).map((availability, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                      <Badge key={index} variant="outline" className="text-xs rounded-xl">
                         {availability}
                       </Badge>
                     ))}
@@ -294,41 +299,41 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-center space-x-8 mt-8">
+        <div className="flex items-center justify-center space-x-6 mt-8">
           <Button
             onClick={handlePass}
             size="lg"
             variant="outline"
-            className="w-16 h-16 rounded-full border-2 border-red-300 hover:bg-red-50"
+            className="w-16 h-16 rounded-full border-2 border-red-200 hover:bg-red-50 hover:border-red-300 shadow-md transition-all"
           >
-            <X className="h-8 w-8 text-red-500" />
+            <span className="material-symbols-outlined text-4xl text-red-500">close</span>
           </Button>
           
           <Button
             onClick={() => handleContact(currentUser.id)}
             size="lg"
-            className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600"
+            className="w-20 h-20 rounded-full bg-stitch-primary hover:bg-stitch-primary/90 shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
-            <MessageCircle className="h-8 w-8 text-white" />
+            <span className="material-symbols-outlined text-4xl text-white" style={{ fontVariationSettings: '"FILL" 1, "wght" 600' }}>chat_bubble</span>
           </Button>
           
           <Button
             onClick={handleLike}
             size="lg"
-            className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600"
+            className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg transition-all hover:scale-105"
           >
-            <Heart className="h-8 w-8 text-white" />
+            <span className="material-symbols-outlined text-4xl text-white" style={{ fontVariationSettings: '"FILL" 1, "wght" 600' }}>favorite</span>
           </Button>
         </div>
 
         {/* Progress */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-8 text-center">
+          <p className="text-sm text-stitch-text-secondary-light font-medium mb-3">
             {currentIndex + 1} de {nearbyUsers.length} usuarios
           </p>
-          <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-stitch-border-light rounded-full h-2 overflow-hidden">
             <div 
-              className="bg-terracotta h-2 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-stitch-primary to-stitch-secondary h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentIndex + 1) / nearbyUsers.length) * 100}%` }}
             ></div>
           </div>

@@ -124,9 +124,15 @@ const OnboardingFlow = () => {
           if (dog.name && dog.age) {
             let imageUrl = '';
             if (dog.imageFile) {
-              // Upload image to Supabase storage
-              const { uploadImage } = await import('@/lib/supabase-services');
-              imageUrl = await uploadImage(dog.imageFile, `dogs/${currentUser.id}/${Date.now()}-${dog.name}.jpg`);
+              try {
+                // Upload image to Supabase storage
+                const { uploadImage } = await import('@/lib/supabase-services');
+                imageUrl = await uploadImage(dog.imageFile, `dogs/${currentUser.id}/${Date.now()}-${dog.name}.jpg`);
+              } catch (uploadError) {
+                console.warn('Failed to upload image:', uploadError);
+                // Continue without image if upload fails
+                imageUrl = '';
+              }
             }
             
             const { createDog } = await import('@/lib/supabase-services');

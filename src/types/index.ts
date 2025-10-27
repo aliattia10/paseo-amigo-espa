@@ -145,4 +145,31 @@ export interface PaymentMethod {
   };
   isDefault: boolean;
   createdAt: Date;
-} 
+}
+
+// Match types for Tinder-style functionality
+export interface Match {
+  id: string;
+  userId: string;
+  matchedUserId: string;
+  matchType: 'like' | 'superlike' | 'pass';
+  isMutual: boolean;
+  matchedAt?: Date;
+  createdAt: Date;
+}
+
+export interface ActivityFeedItem {
+  id: string;
+  userId: string;
+  activityType: 'walk_completed' | 'new_match' | 'review_received' | 'profile_updated' | 'new_dog';
+  activityData: {
+    [key: string]: any;
+  };
+  isPublic: boolean;
+  createdAt: Date;
+}
+
+export interface NearbyWalker extends User {
+  distanceEstimate: number;
+  walkerProfile: WalkerProfile;
+}

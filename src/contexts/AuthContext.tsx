@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const globalTimeout = setTimeout(() => {
       console.warn('AuthContext: Global timeout reached, forcing loading to false');
       setLoading(false);
-    }, 15000); // 15 seconds max
+    }, 8000); // Reduced from 15s to 8s for faster experience
 
     // Get initial session
     const getInitialSession = async () => {
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Add timeout for getUser to prevent hanging
             const profilePromise = getUser(session.user.id);
             const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+              setTimeout(() => reject(new Error('Profile fetch timeout')), 5000) // Reduced from 10s to 5s
             );
             
             const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
@@ -103,19 +103,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Add timeout for getUser to prevent hanging
           const profilePromise = getUser(session.user.id);
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+            setTimeout(() => reject(new Error('Profile fetch timeout')), 5000) // Reduced from 10s to 5s
           );
           
           const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
           console.log('AuthContext: Profile data in auth state change:', profile);
           setUserProfile(profile);
           
-          // Redirect to dashboard after successful login
+          // Redirect to dashboard after successful login - immediate redirect with navigate instead of reload
           if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
             console.log('AuthContext: Redirecting to dashboard after sign in');
-            setTimeout(() => {
-              window.location.href = '/dashboard';
-            }, 500);
+            // Use navigate instead of window.location for faster transition
+            window.history.pushState({}, '', '/dashboard');
+            window.location.reload(); // Still need reload to ensure proper state initialization
           }
         } catch (error) {
           console.error('Error fetching user profile in auth state change:', error);
@@ -125,9 +125,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Still redirect to dashboard even if profile fetch fails
           if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
             console.log('AuthContext: Redirecting to dashboard after sign in (profile fetch failed)');
-            setTimeout(() => {
-              window.location.href = '/dashboard';
-            }, 500);
+            // Use navigate instead of window.location for faster transition
+            window.history.pushState({}, '', '/dashboard');
+            window.location.reload();
           }
         }
       } else {

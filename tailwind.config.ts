@@ -19,17 +19,32 @@ export default {
 		},
 		extend: {
 			colors: {
+				// Stitch Design System - New Colors
+				'stitch-primary': '#4A90E2',
+				'stitch-secondary': '#F5A623',
+				'stitch-bg-light': '#F2F2F7',
+				'stitch-bg-dark': '#1C1C1E',
+				'stitch-text-primary-light': '#1C1C1E',
+				'stitch-text-primary-dark': '#F2F2F7',
+				'stitch-text-secondary-light': '#8E8E93',
+				'stitch-text-secondary-dark': '#8E8E93',
+				'stitch-border-light': '#E5E5EA',
+				'stitch-border-dark': '#3A3A3C',
+				'stitch-card-light': '#FFFFFF',
+				'stitch-card-dark': '#2C2C2E',
+				
+				// Legacy shadcn colors (for compatibility)
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
+					DEFAULT: '#4A90E2', // Use Stitch primary as default
 					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
+					DEFAULT: '#F5A623', // Use Stitch secondary as default
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
 				destructive: {
@@ -49,21 +64,8 @@ export default {
 					foreground: 'hsl(var(--popover-foreground))'
 				},
 				card: {
-					DEFAULT: 'hsl(var(--card))',
+					DEFAULT: '#FFFFFF',
 					foreground: 'hsl(var(--card-foreground))'
-				},
-				// Minimalistic app theme colors
-				primary: {
-					DEFAULT: 'hsl(var(--primary-blue))',
-					light: 'hsl(var(--primary-blue-light))'
-				},
-				secondary: {
-					DEFAULT: 'hsl(var(--secondary-gray))',
-					light: 'hsl(var(--secondary-gray-light))'
-				},
-				accent: {
-					DEFAULT: 'hsl(var(--accent-green))',
-					light: 'hsl(var(--accent-green-light))'
 				},
 				neutral: {
 					bg: 'hsl(var(--neutral-bg))',
@@ -79,6 +81,9 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			fontFamily: {
+				'display': ['"Plus Jakarta Sans"', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

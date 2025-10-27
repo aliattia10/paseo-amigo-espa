@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dog, Heart } from 'lucide-react';
 import appLogo from '@/assets/app-logo.png';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -106,6 +107,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sunny-light to-warm-bg flex flex-col items-center justify-center p-6">
+      {/* Language Switcher - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
+      
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img src={appLogo} alt="¿Damos un Paseo?" className="w-20 h-20 mx-auto mb-4" />
