@@ -14,7 +14,7 @@ import WalkerDashboard from "./components/dashboard/WalkerDashboard";
 import MessagingPage from "./components/messaging/MessagingPage";
 import SubscriptionPage from "./components/subscription/SubscriptionPage";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
+import AuthNew from "./pages/AuthNew";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
@@ -653,7 +653,7 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<AuthComponent />} />
+                <Route path="/auth" element={<AuthNew />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route 

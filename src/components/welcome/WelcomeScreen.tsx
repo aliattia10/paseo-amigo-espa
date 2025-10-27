@@ -7,13 +7,7 @@ const WelcomeScreen: React.FC = () => {
 
   useEffect(() => {
     setFadeIn(true);
-    // Auto-navigate after 2.5 seconds
-    const timer = setTimeout(() => {
-      navigate('/auth');
-    }, 2500);
-
-    return () => clearTimeout(timer);
-  }, [navigate]);
+  }, []);
 
   return (
     <div className="relative flex h-[100svh] w-full flex-col items-center justify-center bg-welcome-background-light dark:bg-welcome-background-dark font-display group/design-root overflow-hidden p-4">
@@ -32,16 +26,32 @@ const WelcomeScreen: React.FC = () => {
           </h1>
         </div>
         {/* Tagline */}
-        <p className={`text-welcome-text-light dark:text-welcome-text-dark text-lg font-normal leading-normal transition-all duration-1000 delay-500 ${fadeIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2.5'}`}>
+        <p className={`text-welcome-text-light dark:text-welcome-text-dark text-lg font-normal leading-normal mb-12 transition-all duration-1000 delay-300 ${fadeIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2.5'}`}>
           Trusted sitters, happy pups.
         </p>
+
+        {/* Action Buttons */}
+        <div className={`flex flex-col gap-4 w-full max-w-[400px] transition-all duration-1000 delay-700 ${fadeIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <button
+            onClick={() => navigate('/auth?mode=signup')}
+            className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-6 bg-welcome-accent-light dark:bg-welcome-accent-dark text-white text-base font-bold leading-normal tracking-[0.015em] w-full shadow-lg hover:opacity-90 transition-opacity"
+          >
+            Get Started
+          </button>
+          <button
+            onClick={() => navigate('/auth?mode=login')}
+            className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-6 bg-white/10 backdrop-blur-sm border-2 border-welcome-accent-light dark:border-welcome-accent-dark text-welcome-accent-light dark:text-welcome-accent-dark text-base font-bold leading-normal tracking-[0.015em] w-full hover:bg-white/20 transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
       </div>
 
-      {/* Optional Loading Indicator */}
-      <div className="absolute bottom-16 flex items-center justify-center w-full">
-        <div className="h-2.5 w-2.5 bg-welcome-accent-light dark:bg-welcome-accent-dark rounded-full animate-pulse [animation-delay:-0.3s]"></div>
-        <div className="h-2.5 w-2.5 bg-welcome-accent-light dark:bg-welcome-accent-dark rounded-full animate-pulse [animation-delay:-0.1s] mx-2"></div>
-        <div className="h-2.5 w-2.5 bg-welcome-accent-light dark:bg-welcome-accent-dark rounded-full animate-pulse"></div>
+      {/* Footer Text */}
+      <div className="absolute bottom-8 text-center px-4">
+        <p className="text-welcome-text-light/60 dark:text-welcome-text-dark/60 text-sm">
+          Join thousands of happy dogs and their owners
+        </p>
       </div>
     </div>
   );
