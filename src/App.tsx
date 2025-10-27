@@ -657,6 +657,7 @@ const App = () => (
                 <Route path="/auth" element={<AuthNew />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route 
                   path="/dashboard" 
