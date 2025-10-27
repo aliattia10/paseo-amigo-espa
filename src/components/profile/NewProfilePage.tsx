@@ -150,7 +150,20 @@ const NewProfilePage: React.FC = () => {
           {/* Account Management List */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
             <ul className="divide-y divide-border-light dark:divide-border-dark">
-              <li className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark">
+              <li 
+                onClick={() => navigate('/bookings')}
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">event</span>
+                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">My Bookings</span>
+                </div>
+                <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
+              </li>
+              <li 
+                onClick={() => navigate('/profile/edit')}
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark"
+              >
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">person</span>
                   <span className="font-medium text-text-primary-light dark:text-text-primary-dark">Personal Info</span>
@@ -164,7 +177,10 @@ const NewProfilePage: React.FC = () => {
                 </div>
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
-              <li className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark">
+              <li 
+                onClick={() => navigate('/notifications')}
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark"
+              >
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">notifications</span>
                   <span className="font-medium text-text-primary-light dark:text-text-primary-dark">Notifications</span>

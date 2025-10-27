@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 
@@ -43,10 +44,12 @@ const NewHomePage: React.FC = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const navigate = useNavigate();
+
   const handleLike = () => {
-    if (currentIndex < profiles.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
+    const profile = profiles[currentIndex];
+    // Navigate to booking request page
+    navigate(`/booking/request?walkerId=${profile.id}&walkerName=${profile.name}&rate=15`);
   };
 
   const handlePass = () => {
@@ -57,7 +60,9 @@ const NewHomePage: React.FC = () => {
 
   const handleInfo = () => {
     // Navigate to profile details
-    console.log('Show info for:', profiles[currentIndex]);
+    const profile = profiles[currentIndex];
+    console.log('Show info for:', profile);
+    // TODO: Navigate to walker profile page
   };
 
   const currentProfile = profiles[currentIndex];

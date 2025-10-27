@@ -26,6 +26,8 @@ import NewHomePage from "./components/dashboard/NewHomePage";
 import NewProfilePage from "./components/profile/NewProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
+import BookingsPage from "./pages/BookingsPage";
+import BookingRequestPage from "./pages/BookingRequestPage";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
@@ -699,6 +701,22 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <NotificationsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/bookings" 
+                  element={
+                    <ProtectedRoute>
+                      <BookingsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/booking/request" 
+                  element={
+                    <ProtectedRoute>
+                      <BookingRequestPage />
                     </ProtectedRoute>
                   } 
                 />
