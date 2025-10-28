@@ -1,19 +1,40 @@
 -- ============================================
 -- ADD MEDIA SUPPORT TO MESSAGES AND LOCATION-BASED MATCHING
+-- Fixed version with proper policy handling
 -- ============================================
 
 -- Add media columns to chat_messages table (the actual messages table in use)
 ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS media_url TEXT;
-ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS media_type VARCHAR(20) CHECK (media_type IN ('image', 'video', 'audio'));
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS media_type VARCHAR(20);
 ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS media_thumbnail_url TEXT;
+
+-- Add constraint if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'chat_messages_media_type_check'
+  ) THEN
+    ALTER TABLE chat_messages ADD CONSTRAINT chat_messages_media_type_check 
+    CHECK (media_type IN ('image', 'video', 'audio'));
+  END IF;
+END $$;
 
 -- Also add to messages table if it exists
 DO $$ 
 BEGIN
   IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'messages') THEN
     ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_url TEXT;
-    ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_type VARCHAR(20) CHECK (media_type IN ('image', 'video', 'audio'));
+    ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_type VARCHAR(20);
     ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_thumbnail_url TEXT;
+    
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint 
+      WHERE conname = 'messages_media_type_check'
+    ) THEN
+      ALTER TABLE messages ADD CONSTRAINT messages_media_type_check 
+      CHECK (media_type IN ('image', 'video', 'audio'));
+    END IF;
   END IF;
 END $$;
 
@@ -41,6 +62,11 @@ DECLARE
   a DECIMAL;
   c DECIMAL;
 BEGIN
+  -- Handle NULL values
+  IF lat1 IS NULL OR lon1 IS NULL OR lat2 IS NULL OR lon2 IS NULL THEN
+    RETURN 999999; -- Return large number for NULL locations
+  END IF;
+  
   dlat := radians(lat2 - lat1);
   dlon := radians(lon2 - lon1);
   
@@ -107,48 +133,67 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add RLS policies for location data
--- Users can update their own location
-CREATE POLICY IF NOT EXISTS "Users can update own location" ON users
-FOR UPDATE
-USING (auth.uid() = id)
-WITH CHECK (auth.uid() = id);
-
--- Users can view location of users they've matched with
-CREATE POLICY IF NOT EXISTS "Users can view matched users location" ON users
-FOR SELECT
-USING (
-  location_enabled = true 
-  AND (
-    auth.uid() = id 
-    OR EXISTS (
-      SELECT 1 FROM matches 
-      WHERE (matches.user1_id = auth.uid() AND matches.user2_id = users.id)
-         OR (matches.user2_id = auth.uid() AND matches.user1_id = users.id)
-    )
-  )
-);
+-- Handle RLS policies safely
+DO $$
+BEGIN
+  -- Drop and recreate location policies
+  DROP POLICY IF EXISTS "Users can update own location" ON users;
+  DROP POLICY IF EXISTS "Users can view matched users location" ON users;
+  
+  -- Users can update their own location
+  CREATE POLICY "Users can update own location" ON users
+  FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+  
+  -- Note: The view policy might conflict with existing policies
+  -- Only create if matches table exists
+  IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'matches') THEN
+    CREATE POLICY "Users can view matched users location" ON users
+    FOR SELECT
+    USING (
+      location_enabled = true 
+      AND (
+        auth.uid() = id 
+        OR EXISTS (
+          SELECT 1 FROM matches 
+          WHERE (matches.user1_id = auth.uid() AND matches.user2_id = users.id)
+             OR (matches.user2_id = auth.uid() AND matches.user1_id = users.id)
+        )
+      )
+    );
+  END IF;
+END $$;
 
 -- Create storage bucket for message media if it doesn't exist
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('message-media', 'message-media', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Set up storage policies for message media
-CREATE POLICY IF NOT EXISTS "Users can upload message media"
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (bucket_id = 'message-media' AND auth.uid()::text = (storage.foldername(name))[1]);
-
-CREATE POLICY IF NOT EXISTS "Users can view message media"
-ON storage.objects FOR SELECT
-TO authenticated
-USING (bucket_id = 'message-media');
-
-CREATE POLICY IF NOT EXISTS "Users can delete own message media"
-ON storage.objects FOR DELETE
-TO authenticated
-USING (bucket_id = 'message-media' AND auth.uid()::text = (storage.foldername(name))[1]);
+-- Handle storage policies safely
+DO $$
+BEGIN
+  -- Drop existing policies if they exist
+  DROP POLICY IF EXISTS "Users can upload message media" ON storage.objects;
+  DROP POLICY IF EXISTS "Users can view message media" ON storage.objects;
+  DROP POLICY IF EXISTS "Users can delete own message media" ON storage.objects;
+  
+  -- Create new policies
+  CREATE POLICY "Users can upload message media"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'message-media' AND auth.uid()::text = (storage.foldername(name))[1]);
+  
+  CREATE POLICY "Users can view message media"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (bucket_id = 'message-media');
+  
+  CREATE POLICY "Users can delete own message media"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (bucket_id = 'message-media' AND auth.uid()::text = (storage.foldername(name))[1]);
+END $$;
 
 -- Add comments for documentation
 COMMENT ON COLUMN chat_messages.media_url IS 'URL to uploaded media file (image, video, or audio)';
@@ -157,3 +202,13 @@ COMMENT ON COLUMN chat_messages.media_thumbnail_url IS 'Thumbnail URL for videos
 COMMENT ON COLUMN users.latitude IS 'User latitude for location-based matching';
 COMMENT ON COLUMN users.longitude IS 'User longitude for location-based matching';
 COMMENT ON COLUMN users.location_enabled IS 'Whether user has enabled location-based matching';
+
+-- Success message
+DO $$
+BEGIN
+  RAISE NOTICE 'Media and location features added successfully!';
+  RAISE NOTICE 'Added columns: media_url, media_type, media_thumbnail_url to chat_messages';
+  RAISE NOTICE 'Added columns: latitude, longitude, location_enabled to users';
+  RAISE NOTICE 'Created functions: calculate_distance, update_user_location, get_nearby_users';
+  RAISE NOTICE 'Created storage bucket: message-media';
+END $$;
