@@ -6,6 +6,7 @@ import { useLocation } from '@/contexts/LocationContext';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import MatchModal from '@/components/ui/MatchModal';
+import FiltersModal, { FilterOptions } from '@/components/ui/FiltersModal';
 import { playMatchSound, playLikeSound } from '@/lib/sounds';
 
 interface Profile {
@@ -104,6 +105,15 @@ const NewHomePage: React.FC = () => {
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({
+    petType: 'all',
+    maxDistance: 50,
+    minRating: 0,
+    maxPrice: null,
+    sortBy: 'distance',
+  });
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   // Load saved state from localStorage on mount
   React.useEffect(() => {
@@ -114,6 +124,16 @@ const NewHomePage: React.FC = () => {
     if (savedRole) setUserRole(savedRole);
     if (savedPassed) setPassedProfiles(new Set(JSON.parse(savedPassed)));
     if (savedLiked) setLikedProfiles(new Set(JSON.parse(savedLiked)));
+    
+    // Load saved filters
+    const savedFilters = localStorage.getItem('userFilters');
+    if (savedFilters) {
+      try {
+        setFilters(JSON.parse(savedFilters));
+      } catch (e) {
+        console.error('Error loading filters:', e);
+      }
+    }
     
     // Show location prompt if not enabled and not in global mode
     if (!locationEnabled && !isGlobalMode) {
@@ -131,9 +151,75 @@ const NewHomePage: React.FC = () => {
     }
   }, [locationEnabled, isGlobalMode]);
 
+  // Count active filters
+  React.useEffect(() => {
+    let count = 0;
+    if (filters.petType !== 'all') count++;
+    if (filters.maxDistance !== 50) count++;
+    if (filters.minRating > 0) count++;
+    if (filters.maxPrice !== null) count++;
+    if (filters.sortBy !== 'distance') count++;
+    setActiveFiltersCount(count);
+  }, [filters]);
+
+  const handleApplyFilters = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+    setCurrentIndex(0); // Reset to first profile
+    toast({
+      title: 'Filters applied',
+      description: 'Profiles updated based on your preferences',
+    });
+  };
+
+  // Apply filters to profiles
+  const applyFilters = (profiles: Profile[]) => {
+    let filtered = profiles.filter(p => !passedProfiles.has(p.id) && !likedProfiles.has(p.id));
+
+    // Pet type filter (for owners looking at walkers)
+    if (userRole === 'owner' && filters.petType !== 'all') {
+      // In real implementation, this would check walker's pet preferences
+      // For now, we'll keep all profiles
+    }
+
+    // Distance filter (only in local mode)
+    if (!isGlobalMode && filters.maxDistance) {
+      filtered = filtered.filter(p => p.distance <= filters.maxDistance);
+    }
+
+    // Rating filter
+    if (filters.minRating > 0) {
+      filtered = filtered.filter(p => p.rating >= filters.minRating);
+    }
+
+    // Price filter
+    if (filters.maxPrice && userRole === 'owner') {
+      filtered = filtered.filter(p => !p.hourlyRate || p.hourlyRate <= filters.maxPrice!);
+    }
+
+    // Sort profiles
+    switch (filters.sortBy) {
+      case 'distance':
+        filtered.sort((a, b) => a.distance - b.distance);
+        break;
+      case 'rating':
+        filtered.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'price':
+        if (userRole === 'owner') {
+          filtered.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
+        }
+        break;
+      case 'newest':
+        // In real implementation, would sort by created_at
+        break;
+    }
+
+    return filtered;
+  };
+
   // Get profiles based on user role, filtering out passed/liked ones
   const allProfiles = userRole === 'owner' ? walkerProfiles : dogProfiles;
-  const profiles = allProfiles.filter(p => !passedProfiles.has(p.id) && !likedProfiles.has(p.id));
+  const profiles = applyFilters(allProfiles);
 
   // Reset to first available profile when profiles change
   React.useEffect(() => {
@@ -292,10 +378,22 @@ const NewHomePage: React.FC = () => {
           <h1 className="text-[#0e1b13] dark:text-gray-100 text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
             Petflik
           </h1>
-          <div className="flex w-12 items-center justify-end">
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowFilters(true)}
+              className="relative flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title="Filters"
+            >
+              <span className="material-symbols-outlined">tune</span>
+              {activeFiltersCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </button>
             <button 
               onClick={toggleGlobalMode}
-              className={`flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 p-0 transition-all ${
+              className={`flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 p-0 transition-all ${
                 isGlobalMode 
                   ? 'bg-blue-500 text-white hover:bg-blue-600' 
                   : 'bg-transparent text-[#0e1b13] dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -469,6 +567,14 @@ const NewHomePage: React.FC = () => {
 
       {/* Bottom Navigation Bar */}
       <BottomNavigation />
+      
+      {/* Filters Modal */}
+      <FiltersModal
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        onApply={handleApplyFilters}
+        userRole={userRole}
+      />
       
       {/* Match Modal */}
       {matchedUser && (
