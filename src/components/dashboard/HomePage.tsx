@@ -19,35 +19,89 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [maxDistance, setMaxDistance] = useState(50);
+  const [locationError, setLocationError] = useState<{
+    denied: boolean;
+    message: string;
+  } | null>(null);
+  const [isRequestingLocation, setIsRequestingLocation] = useState(false);
 
-  // Get user's current location
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ latitude, longitude });
-          
-          // Update user's location in database
-          if (userProfile?.id) {
-            updateUserLocation(userProfile.id, latitude, longitude).catch(console.error);
-          }
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          // Fallback to Madrid coordinates
-          setUserLocation({ latitude: 40.4168, longitude: -3.7038 });
-        }
-      );
-    } else {
-      // Fallback to Madrid coordinates
-      setUserLocation({ latitude: 40.4168, longitude: -3.7038 });
+  // Function to request location
+  const requestLocation = async () => {
+    if (!navigator.geolocation) {
+      setLocationError({
+        denied: true,
+        message: 'Geolocation is not supported by your browser.'
+      });
+      return;
     }
-  }, [userProfile?.id]);
+
+    setIsRequestingLocation(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ latitude, longitude });
+        setLocationError(null); // Clear any previous errors
+        
+        // Update user's location in database
+        if (userProfile?.id) {
+          updateUserLocation(userProfile.id, latitude, longitude).catch(console.error);
+        }
+        
+        setIsRequestingLocation(false);
+        
+        toast({
+          title: "Location Enabled ✓",
+          description: "You can now see nearby matches!",
+        });
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        let errorMessage = 'Unable to get your location.';
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location access denied. Please enable location access to see nearby matches.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information is unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out.';
+            break;
+          default:
+            errorMessage = 'An unknown error occurred.';
+            break;
+        }
+        
+        setLocationError({
+          denied: error.code === error.PERMISSION_DENIED,
+          message: errorMessage
+        });
+        
+        setIsRequestingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
+  // Get user's current location on mount
+  useEffect(() => {
+    requestLocation();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const loadNearbyUsers = async () => {
-      if (!userProfile || !userLocation) return;
+      // Don't load users if location is denied or we're still requesting location
+      if (!userProfile || !userLocation || locationError?.denied || isRequestingLocation) {
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
@@ -73,7 +127,7 @@ const HomePage: React.FC = () => {
     };
 
     loadNearbyUsers();
-  }, [userProfile, userLocation, maxDistance, toast]);
+  }, [userProfile, userLocation, maxDistance, toast, locationError, isRequestingLocation]);
 
   const handleLike = () => {
     const currentUser = nearbyUsers[currentIndex];
@@ -113,14 +167,65 @@ const HomePage: React.FC = () => {
     window.location.reload();
   };
 
-  if (loading) {
+  // Show location denied error screen
+  if (locationError?.denied) {
+    return (
+      <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden max-w-md mx-auto border-x border-gray-200 dark:border-gray-800 bg-home-background-light dark:bg-home-background-dark">
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-red-500 text-5xl">location_off</span>
+            </div>
+            <h2 className="text-2xl font-bold text-[#0e1b13] dark:text-gray-100 mb-4 font-display">
+              Location access denied
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              Please enable location access to see nearby matches
+            </p>
+            <div className="space-y-3">
+              <button 
+                onClick={requestLocation}
+                disabled={isRequestingLocation}
+                className="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-home-primary text-[#0e1b13] text-base font-bold leading-normal tracking-[0.015em] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRequestingLocation ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#0e1b13] border-t-transparent mr-2"></div>
+                    Requesting...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined mr-2">location_on</span>
+                    Enable Location
+                  </>
+                )}
+              </button>
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-gray-200 dark:bg-gray-800 text-[#0e1b13] dark:text-gray-100 text-base font-medium leading-normal"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || isRequestingLocation) {
     return (
       <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden max-w-md mx-auto border-x border-gray-200 dark:border-gray-800 bg-home-background-light dark:bg-home-background-dark">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-home-primary mx-auto mb-4"></div>
             <p className="text-[#0e1b13] dark:text-gray-100">
-              {userProfile?.userType === 'owner' ? 'Buscando paseadores cercanos...' : 'Buscando dueños de perros cercanos...'}
+              {isRequestingLocation 
+                ? 'Requesting location access...'
+                : userProfile?.userType === 'owner' 
+                  ? 'Buscando paseadores cercanos...' 
+                  : 'Buscando dueños de perros cercanos...'
+              }
             </p>
           </div>
         </div>
