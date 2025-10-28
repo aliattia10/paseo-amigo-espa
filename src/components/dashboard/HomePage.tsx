@@ -89,9 +89,14 @@ const HomePage: React.FC = () => {
     );
   };
 
-  // Get user's current location on mount
+  // Don't auto-request location on mount - let user trigger it
+  // This prevents browser from blocking the permission prompt
   useEffect(() => {
-    requestLocation();
+    // Check if location was previously enabled
+    const previouslyEnabled = localStorage.getItem('locationEnabled') === 'true';
+    if (previouslyEnabled) {
+      requestLocation();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

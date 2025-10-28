@@ -25,6 +25,29 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const savedGlobalMode = localStorage.getItem('globalMode') === 'true';
     setIsGlobalMode(savedGlobalMode);
+    
+    const savedLocationEnabled = localStorage.getItem('locationEnabled') === 'true';
+    if (savedLocationEnabled) {
+      setLocationEnabled(true);
+      // Optionally try to get current location again
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setLocation({ 
+              latitude: position.coords.latitude, 
+              longitude: position.coords.longitude 
+            });
+          },
+          (error) => {
+            console.error('Error getting saved location:', error);
+            // If we can't get location, remove the saved flag
+            localStorage.removeItem('locationEnabled');
+            setLocationEnabled(false);
+          },
+          { timeout: 5000, maximumAge: 600000 } // 10 minute cache
+        );
+      }
+    }
   }, []);
 
   // Request location permission
@@ -50,6 +73,9 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const { latitude, longitude } = position.coords;
       setLocation({ latitude, longitude });
       setLocationEnabled(true);
+      
+      // Save location enabled state
+      localStorage.setItem('locationEnabled', 'true');
 
       // Update user location in database
       if (currentUser) {
@@ -60,13 +86,18 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         title: '📍 Location enabled',
         description: 'You can now see nearby matches',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting location:', error);
-      toast({
-        title: 'Location access denied',
-        description: 'Please enable location access to see nearby matches',
-        variant: 'destructive',
-      });
+      
+      // Only show toast if user explicitly denied (not if it just timed out or unavailable)
+      if (error?.code === 1) { // PERMISSION_DENIED
+        toast({
+          title: 'Location access denied',
+          description: 'To enable location, click the location icon in your browser address bar',
+          variant: 'destructive',
+        });
+      }
+      // For other errors, fail silently - the UI will show the prompt
     }
   };
 

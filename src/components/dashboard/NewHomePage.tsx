@@ -141,13 +141,20 @@ const NewHomePage: React.FC = () => {
     }
   }, []);
   
-  // Request location on mount if not in global mode
+  // Show location prompt after a delay if not enabled
   React.useEffect(() => {
-    if (!locationEnabled && !isGlobalMode && !showLocationPrompt) {
+    if (!locationEnabled && !isGlobalMode) {
       const timer = setTimeout(() => {
         setShowLocationPrompt(true);
-      }, 2000);
+      }, 1000); // Show prompt after 1 second
       return () => clearTimeout(timer);
+    }
+  }, [locationEnabled, isGlobalMode]);
+  
+  // Close location prompt when location is enabled or global mode is activated
+  React.useEffect(() => {
+    if (locationEnabled || isGlobalMode) {
+      setShowLocationPrompt(false);
     }
   }, [locationEnabled, isGlobalMode]);
 
@@ -598,17 +605,27 @@ const NewHomePage: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Enable Location
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
                 Allow location access to find nearby {userRole === 'owner' ? 'sitters' : 'pets'} in your area. 
                 You can also browse globally without location.
               </p>
+              <details className="text-xs text-gray-500 dark:text-gray-400">
+                <summary className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">
+                  Having trouble enabling location?
+                </summary>
+                <div className="mt-2 pl-2 space-y-1">
+                  <p>1. Click the 🔒 or location icon in your browser's address bar</p>
+                  <p>2. Select "Allow" or "Always allow" for location</p>
+                  <p>3. Refresh the page if needed</p>
+                </div>
+              </details>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-3 mt-4">
               <button
                 onClick={async () => {
                   await requestLocation();
-                  setShowLocationPrompt(false);
+                  // Don't close immediately - let the permission prompt show
                 }}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
