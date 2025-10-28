@@ -26,12 +26,18 @@ const AuthNew = () => {
   const [postalCode, setPostalCode] = useState('');
   const [phone, setPhone] = useState('');
 
-  // If mode is login, skip role selection
+  // If mode is login or role is provided in URL, skip role selection
   useEffect(() => {
+    const roleFromUrl = searchParams.get('role') as 'owner' | 'walker' | null;
+    
     if (mode === 'login') {
       setStep('form');
+    } else if (mode === 'signup' && roleFromUrl) {
+      // Role already selected from RoleSelectionPage
+      setSelectedRole(roleFromUrl);
+      setStep('form');
     }
-  }, [mode]);
+  }, [mode, searchParams]);
 
   const handleRoleSelect = (role: 'owner' | 'walker' | 'both') => {
     setSelectedRole(role);
