@@ -9,6 +9,8 @@
 4. Copy ALL content from `database/sprint_enhanced_profiles_availability_booking.sql`
 5. Paste and click **Run**
 
+**Note:** If you get an error about "btree_gist", the script will automatically enable it. Just run it again.
+
 ### Step 2: Set Up Storage (1 min)
 1. Go to **Storage** in sidebar
 2. Check if `avatars` bucket exists

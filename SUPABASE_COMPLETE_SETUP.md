@@ -24,6 +24,8 @@ This guide will help you set up your Supabase database to prevent errors and sav
 
 **Expected Result:** You should see "Success. No rows returned" message.
 
+**Note:** The script automatically enables the `btree_gist` extension which is required for preventing overlapping availability slots. If you see any extension-related errors, just run the script again.
+
 ### 2.3 What This Creates:
 
 The migration creates these tables:

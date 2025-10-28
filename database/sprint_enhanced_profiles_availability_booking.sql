@@ -2,6 +2,13 @@
 -- This migration adds new fields and tables for the enhanced user experience
 
 -- ============================================
+-- 0. ENABLE REQUIRED EXTENSIONS
+-- ============================================
+
+-- Enable btree_gist extension for EXCLUDE constraints
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+-- ============================================
 -- 1. ENHANCED PROFILE FIELDS
 -- ============================================
 
