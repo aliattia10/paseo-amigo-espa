@@ -19,21 +19,74 @@ const ProfileEditPage: React.FC = () => {
     city: userProfile?.city || '',
     postalCode: userProfile?.postalCode || '',
     bio: '',
+    profilePictureUrl: '',
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const handleImageUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser?.id}-${Date.now()}.${fileExt}`;
+      const filePath = `profiles/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setFormData({ ...formData, profilePictureUrl: publicUrl });
+      
+      toast({
+        title: t('common.success'),
+        description: 'Profile picture uploaded',
+      });
+    } catch (error: any) {
+      toast({
+        title: t('common.error'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      handleImageUpload(file);
+    }
+  };
 
   const handleSave = async () => {
     setLoading(true);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
+      const updateData: any = {
+        name: formData.name,
+        phone: formData.phone,
+        city: formData.city,
+        postal_code: formData.postalCode,
+      };
+
+      if (formData.profilePictureUrl) {
+        updateData.avatar_url = formData.profilePictureUrl;
+      }
+
       const { error } = await supabase
         .from('users')
-        .update({
-          name: formData.name,
-          phone: formData.phone,
-          city: formData.city,
-          postal_code: formData.postalCode,
-        })
+        .update(updateData)
         .eq('id', currentUser?.id);
 
       if (error) throw error;
@@ -76,16 +129,34 @@ const ProfileEditPage: React.FC = () => {
       <main className="flex-1 p-4 space-y-4">
         {/* Profile Picture */}
         <div className="flex flex-col items-center gap-4 py-4">
-          <div 
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md"
-            style={{
-              backgroundImage: 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")'
-            }}
-          />
-          <Button variant="outline" className="text-primary">
-            <span className="material-symbols-outlined mr-2">photo_camera</span>
-            Change Photo
-          </Button>
+          <div className="relative">
+            <div 
+              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md"
+              style={{
+                backgroundImage: formData.profilePictureUrl 
+                  ? `url("${formData.profilePictureUrl}")`
+                  : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")'
+              }}
+            />
+            {uploadingImage && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            )}
+          </div>
+          <label htmlFor="profile-picture" className="cursor-pointer">
+            <input
+              id="profile-picture"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <Button type="button" variant="outline" className="text-primary" disabled={uploadingImage}>
+              <span className="material-symbols-outlined mr-2">photo_camera</span>
+              {uploadingImage ? 'Uploading...' : 'Change Photo'}
+            </Button>
+          </label>
         </div>
 
         {/* Form Fields */}

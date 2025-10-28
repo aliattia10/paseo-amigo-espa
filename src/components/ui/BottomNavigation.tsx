@@ -60,6 +60,25 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0 }) 
         </button>
 
         <button 
+          onClick={() => navigate('/bookings')} 
+          className={`flex flex-col items-center justify-center p-2 ${
+            isActive('/bookings') 
+              ? 'text-home-primary' 
+              : 'text-text-secondary-light dark:text-text-secondary-dark'
+          }`}
+        >
+          <span 
+            className="material-symbols-outlined text-2xl"
+            style={isActive('/bookings') ? { fontVariationSettings: '"FILL" 1' } : {}}
+          >
+            event
+          </span>
+          <span className={`text-xs ${isActive('/bookings') ? 'font-bold' : 'font-medium'}`}>
+            Bookings
+          </span>
+        </button>
+
+        <button 
           onClick={() => navigate('/notifications')} 
           className={`flex flex-col items-center justify-center relative p-2 ${
             isActive('/notifications') 

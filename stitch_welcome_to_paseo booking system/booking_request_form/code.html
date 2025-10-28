@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Book a Sitter</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#20df6c",
+            "background-light": "#f6f8f7",
+            "background-dark": "#112117",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden" style="--select-button-svg: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(80,149,108)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e');">
+<div class="flex flex-col pb-28">
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<div class="flex size-12 shrink-0 items-center justify-start">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Profile picture of Jane Doe" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA-fdRuwX6LxEhSSlB4L74szR9s9gAGzDlOdUmAt3n7EPAGZ6DKhm96rkiYHqkNhvtm10GSpq9JQIKO4TcGOY57tE9irKbVZFzX2cYm-FaYrzIVIHOX14NMMsrDViGk2JDafs9wq4mRdj4mm7QCqwBBiGCoxIwQgDsQ7A5xX3SkjN_6bbaf_FAhaZsEhzMSwQ0XLhD25t0LScW6C1b99s3qd99YZMHGkUOJDNUlJ69W4TG9xivrZYG17F3a_hUI10041vNRGbrafU0");'></div>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Book Jane Doe</h2>
+<div class="size-12"></div>
+</div>
+<!-- Service and Rate Section -->
+<div class="flex flex-wrap items-end gap-4 px-4 py-3">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal pb-2">Service</p>
+<select class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-0 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 focus:border-primary h-14 bg-[image:--select-button-svg] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-[15px] text-base font-normal leading-normal">
+<option value="walking">Dog Walking</option>
+<option value="sitting">House Sitting</option>
+<option value="visit">Drop-in Visit</option>
+</select>
+</label>
+<label class="flex flex-col min-w-[120px] w-auto">
+<p class="text-slate-800 dark:text-slate-200 text-sm font-medium leading-normal pb-2">Hourly Rate ($)</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-0 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 focus:border-primary h-14 p-[15px] text-base font-normal leading-normal text-center" type="number" value="15"/>
+</label>
+</div>
+<!-- Date & Time Section Header -->
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">When?</h3>
+<!-- Calendar Picker -->
+<div class="flex flex-wrap items-center justify-center gap-6 px-4">
+<div class="flex w-full min-w-72 max-w-[480px] flex-1 flex-col gap-0.5 rounded-xl bg-slate-50 dark:bg-slate-800 p-2">
+<div class="flex items-center p-1 justify-between">
+<button class="flex size-10 items-center justify-center text-slate-900 dark:text-slate-100">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight flex-1 text-center">October 2024</p>
+<button class="flex size-10 items-center justify-center text-slate-900 dark:text-slate-100">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-7 gap-y-1">
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em] flex h-10 w-full items-center justify-center pb-0.5">S</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em] flex h-10 w-full items-center justify-center pb-0.5">M</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em] flex h-10 w-full items-center justify-center pb-0.5">T</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em] flex h-10 w-full items-center justify-center pb-0.5">W</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em] flex h-10 w-full items-center justify-center pb-0.5">T</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em] flex h-10 w-full items-center justify-center pb-0.5">F</p>
+<p class="text-slate-500 dark:text-slate-400 text-[13px] font-bold leading-normal tracking-[0.015em] flex h-10 w-full items-center justify-center pb-0.5">S</p>
+<button class="h-10 w-full text-slate-400 dark:text-slate-600 col-start-4 text-sm font-medium leading-normal cursor-not-allowed">
+<div class="flex size-full items-center justify-center rounded-full">1</div>
+</button>
+<button class="h-10 w-full text-slate-400 dark:text-slate-600 text-sm font-medium leading-normal cursor-not-allowed"><div class="flex size-full items-center justify-center rounded-full">2</div></button>
+<button class="h-10 w-full text-slate-400 dark:text-slate-600 text-sm font-medium leading-normal cursor-not-allowed"><div class="flex size-full items-center justify-center rounded-full">3</div></button>
+<button class="h-10 w-full text-slate-400 dark:text-slate-600 text-sm font-medium leading-normal cursor-not-allowed"><div class="flex size-full items-center justify-center rounded-full">4</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 rounded-l-full bg-primary/20 text-sm font-medium leading-normal">
+<div class="flex size-full items-center justify-center rounded-full bg-primary text-white">5</div>
+</button>
+<button class="h-10 w-full bg-primary/20 text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal">
+<div class="flex size-full items-center justify-center rounded-none">6</div>
+</button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 rounded-r-full bg-primary/20 text-sm font-medium leading-normal">
+<div class="flex size-full items-center justify-center rounded-full bg-primary text-white">7</div>
+</button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">8</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">9</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">10</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">11</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">12</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">13</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">14</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">15</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">16</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">17</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">18</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">19</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">20</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">21</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">22</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">23</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">24</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">25</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">26</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">27</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">28</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">29</div></button>
+<button class="h-10 w-full text-slate-900 dark:text-slate-100 text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"><div class="flex size-full items-center justify-center rounded-full">30</div></button>
+</div>
+</div>
+</div>
+<!-- Time Picker -->
+<div class="flex px-4 py-4">
+<div class="group flex-1">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal flex h-11 items-center justify-center truncate px-4 text-center">
+            Start Time
+          </p>
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-normal tracking-[0.015em] flex h-12 items-center justify-center truncate px-4 text-center rounded-l-xl bg-slate-50 dark:bg-slate-800">
+            9:00 AM
+          </p>
+</div>
+<div class="group flex-1">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal flex h-11 items-center justify-center truncate px-4 text-center">
+            End Time
+          </p>
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-normal tracking-[0.015em] flex h-12 items-center justify-center truncate px-4 text-center rounded-r-xl bg-slate-50 dark:bg-slate-800">
+            11:00 AM
+          </p>
+</div>
+</div>
+<!-- Price Summary -->
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Price Summary</h3>
+<div class="px-4 py-2">
+<div class="w-full bg-slate-50 dark:bg-slate-800 rounded-xl p-4 flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<p class="text-slate-600 dark:text-slate-300">Jane Doe's Rate (2 hrs @ $15/hr)</p>
+<p class="text-slate-800 dark:text-slate-200 font-medium">$30.00</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1.5">
+<p class="text-slate-600 dark:text-slate-300">Paseo Service Fee (20%)</p>
+<span class="material-symbols-outlined text-sm text-slate-500 dark:text-slate-400">info</span>
+</div>
+<p class="text-slate-800 dark:text-slate-200 font-medium">$6.00</p>
+</div>
+<div class="w-full h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
+<div class="flex justify-between items-center">
+<p class="text-slate-900 dark:text-slate-100 font-bold">Total</p>
+<p class="text-slate-900 dark:text-slate-100 font-bold text-lg">$36.00</p>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="px-4 pt-6">
+<button class="w-full bg-primary text-white font-bold py-4 rounded-xl text-base h-14 flex items-center justify-center">Send Booking Request</button>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 h-24 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800">
+<div class="flex justify-around items-center h-full max-w-md mx-auto">
+<a class="flex flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-bold">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-xs font-medium">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+</div>
+</div>
+</body></html>

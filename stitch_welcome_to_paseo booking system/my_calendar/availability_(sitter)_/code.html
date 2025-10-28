@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Schedule - Dog Sitter App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#4A90E2",
+              "secondary-booked": "#50E3C2",
+              "secondary-unavailable": "#D8D8D8",
+              "text-primary": "#333333",
+              "text-secondary": "#A0A0A0",
+              "background-light": "#f6f8f7",
+              "background-dark": "#112117",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .material-symbols-outlined.fill {
+        font-variation-settings: 'FILL' 1;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden" style='font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif;'>
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
+<div class="flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined text-text-primary dark:text-white">menu</span>
+</div>
+<h2 class="text-text-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">My Schedule</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-text-primary dark:text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+<!-- Segmented Buttons (View Toggle) -->
+<div class="flex px-4 py-3">
+<div class="flex h-10 flex-1 items-center justify-center rounded-xl bg-gray-200/50 dark:bg-gray-700/50 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-background-dark has-[:checked]:shadow-[0_1px_3px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-text-secondary text-sm font-medium leading-normal">
+<span class="truncate">Month</span>
+<input checked="" class="invisible w-0" name="view-toggle" type="radio" value="Month"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-background-dark has-[:checked]:shadow-[0_1px_3px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-text-secondary text-sm font-medium leading-normal">
+<span class="truncate">Week</span>
+<input class="invisible w-0" name="view-toggle" type="radio" value="Week"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-background-dark has-[:checked]:shadow-[0_1px_3px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-text-secondary text-sm font-medium leading-normal">
+<span class="truncate">Day</span>
+<input class="invisible w-0" name="view-toggle" type="radio" value="Day"/>
+</label>
+</div>
+</div>
+<!-- Calendar Picker -->
+<div class="flex flex-wrap items-center justify-center gap-6 px-4 py-2">
+<div class="flex min-w-72 max-w-[336px] flex-1 flex-col gap-0.5">
+<div class="flex items-center p-1 justify-between">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50">
+<span class="material-symbols-outlined text-text-primary dark:text-white text-lg">chevron_left</span>
+</button>
+<p class="text-text-primary dark:text-white text-base font-bold leading-tight flex-1 text-center">October 2024</p>
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50">
+<span class="material-symbols-outlined text-text-primary dark:text-white text-lg">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-7">
+<p class="text-text-secondary text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">S</p>
+<p class="text-text-secondary text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">M</p>
+<p class="text-text-secondary text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">T</p>
+<p class="text-text-secondary text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">W</p>
+<p class="text-text-secondary text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">T</p>
+<p class="text-text-secondary text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">F</p>
+<p class="text-text-secondary text-[13px] font-bold leading-normal flex h-12 w-full items-center justify-center pb-0.5">S</p>
+<button class="h-12 w-full text-gray-400 dark:text-gray-600 col-start-3 text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">1</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">2</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">3</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">4</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">5</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">6</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">7</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal relative"><div class="flex size-full items-center justify-center rounded-full">8</div><div class="absolute bottom-2 left-1/2 -translate-x-1/2 size-1.5 rounded-full bg-secondary-booked"></div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">9</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">10</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal relative"><div class="flex size-full items-center justify-center rounded-full">11</div><div class="absolute bottom-2 left-1/2 -translate-x-1/2 size-1.5 rounded-full bg-secondary-unavailable"></div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">12</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">13</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">14</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal relative"><div class="flex size-full items-center justify-center rounded-full">15</div><div class="absolute bottom-2 left-1/2 -translate-x-1/2 size-1.5 rounded-full bg-secondary-booked"></div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal relative"><div class="flex size-full items-center justify-center rounded-full">16</div><div class="absolute bottom-2 left-1/2 -translate-x-1/2 size-1.5 rounded-full bg-secondary-booked"></div></button>
+<button class="h-12 w-full text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full bg-primary shadow-md">17</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">18</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">19</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">20</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">21</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">22</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">23</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">24</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">25</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">26</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">27</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">28</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">29</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">30</div></button>
+<button class="h-12 w-full text-text-primary dark:text-white text-sm font-medium leading-normal"><div class="flex size-full items-center justify-center rounded-full">31</div></button>
+</div>
+</div>
+</div>
+<!-- Legend / Key -->
+<div class="px-4 pt-2 pb-4 grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm text-text-secondary">
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-primary/20 dark:bg-primary/30"></div>
+<p>Available</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-secondary-booked"></div>
+<p>Booked</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-secondary-unavailable"></div>
+<p>Unavailable</p>
+</div>
+</div>
+<!-- Divider -->
+<div class="px-4"><div class="h-px w-full bg-gray-200 dark:bg-gray-700"></div></div>
+<!-- Empty State for Today -->
+<div class="flex flex-col items-center justify-center p-8 text-center flex-grow">
+<span class="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600 mb-4">event_available</span>
+<h3 class="text-lg font-bold text-text-primary dark:text-white">All Clear for Today!</h3>
+<p class="text-text-secondary mt-1 max-w-xs">You have no bookings or unavailable time scheduled for October 17th.</p>
+</div>
+<!-- FAB (Floating Action Button) -->
+<div class="fixed bottom-24 right-5 z-20">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 w-14 bg-primary text-white shadow-lg transition-transform duration-200 hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<!-- Persistent Bottom Navigation Bar -->
+<div class="sticky bottom-0 z-10 mt-auto flex h-20 items-center justify-around border-t border-t-gray-200 bg-background-light/90 dark:border-t-gray-700 dark:bg-background-dark/90 backdrop-blur-sm">
+<a class="flex flex-col items-center gap-1 text-text-secondary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined fill">calendar_month</span>
+<span class="text-xs font-bold">Schedule</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-secondary" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-xs font-medium">Messages</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-secondary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+</div>
+</body></html>

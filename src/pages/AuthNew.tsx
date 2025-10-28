@@ -52,7 +52,7 @@ const AuthNew = () => {
         navigate('/');
       } else {
         // Signup
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -67,10 +67,39 @@ const AuthNew = () => {
           }
         });
         if (error) throw error;
+        
+        // Create user profile in database
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('users')
+            .insert({
+              id: data.user.id,
+              name,
+              email,
+              phone,
+              city,
+              postal_code: postalCode,
+              user_type: selectedRole || 'owner',
+            });
+          
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+          }
+        }
+        
         toast({
           title: "Success!",
-          description: "Check your email to confirm your account.",
+          description: "Account created successfully!",
         });
+        
+        // Redirect to appropriate profile setup
+        if (selectedRole === 'owner') {
+          navigate('/dog-profile-setup');
+        } else if (selectedRole === 'walker') {
+          navigate('/sitter-profile-setup');
+        } else {
+          navigate('/');
+        }
       }
     } catch (error: any) {
       toast({

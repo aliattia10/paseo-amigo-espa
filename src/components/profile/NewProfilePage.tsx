@@ -127,12 +127,51 @@ const NewProfilePage: React.FC = () => {
 
         {/* Information Cards/Sections */}
         <div className="flex flex-col gap-4 px-4">
+          {/* My Dogs Section - Only for owners */}
+          {activeRole === 'owner' && (
+            <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">My Dogs</h3>
+                <button 
+                  onClick={() => navigate('/dog-profile-setup')}
+                  className="text-primary font-bold text-sm flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-base">add</span>
+                  Add Dog
+                </button>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                  <div 
+                    className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-primary/20"
+                    style={{ backgroundImage: "url('https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200')" }}
+                  />
+                  <div className="flex-1">
+                    <p className="font-bold text-text-primary-light dark:text-text-primary-dark">Max</p>
+                    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">Golden Retriever • 2 years</p>
+                  </div>
+                  <button className="text-text-secondary-light dark:text-text-secondary-dark">
+                    <span className="material-symbols-outlined">edit</span>
+                  </button>
+                </div>
+                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center py-2">
+                  Add your dog's profile to find the perfect sitter
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* My Availability Card */}
           {activeRole === 'sitter' && (
             <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">My Availability</h3>
-                <a className="text-primary font-bold text-sm" href="#">Manage</a>
+                <button 
+                  onClick={() => navigate('/availability')}
+                  className="text-primary font-bold text-sm"
+                >
+                  Manage
+                </button>
               </div>
               <div className="grid grid-cols-7 gap-2 text-center">
                 {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day, index) => (

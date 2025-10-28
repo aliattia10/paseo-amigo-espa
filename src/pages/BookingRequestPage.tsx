@@ -25,6 +25,34 @@ const BookingRequestPage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [dogs, setDogs] = useState<Array<{ id: string; name: string; image_url?: string }>>([]);
+
+  // Fetch user's dogs
+  React.useEffect(() => {
+    const fetchDogs = async () => {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data, error } = await supabase
+          .from('dogs')
+          .select('id, name, image_url')
+          .eq('owner_id', currentUser?.id);
+        
+        if (error) throw error;
+        setDogs(data || []);
+        
+        // Auto-select first dog if only one
+        if (data && data.length === 1) {
+          setFormData(prev => ({ ...prev, dogId: data[0].id }));
+        }
+      } catch (error: any) {
+        console.error('Error fetching dogs:', error);
+      }
+    };
+    
+    if (currentUser) {
+      fetchDogs();
+    }
+  }, [currentUser]);
 
   // Calculate pricing
   const subtotal = hourlyRate * formData.duration;
@@ -33,48 +61,46 @@ const BookingRequestPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.dogId) {
+      toast({
+        title: t('common.error'),
+        description: 'Please select a dog',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const { supabase } = await import('@/integrations/supabase/client');
 
-      // Create walk request
-      const { data: walkRequest, error } = await supabase
-        .from('walk_requests')
-        .insert({
-          owner_id: currentUser?.id,
-          walker_id: walkerId,
-          dog_id: formData.dogId || 'temp-dog-id', // Required field
-          walk_date: formData.date,
-          walk_time: formData.startTime,
-          duration: formData.duration,
-          price: total,
-          service_type: 'walk',
-          location: 'TBD',
-          status: 'pending',
-          notes: formData.notes || '',
-        })
-        .select()
-        .single();
+      // Create start and end datetime
+      const startDateTime = new Date(`${formData.date}T${formData.startTime}`);
+      const endDateTime = new Date(startDateTime.getTime() + formData.duration * 60 * 60 * 1000);
+
+      // Create booking using RPC function
+      const { data: bookingId, error } = await supabase.rpc('create_booking', {
+        p_owner_id: currentUser?.id,
+        p_sitter_id: walkerId,
+        p_dog_id: formData.dogId,
+        p_start_time: startDateTime.toISOString(),
+        p_end_time: endDateTime.toISOString(),
+        p_service_type: 'walk',
+        p_location: 'TBD',
+        p_notes: formData.notes || '',
+        p_total_price: total,
+      });
 
       if (error) throw error;
 
-      // Create notification for walker
-      await supabase.from('notifications').insert({
-        user_id: walkerId,
-        type: 'walk_request',
-        title: 'New walk request',
-        message: `You have a new walk request for ${formData.date}`,
-        related_id: walkRequest.id,
-        is_read: false,
-      });
-
       toast({
         title: 'Booking Request Sent!',
-        description: 'The walker will be notified of your request.',
+        description: 'The sitter will be notified of your request.',
       });
 
-      navigate('/dashboard');
+      navigate('/bookings');
     } catch (error: any) {
       toast({
         title: t('common.error'),
@@ -106,6 +132,52 @@ const BookingRequestPage: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 p-4 space-y-4 pb-8">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Dog Selection */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+              Select Dog <span className="text-red-500">*</span>
+            </label>
+            {dogs.length === 0 ? (
+              <div className="text-center py-4">
+                <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm mb-3">
+                  You need to add a dog profile first
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => navigate('/dog-profile-setup')}
+                  variant="outline"
+                >
+                  Add Dog Profile
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-2">
+                {dogs.map((dog) => (
+                  <button
+                    key={dog.id}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, dogId: dog.id })}
+                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      formData.dogId === dog.id
+                        ? 'bg-primary text-white'
+                        : 'bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark border border-border-light dark:border-border-dark'
+                    }`}
+                  >
+                    <div 
+                      className="w-12 h-12 rounded-full bg-cover bg-center"
+                      style={{
+                        backgroundImage: dog.image_url 
+                          ? `url("${dog.image_url}")`
+                          : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      }}
+                    />
+                    <span className="font-medium">{dog.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Date Selection */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
@@ -204,7 +276,7 @@ const BookingRequestPage: React.FC = () => {
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || dogs.length === 0 || !formData.dogId}
             className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-base font-bold"
           >
             {loading ? t('common.loading') : 'Send Booking Request'}

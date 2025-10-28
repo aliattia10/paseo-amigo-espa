@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Bookings</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "background-light": "#F4F4F8",
+            "background-dark": "#101418",
+            "text-light": "#333333",
+            "text-dark": "#E0E0E0",
+            "success": "#7ED321",
+            "warning": "#F5A623",
+            "neutral": "#4A4A4A",
+            "error": "#D0021B",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "sans-serif"]
+          },
+          borderRadius: {
+              "DEFAULT": "0.5rem",
+              "lg": "1rem",
+              "xl": "1.5rem",
+              "full": "9999px"
+          },
+        },
+      },
+    }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden font-display">
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<h1 class="text-text-light dark:text-text-dark text-xl font-bold leading-tight tracking-[-0.015em] flex-1">My Bookings</h1>
+</div>
+<!-- Tabs -->
+<div class="sticky top-[60px] z-10 bg-background-light dark:bg-background-dark">
+<div class="flex border-b border-gray-200 dark:border-gray-700 px-4 justify-between">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-primary pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal">Upcoming</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal">Pending</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal">Past</p>
+</a>
+</div>
+</div>
+<!-- Bookings List -->
+<div class="flex flex-col px-4 pt-4 pb-24 space-y-3">
+<!-- Booking Card 1 -->
+<div class="flex gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg justify-between items-center shadow-sm">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14" data-alt="Profile picture of Jane Doe" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCzCyW-6FmA63NIhw6K96oi5EJd5Ls5N0xs5HWuzTEURYsk8sXz753CvoGcTTb1QothfosxtVemjer6itludLVg3tVHs9W02ew6VcMw-Pq4kcUcn_osvBqsPO663hOZesugyhKhR_cnJjxLqrRllbod3Q_rqMUDcS60oBa5MDdhKUM9kwR7q0bA5si8liAV7Rhsa2oOzgP68qTM-ujFXzxMvXqLpsfxH5-dt_y9SVMPeWBznDvyG_RnWZw5KqSlIUe8mEGOO7cEUUg");'></div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal">Jane Doe</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Total: $120.00</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Aug 12 - Aug 15, 2024</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex items-center justify-center rounded-full bg-success/20 px-3 py-1">
+<p class="text-success text-xs font-bold">Confirmed</p>
+</div>
+</div>
+</div>
+<!-- Booking Card 2 -->
+<div class="flex gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg justify-between items-center shadow-sm">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14" data-alt="Photo of a dog named Buddy" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAnTnyZxbR-8hvAmh9m24NOKeR5KF5_jLOgKGuhve8hUVJFJJFqSD5WqmLY68fHeavsHJ55OFNxvcT9UnjUzC3O1-UUjK2hJ6qeIq6MhQl_F4Z9Abd1hq4-c2cqMPtmcVcVoxUaQlmOVfSmHG5lj9evCSR5nq9NhRK05Eg7RhJIQUhO-9XUT1lutoJyfw_P9CGcv8CQw57Y8MHu_Ess51j8jPrLfWz_sGmUp8otOKeRQj1CffP-XQQ0r-lHfGZ17SOXrC_-vFsFLwY");'></div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal">John Smith &amp; Buddy</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Payout: $60.00</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Aug 18 - Aug 19, 2024</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex items-center justify-center rounded-full bg-success/20 px-3 py-1">
+<p class="text-success text-xs font-bold">Confirmed</p>
+</div>
+</div>
+</div>
+<!-- Empty State for Pending Tab (Example) -->
+<!-- To show this, you would remove the bookings above and uncomment this block. -->
+<!--
+            <div class="flex flex-col items-center justify-center text-center py-20">
+                <span class="material-symbols-outlined text-5xl text-gray-400 dark:text-gray-500 mb-4">event_busy</span>
+                <p class="text-text-light dark:text-text-dark font-semibold">No upcoming bookings yet!</p>
+                <p class="text-gray-500 dark:text-gray-400 text-sm">When you have a new booking, it will show up here.</p>
+            </div>
+            -->
+</div>
+<!-- Persistent Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+<div class="flex justify-around h-16">
+<a class="flex flex-col items-center justify-center flex-1 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center flex-1 text-primary dark:text-primary" href="#">
+<span class="material-symbols-outlined fill">pets</span>
+<span class="text-xs font-bold">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center flex-1 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-xs">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center flex-1 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs">Profile</span>
+</a>
+</div>
+</div>
+</div>
+</body></html>
