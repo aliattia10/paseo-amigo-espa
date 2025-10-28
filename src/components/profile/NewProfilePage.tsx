@@ -27,19 +27,37 @@ const NewProfilePage: React.FC = () => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please select an image file');
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Image must be less than 5MB');
+      }
+      
       const fileExt = file.name.split('.').pop();
-      const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
-      const filePath = `profiles/${fileName}`;
+      const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        if (uploadError.message.includes('not found')) {
+          throw new Error('Storage bucket not configured. Please run: database/fix_profile_storage.sql');
+        }
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       // Update user profile with new avatar URL
       const { error: updateError } = await supabase
@@ -57,9 +75,10 @@ const NewProfilePage: React.FC = () => {
       // Reload page to show new image
       window.location.reload();
     } catch (error: any) {
+      console.error('Image upload error:', error);
       toast({
         title: t('common.error'),
-        description: error.message,
+        description: error.message || 'Failed to upload image',
         variant: 'destructive',
       });
     } finally {

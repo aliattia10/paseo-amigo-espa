@@ -25,34 +25,69 @@ const ProfileEditPage: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleImageUpload = async (file: File) => {
+    if (!currentUser) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to upload images',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setUploadingImage(true);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${currentUser?.id}-${Date.now()}.${fileExt}`;
-      const filePath = `profiles/${fileName}`;
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please select an image file');
+      }
 
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Image must be less than 5MB');
+      }
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
+
+      // Delete old image if exists
+      if (formData.profilePictureUrl) {
+        const oldPath = formData.profilePictureUrl.split('/').slice(-2).join('/');
+        await supabase.storage.from('avatars').remove([oldPath]);
+      }
+
+      // Upload new image
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        if (uploadError.message.includes('not found')) {
+          throw new Error('Storage bucket not configured. Please run: database/fix_profile_storage.sql');
+        }
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       setFormData({ ...formData, profilePictureUrl: publicUrl });
       
       toast({
-        title: t('common.success'),
-        description: 'Profile picture uploaded',
+        title: 'Success!',
+        description: 'Profile picture uploaded successfully',
       });
     } catch (error: any) {
+      console.error('Image upload error:', error);
       toast({
-        title: t('common.error'),
-        description: error.message,
+        title: 'Upload Failed',
+        description: error.message || 'Failed to upload image',
         variant: 'destructive',
       });
     } finally {
@@ -69,44 +104,77 @@ const ProfileEditPage: React.FC = () => {
   };
 
   const handleSave = async () => {
+    if (!currentUser) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to update your profile',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.name || !formData.phone) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please fill in your name and phone number',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
       const updateData: any = {
-        name: formData.name,
-        phone: formData.phone,
-        city: formData.city,
-        postal_code: formData.postalCode,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        city: formData.city?.trim() || null,
+        postal_code: formData.postalCode?.trim() || null,
+        updated_at: new Date().toISOString(),
       };
 
       if (formData.profilePictureUrl) {
-        updateData.avatar_url = formData.profilePictureUrl;
+        updateData.profile_image = formData.profilePictureUrl;
       }
 
-      const { error } = await supabase
+      console.log('Updating profile with data:', updateData);
+
+      const { data, error } = await supabase
         .from('users')
         .update(updateData)
-        .eq('id', currentUser?.id);
+        .eq('id', currentUser.id)
+        .select();
 
       if (error) {
+        console.error('Update error:', error);
         // If table doesn't exist, provide helpful message
         if (error.message.includes('does not exist') || error.message.includes('not find')) {
-          throw new Error('Database not set up. Please contact support or run database migrations.');
+          throw new Error('Database not set up. Please run: database/fix_profile_storage.sql');
+        }
+        if (error.message.includes('permission')) {
+          throw new Error('Permission denied. Please check database RLS policies.');
         }
         throw error;
       }
 
+      console.log('Profile updated successfully:', data);
+
       toast({
-        title: t('common.success'),
-        description: 'Profile updated successfully',
+        title: '✓ Saved!',
+        description: 'Your profile has been updated',
       });
 
-      navigate('/profile');
+      // Reload to show updated data
+      setTimeout(() => {
+        window.location.href = '/profile';
+      }, 1000);
     } catch (error: any) {
+      console.error('Save error:', error);
       toast({
-        title: t('common.error'),
-        description: error.message,
+        title: 'Save Failed',
+        description: error.message || 'Failed to update profile. Please try again.',
         variant: 'destructive',
       });
     } finally {
