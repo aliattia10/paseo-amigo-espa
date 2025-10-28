@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 const ProfileEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, userProfile, refreshUserProfile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -77,11 +77,28 @@ const ProfileEditPage: React.FC = () => {
         .from('avatars')
         .getPublicUrl(fileName);
 
+      // Update the profile picture in the database immediately
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ 
+          profile_image: publicUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentUser.id);
+
+      if (updateError) {
+        console.error('Profile update error:', updateError);
+        throw new Error('Failed to update profile picture in database');
+      }
+
       setFormData({ ...formData, profilePictureUrl: publicUrl });
+      
+      // Refresh the user profile in auth context
+      await refreshUserProfile();
       
       toast({
         title: 'Success!',
-        description: 'Profile picture uploaded successfully',
+        description: 'Profile picture updated successfully',
       });
     } catch (error: any) {
       console.error('Image upload error:', error);
@@ -161,15 +178,18 @@ const ProfileEditPage: React.FC = () => {
 
       console.log('Profile updated successfully:', data);
 
+      // Refresh the user profile in auth context
+      await refreshUserProfile();
+
       toast({
         title: '✓ Saved!',
         description: 'Your profile has been updated',
       });
 
-      // Reload to show updated data
+      // Navigate back without reload
       setTimeout(() => {
-        window.location.href = '/profile';
-      }, 1000);
+        navigate('/profile');
+      }, 500);
     } catch (error: any) {
       console.error('Save error:', error);
       toast({
