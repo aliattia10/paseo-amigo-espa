@@ -90,6 +90,21 @@ const AuthNew = () => {
               console.error('Profile creation error:', profileError);
             }
           }
+          
+          // Send welcome notification
+          try {
+            await supabase
+              .from('notifications')
+              .insert({
+                user_id: data.user.id,
+                type: 'welcome',
+                title: '🎉 Welcome to Paseo!',
+                message: `Hi ${name}! We're excited to have you join our community. ${selectedRole === 'owner' ? 'Start browsing sitters for your furry friend!' : 'Start connecting with dog owners in your area!'}`,
+                read: false
+              });
+          } catch (notifError) {
+            console.warn('Could not create welcome notification:', notifError);
+          }
         }
         
         toast({

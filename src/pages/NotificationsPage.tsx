@@ -96,14 +96,25 @@ const NotificationsPage: React.FC = () => {
     
     try {
       const { supabase } = await import('@/integrations/supabase/client');
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('user_id', currentUser.id)
-        .eq('is_read', false);
-
-      if (error && !error.message.includes('does not exist')) {
-        throw error;
+      
+      // Get all unread notification IDs
+      const unreadNotifs = notifications.filter(n => !n.isRead);
+      
+      if (unreadNotifs.length === 0) {
+        toast({
+          title: 'No unread notifications',
+          description: 'All notifications are already marked as read',
+        });
+        setShowMenu(false);
+        return;
+      }
+      
+      // Update each notification
+      for (const notif of unreadNotifs) {
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('id', notif.id);
       }
 
       // Update local state
@@ -112,12 +123,13 @@ const NotificationsPage: React.FC = () => {
       
       toast({
         title: t('common.success'),
-        description: 'All notifications marked as read',
+        description: `Marked ${unreadNotifs.length} notification${unreadNotifs.length > 1 ? 's' : ''} as read`,
       });
     } catch (error: any) {
+      console.error('Error marking notifications as read:', error);
       toast({
         title: t('common.error'),
-        description: error.message,
+        description: 'Failed to mark notifications as read',
         variant: 'destructive',
       });
     }

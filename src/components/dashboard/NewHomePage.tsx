@@ -88,25 +88,68 @@ const NewHomePage: React.FC = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
+  const [passedProfiles, setPassedProfiles] = useState<Set<string>>(new Set());
+  const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
 
-  // Get profiles based on user role
-  const profiles = userRole === 'owner' ? walkerProfiles : dogProfiles;
+  // Load saved state from localStorage on mount
+  React.useEffect(() => {
+    const savedRole = localStorage.getItem('userRole') as 'owner' | 'sitter' | null;
+    const savedPassed = localStorage.getItem('passedProfiles');
+    const savedLiked = localStorage.getItem('likedProfiles');
+    
+    if (savedRole) setUserRole(savedRole);
+    if (savedPassed) setPassedProfiles(new Set(JSON.parse(savedPassed)));
+    if (savedLiked) setLikedProfiles(new Set(JSON.parse(savedLiked)));
+  }, []);
+
+  // Get profiles based on user role, filtering out passed/liked ones
+  const allProfiles = userRole === 'owner' ? walkerProfiles : dogProfiles;
+  const profiles = allProfiles.filter(p => !passedProfiles.has(p.id) && !likedProfiles.has(p.id));
+
+  // Reset to first available profile when profiles change
+  React.useEffect(() => {
+    if (profiles.length > 0 && currentIndex >= profiles.length) {
+      setCurrentIndex(0);
+    }
+  }, [profiles.length, currentIndex]);
 
   // Reset index when switching roles
   const handleRoleChange = (role: 'owner' | 'sitter') => {
     setUserRole(role);
     setCurrentIndex(0);
+    localStorage.setItem('userRole', role);
   };
 
   const navigate = useNavigate();
 
   const handleLike = () => {
     const profile = profiles[currentIndex];
+    
+    // Add to liked profiles
+    const newLiked = new Set(likedProfiles);
+    newLiked.add(profile.id);
+    setLikedProfiles(newLiked);
+    localStorage.setItem('likedProfiles', JSON.stringify(Array.from(newLiked)));
+    
+    // Move to next profile or stay at current if it's the last one
+    if (currentIndex < profiles.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+    
     // Navigate to booking request page
-    navigate(`/booking/request?walkerId=${profile.id}&walkerName=${profile.name}&rate=15`);
+    navigate(`/booking/request?walkerId=${profile.id}&walkerName=${profile.name}&rate=${profile.hourlyRate || 15}`);
   };
 
   const handlePass = () => {
+    const profile = profiles[currentIndex];
+    
+    // Add to passed profiles
+    const newPassed = new Set(passedProfiles);
+    newPassed.add(profile.id);
+    setPassedProfiles(newPassed);
+    localStorage.setItem('passedProfiles', JSON.stringify(Array.from(newPassed)));
+    
+    // Move to next profile
     if (currentIndex < profiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
@@ -171,14 +214,40 @@ const NewHomePage: React.FC = () => {
       {/* Main Content: Card Stack */}
       <main className="flex-1 flex flex-col items-center p-4 pt-0 overflow-hidden max-w-md mx-auto w-full">
         <div className="relative w-full max-w-[400px] h-[450px] flex items-center justify-center">
-          {/* Background Card 2 */}
-          <div className="absolute w-[90%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-md transform scale-95 -translate-y-4"></div>
-          
-          {/* Background Card 1 */}
-          <div className="absolute w-[95%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-lg transform scale-95"></div>
-          
-          {/* Main Card */}
-          {currentProfile && (
+          {profiles.length === 0 ? (
+            /* No more profiles message */
+            <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 text-center">
+              <span className="material-symbols-outlined text-6xl text-gray-400 mb-4">
+                {userRole === 'owner' ? 'person_search' : 'pets'}
+              </span>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+                No more profiles
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                You've seen all available {userRole === 'owner' ? 'sitters' : 'dogs'} in your area.
+              </p>
+              <button
+                onClick={() => {
+                  // Clear passed profiles to see them again
+                  setPassedProfiles(new Set());
+                  localStorage.removeItem('passedProfiles');
+                  setCurrentIndex(0);
+                }}
+                className="px-6 py-3 bg-home-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+              >
+                Start Over
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Background Card 2 */}
+              <div className="absolute w-[90%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-md transform scale-95 -translate-y-4"></div>
+              
+              {/* Background Card 1 */}
+              <div className="absolute w-[95%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-lg transform scale-95"></div>
+              
+              {/* Main Card */}
+              {currentProfile && (
             <div 
               className="absolute bg-cover bg-center flex flex-col items-stretch justify-end rounded-xl shadow-xl w-full h-full"
               style={{
@@ -221,6 +290,8 @@ const NewHomePage: React.FC = () => {
                 </div>
               </div>
             </div>
+          )}
+            </>
           )}
         </div>
       </main>
