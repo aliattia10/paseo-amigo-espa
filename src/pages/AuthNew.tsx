@@ -56,7 +56,7 @@ const AuthNew = () => {
           password,
         });
         if (error) throw error;
-        navigate('/');
+        navigate('/dashboard');
       } else {
         // Signup
         const { data, error } = await supabase.auth.signUp({

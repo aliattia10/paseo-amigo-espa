@@ -430,7 +430,7 @@ const NewHomePage: React.FC = () => {
               }`}
             >
               <span className="material-symbols-outlined text-base mr-1">school</span>
-              Find Dogs
+              Find Pets
             </button>
           </div>
         </div>
@@ -449,7 +449,7 @@ const NewHomePage: React.FC = () => {
                 No more profiles
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                You've seen all available {userRole === 'owner' ? 'sitters' : 'dogs'} in your area.
+                You've seen all available {userRole === 'owner' ? 'sitters' : 'pets'} in your area.
               </p>
               <button
                 onClick={() => {
