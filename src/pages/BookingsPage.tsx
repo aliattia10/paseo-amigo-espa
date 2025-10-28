@@ -98,6 +98,37 @@ const BookingsPage: React.FC = () => {
     }
   };
 
+  const handleReleasePayment = async (bookingId: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase.functions.invoke('capture-payment', {
+        body: { bookingId },
+      });
+      if (error) throw error;
+      toast({ title: 'Payment Released', description: 'Payment has been released to the sitter.' });
+      fetchBookings();
+    } catch (error: any) {
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleRefund = async (bookingId: string) => {
+    const reason = prompt('Please provide a reason for cancellation:');
+    if (!reason) return;
+
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase.functions.invoke('refund-payment', {
+        body: { bookingId, reason },
+      });
+      if (error) throw error;
+      toast({ title: 'Booking Cancelled', description: 'Booking cancelled and payment refunded.' });
+      fetchBookings();
+    } catch (error: any) {
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
+    }
+  };
+
   const handleCancelBooking = async (bookingId: string) => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
@@ -154,6 +185,16 @@ const BookingsPage: React.FC = () => {
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">calendar_today</span><span>{new Date(booking.booking_date).toLocaleDateString()}</span></div>
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">schedule</span><span>{booking.start_time} • {booking.duration_hours}h</span></div>
             </div>
+            {(booking.status as string) === 'completed' && (booking as any).payment_status === 'held' && (
+              <div className="flex gap-2 pt-2">
+                <Button onClick={() => handleReleasePayment(booking.id)} className="flex-1 bg-primary text-white">Release Payment</Button>
+              </div>
+            )}
+            {(booking.status as string) === 'requested' && (booking as any).payment_status === 'held' && (
+              <div className="flex gap-2 pt-2">
+                <Button onClick={() => handleRefund(booking.id)} variant="destructive" className="flex-1">Cancel & Refund</Button>
+              </div>
+            )}
             {(booking.status as string) === 'requested' && <div className="flex gap-2 pt-2"><Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">Accept</Button><Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">Decline</Button></div>}
           </div>
         ))}

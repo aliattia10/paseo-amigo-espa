@@ -33,6 +33,7 @@ import SitterProfileSetup from "./pages/SitterProfileSetup";
 import AvailabilityPage from "./pages/AvailabilityPage";
 import BookingsPage from "./pages/BookingsPage";
 import BookingRequestPage from "./pages/BookingRequestPage";
+import PaymentPage from "./pages/PaymentPage";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
@@ -747,6 +748,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <BookingsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/payment/:bookingId" 
+                  element={
+                    <ProtectedRoute>
+                      <PaymentPage />
                     </ProtectedRoute>
                   } 
                 />

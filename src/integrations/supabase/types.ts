@@ -63,11 +63,16 @@ export type Database = {
           location: string | null
           notes: string | null
           owner_id: string
+          payment_amount: number | null
+          payment_status: string | null
           pet_id: string | null
+          refund_reason: string | null
+          refunded_at: string | null
           service_type: string
           sitter_id: string
           start_time: string
           status: string
+          stripe_payment_intent_id: string | null
           total_price: number
           updated_at: string | null
         }
@@ -81,11 +86,16 @@ export type Database = {
           location?: string | null
           notes?: string | null
           owner_id: string
+          payment_amount?: number | null
+          payment_status?: string | null
           pet_id?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
           service_type?: string
           sitter_id: string
           start_time: string
           status?: string
+          stripe_payment_intent_id?: string | null
           total_price: number
           updated_at?: string | null
         }
@@ -99,11 +109,16 @@ export type Database = {
           location?: string | null
           notes?: string | null
           owner_id?: string
+          payment_amount?: number | null
+          payment_status?: string | null
           pet_id?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
           service_type?: string
           sitter_id?: string
           start_time?: string
           status?: string
+          stripe_payment_intent_id?: string | null
           total_price?: number
           updated_at?: string | null
         }
@@ -1128,6 +1143,10 @@ export type Database = {
           name: string
           user_type: string
         }[]
+      }
+      release_payment_to_sitter: {
+        Args: { p_booking_id: string }
+        Returns: boolean
       }
       update_booking_status: {
         Args: { p_booking_id: string; p_new_status: string }
