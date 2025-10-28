@@ -272,7 +272,7 @@ const NewHomePage: React.FC = () => {
             <span className="material-symbols-outlined text-3xl text-home-primary">pets</span>
           </div>
           <h1 className="text-[#0e1b13] dark:text-gray-100 text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
-            Paseo
+            Petflik
           </h1>
           <div className="flex w-12 items-center justify-end">
             <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">

@@ -210,7 +210,7 @@ const OnboardingFlow = () => {
                 <span className="text-white text-3xl">🐕</span>
               </div>
               <h1 className="text-3xl font-bold text-neutral-text mb-2">
-                ¡Bienvenido a Paseo!
+                ¡Bienvenido a Petflik!
               </h1>
               <p className="text-muted-foreground">
                 Completa tu perfil para comenzar a conectar con perros y paseadores
@@ -272,7 +272,7 @@ const OnboardingFlow = () => {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-text mb-3">
-                  ¿Qué quieres hacer en Paseo? *
+                  ¿Qué quieres hacer en Petflik? *
                 </label>
                 <div className="space-y-3">
                   <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">

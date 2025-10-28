@@ -141,7 +141,7 @@ async function createExecSqlFunction() {
 
 // Main execution
 async function main() {
-  console.log('🚀 Paseo Amigo Security Fix Application\n');
+  console.log('🚀 Petflik Security Fix Application\n');
   
   // Try to create the exec_sql function first
   await createExecSqlFunction();

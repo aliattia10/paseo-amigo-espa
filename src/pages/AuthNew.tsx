@@ -105,7 +105,7 @@ const AuthNew = () => {
               .insert({
                 user_id: data.user.id,
                 type: 'welcome',
-                title: '🎉 Welcome to Paseo!',
+                title: '🎉 Welcome to Petflik!',
                 message: `Hi ${name}! We're excited to have you join our community. ${selectedRole === 'owner' ? 'Start browsing sitters for your furry friend!' : 'Start connecting with dog owners in your area!'}`,
                 read: false
               });

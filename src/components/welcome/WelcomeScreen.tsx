@@ -27,12 +27,12 @@ const WelcomeScreen: React.FC = () => {
             pets
           </span>
           <h1 className="text-welcome-text-light dark:text-welcome-text-dark tracking-tight text-6xl font-extrabold leading-tight">
-            Paseo
+            Petflik
           </h1>
         </div>
         {/* Tagline */}
         <p className={`text-welcome-text-light dark:text-welcome-text-dark text-lg font-normal leading-normal transition-all duration-1000 delay-500 ${fadeIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2.5'}`}>
-          Trusted sitters, happy pups.
+          Trusted Sitters for happy pets.
         </p>
       </div>
 

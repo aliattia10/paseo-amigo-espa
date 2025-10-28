@@ -34,7 +34,7 @@ const RoleSelectionPage: React.FC = () => {
 
       {/* HeadlineText */}
       <h1 className="text-role-text-light dark:text-role-text-dark tracking-tight text-[32px] font-bold leading-tight px-4 text-center pb-3 pt-6">
-        Join Paseo. Are you a...
+        Join Petflik. Are you a...
       </h1>
 
       {/* ButtonGroup */}
@@ -85,7 +85,7 @@ const RoleSelectionPage: React.FC = () => {
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-xl">pets</span>
           </div>
-          <span className="font-bold text-lg">Paseo</span>
+          <span className="font-bold text-lg">Petflik</span>
         </div>
       </footer>
     </div>
