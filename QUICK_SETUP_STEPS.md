@@ -2,14 +2,13 @@
 
 ## 🚀 Fast Track (5 Minutes)
 
-### Step 1: Run Migration (2 min)
+### Step 1: Run Main Migration (2 min)
 1. Go to https://supabase.com/dashboard
 2. Select your project
 3. Click **SQL Editor** → **New query**
-4. Copy ALL content from `database/sprint_enhanced_profiles_availability_booking.sql`
+4. Copy ALL content from `database/clean_migration.sql`
 5. Paste and click **Run**
-
-**Note:** If you get an error about "btree_gist", the script will automatically enable it. Just run it again.
+6. Wait for "✅ Migration completed successfully!" message
 
 ### Step 2: Set Up Storage (1 min)
 1. Go to **Storage** in sidebar
@@ -18,7 +17,12 @@
 4. Inside bucket, create folders: `profiles/` and `dogs/`
 
 ### Step 3: Enable RLS Policies (2 min)
-Copy and run this in SQL Editor:
+1. In SQL Editor, click **New query**
+2. Copy ALL content from `database/setup_rls_policies.sql`
+3. Paste and click **Run**
+4. Wait for "✅ RLS Policies configured successfully!" message
+
+**Alternative:** Copy and run this in SQL Editor:
 
 ```sql
 -- Users Table
