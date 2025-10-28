@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 
 interface Notification {
@@ -17,9 +19,111 @@ interface Notification {
 const NotificationsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
   const [filter, setFilter] = useState<'all' | 'messages' | 'bookings'>('all');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
 
-  const notifications: Notification[] = [
+  useEffect(() => {
+    fetchNotifications();
+  }, [currentUser]);
+
+  const fetchNotifications = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        // If table doesn't exist, show sample data
+        if (error.message.includes('does not exist')) {
+          setNotifications(sampleNotifications);
+          setLoading(false);
+          return;
+        }
+        throw error;
+      }
+
+      const formattedNotifications = data?.map((notif: any) => ({
+        id: notif.id,
+        type: notif.type,
+        title: notif.title,
+        description: notif.message,
+        time: new Date(notif.created_at).toLocaleDateString(),
+        isRead: notif.is_read || false,
+        icon: getIconForType(notif.type),
+        iconColor: getIconColorForType(notif.type)
+      })) || [];
+
+      setNotifications(formattedNotifications);
+    } catch (error: any) {
+      console.error('Error fetching notifications:', error);
+      setNotifications(sampleNotifications);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getIconForType = (type: string) => {
+    switch (type) {
+      case 'booking_request': return 'calendar_add_on';
+      case 'booking_status_update': return 'task_alt';
+      case 'message': return 'chat_bubble';
+      case 'review': return 'star';
+      default: return 'notifications';
+    }
+  };
+
+  const getIconColorForType = (type: string) => {
+    switch (type) {
+      case 'booking_request': return 'text-primary';
+      case 'booking_status_update': return 'text-green-500';
+      case 'message': return 'text-blue-500';
+      case 'review': return 'text-secondary';
+      default: return 'text-gray-500';
+    }
+  };
+
+  const markAllAsRead = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', currentUser.id)
+        .eq('is_read', false);
+
+      if (error && !error.message.includes('does not exist')) {
+        throw error;
+      }
+
+      // Update local state
+      setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
+      setShowMenu(false);
+      
+      toast({
+        title: t('common.success'),
+        description: 'All notifications marked as read',
+      });
+    } catch (error: any) {
+      toast({
+        title: t('common.error'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const sampleNotifications: Notification[] = [
     {
       id: '1',
       type: 'booking',
@@ -89,9 +193,26 @@ const NotificationsPage: React.FC = () => {
         <h1 className="text-text-primary-light dark:text-text-primary-dark text-xl font-bold leading-tight tracking-[-0.015em]">
           Notifications
         </h1>
-        <button className="text-text-primary-light dark:text-text-primary-dark flex h-10 w-10 items-center justify-center">
-          <span className="material-symbols-outlined">more_vert</span>
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setShowMenu(!showMenu)}
+            className="text-text-primary-light dark:text-text-primary-dark flex h-10 w-10 items-center justify-center"
+          >
+            <span className="material-symbols-outlined">more_vert</span>
+          </button>
+          
+          {showMenu && (
+            <div className="absolute right-0 top-12 bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark min-w-[160px] z-20">
+              <button
+                onClick={markAllAsRead}
+                className="w-full px-4 py-3 text-left text-text-primary-light dark:text-text-primary-dark hover:bg-background-light dark:hover:bg-background-dark rounded-lg flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-base">done_all</span>
+                Mark all as read
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Segmented Buttons */}
