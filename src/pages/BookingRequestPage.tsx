@@ -25,7 +25,7 @@ const BookingRequestPage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [dogs, setDogs] = useState<Array<{ id: string; name: string; image_url?: string }>>([]);
+  const [dogs, setDogs] = useState<Array<{ id: string; name: string; image_url?: string; pet_type?: 'dog' | 'cat' }>>([]);
 
   // Fetch user's dogs
   React.useEffect(() => {
@@ -35,14 +35,14 @@ const BookingRequestPage: React.FC = () => {
       try {
         const { supabase } = await import('@/integrations/supabase/client');
         const { data, error } = await supabase
-          .from('dogs')
-          .select('id, name, image_url')
+          .from('pets')
+          .select('id, name, image_url, pet_type')
           .eq('owner_id', currentUser?.id);
         
         if (error) {
           // If table doesn't exist, show empty state
           if (error.message.includes('does not exist') || error.message.includes('not find')) {
-            console.warn('Dogs table not found. Please run database migrations.');
+            console.warn('Pets table not found. Please run database migrations.');
             setDogs([]);
             return;
           }
@@ -58,7 +58,7 @@ const BookingRequestPage: React.FC = () => {
         console.error('Error fetching dogs:', error);
         toast({
           title: t('common.error'),
-          description: 'Failed to load your dogs',
+          description: 'Failed to load your pets',
           variant: 'destructive',
         });
       }
@@ -172,22 +172,22 @@ const BookingRequestPage: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 p-4 space-y-4 pb-8">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Dog Selection */}
+          {/* Pet Selection */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Select Dog <span className="text-red-500">*</span>
+              Select Pet <span className="text-red-500">*</span>
             </label>
             {dogs.length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm mb-3">
-                  You need to add a dog profile first
+                  You need to add a pet profile first
                 </p>
                 <Button
                   type="button"
                   onClick={() => navigate('/dog-profile-setup')}
                   variant="outline"
                 >
-                  Add Dog Profile
+                  Add Pet Profile
                 </Button>
               </div>
             ) : (
@@ -211,7 +211,9 @@ const BookingRequestPage: React.FC = () => {
                           : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                       }}
                     />
-                    <span className="font-medium">{dog.name}</span>
+                    <span className="font-medium">
+                      {dog.pet_type === 'cat' ? '🐱' : '🐶'} {dog.name}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -279,7 +281,7 @@ const BookingRequestPage: React.FC = () => {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full min-h-[100px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
-              placeholder="Any special instructions for the walker..."
+              placeholder="Any special instructions for the sitter..."
             />
           </div>
 

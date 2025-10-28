@@ -167,7 +167,7 @@ const SitterProfileSetup: React.FC = () => {
       <main className="flex-1 p-4 space-y-4">
         <div className="text-center py-4">
           <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
-            Tell dog owners about yourself and set your rate to start getting bookings!
+            Tell pet owners about yourself and set your rate to start getting bookings!
           </p>
         </div>
 
@@ -219,7 +219,7 @@ const SitterProfileSetup: React.FC = () => {
               value={sitterData.bio}
               onChange={(e) => setSitterData({ ...sitterData, bio: e.target.value })}
               className="w-full min-h-[120px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
-              placeholder="Tell dog owners about yourself, your experience with dogs, and why you'd be a great sitter..."
+              placeholder="Tell pet owners about yourself, your experience with pets, and why you'd be a great sitter..."
               required
               maxLength={500}
             />
@@ -257,7 +257,7 @@ const SitterProfileSetup: React.FC = () => {
               Your Experience (Select all that apply)
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {['Large Dogs', 'Small Dogs', 'Puppies', 'Senior Dogs', 'Basic Training', 'High Energy', 'Special Needs', 'Multiple Dogs'].map((exp) => (
+              {['Large Dogs', 'Small Dogs', 'Puppies', 'Senior Dogs', 'Cats', 'Kittens', 'Basic Training', 'High Energy', 'Special Needs', 'Multiple Pets'].map((exp) => (
                 <button
                   key={exp}
                   type="button"
