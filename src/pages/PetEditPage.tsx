@@ -68,7 +68,7 @@ const PetEditPage: React.FC = () => {
       } else {
         setPetData({
           name: data.name || '',
-          petType: data.pet_type || 'dog',
+          petType: (data.pet_type as 'cat' | 'dog') || 'dog',
           age: data.age || '',
           breed: data.breed || '',
           notes: data.notes || '',

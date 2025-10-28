@@ -260,9 +260,9 @@ const NewHomePage: React.FC = () => {
       const { supabase } = await import('@/integrations/supabase/client');
       
       // Call the match function
-      const { data: isMatch, error } = await supabase.rpc('check_and_create_match', {
-        p_liker_id: currentUser.id,
-        p_liked_id: profile.id
+      const { data: isMatch, error } = await (supabase.rpc as any)('check_and_create_match', {
+        liker_user_id: currentUser.id,
+        liked_user_id: profile.id
       });
       
       if (error && !error.message.includes('does not exist')) {

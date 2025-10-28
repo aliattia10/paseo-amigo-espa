@@ -347,11 +347,6 @@ const HomePage: React.FC = () => {
                   {currentUser.userType === 'walker' && currentUser.hourlyRate && (
                     <span className="text-lg font-normal ml-2">€{currentUser.hourlyRate}/h</span>
                   )}
-                  {currentUser.petType && (
-                    <span className="text-2xl ml-2">
-                      {currentUser.petType === 'cat' ? '🐱' : '🐕'}
-                    </span>
-                  )}
                 </p>
                 <div className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-yellow-400" style={{ fontVariationSettings: '"FILL" 1' }}>star</span>

@@ -63,7 +63,10 @@ const AvailabilityPage: React.FC = () => {
         }
         throw error;
       }
-      setSlots(data || []);
+      setSlots((data || []).map(slot => ({
+        ...slot,
+        status: (slot.status as 'available' | 'booked' | 'unavailable') || 'available'
+      })));
     } catch (error: any) {
       toast({
         title: t('common.error'),

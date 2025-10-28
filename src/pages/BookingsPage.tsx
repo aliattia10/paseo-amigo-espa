@@ -115,8 +115,8 @@ const BookingsPage: React.FC = () => {
 
   const filteredBookings = bookings.filter(booking => {
     if (filter === 'all') return true;
-    if (filter === 'pending') return booking.status === 'requested';
-    if (filter === 'accepted') return booking.status === 'confirmed';
+    if (filter === 'pending') return (booking.status as string) === 'requested';
+    if (filter === 'accepted') return (booking.status as string) === 'confirmed';
     return booking.status === filter;
   });
   
@@ -154,7 +154,7 @@ const BookingsPage: React.FC = () => {
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">calendar_today</span><span>{new Date(booking.booking_date).toLocaleDateString()}</span></div>
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">schedule</span><span>{booking.start_time} • {booking.duration_hours}h</span></div>
             </div>
-            {booking.status === 'requested' && <div className="flex gap-2 pt-2"><Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">Accept</Button><Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">Decline</Button></div>}
+            {(booking.status as string) === 'requested' && <div className="flex gap-2 pt-2"><Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">Accept</Button><Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">Decline</Button></div>}
           </div>
         ))}
       </main>

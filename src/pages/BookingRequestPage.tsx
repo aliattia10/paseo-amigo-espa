@@ -48,7 +48,10 @@ const BookingRequestPage: React.FC = () => {
           }
           throw error;
         }
-        setDogs(data || []);
+        setDogs((data || []).map(dog => ({
+          ...dog,
+          pet_type: (dog.pet_type as 'cat' | 'dog') || 'dog'
+        })));
         
         // Auto-select first dog if only one
         if (data && data.length === 1) {

@@ -139,7 +139,10 @@ const NewProfilePage: React.FC = () => {
             }
           }
         } else {
-          setPets(data || []);
+          setPets((data || []).map(pet => ({
+            ...pet,
+            pet_type: (pet.pet_type as 'cat' | 'dog') || 'dog'
+          })));
         }
       } catch (error) {
         console.error('Error fetching pets:', error);

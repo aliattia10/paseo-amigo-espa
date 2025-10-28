@@ -75,16 +75,16 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!currentUser) return;
 
     try {
-      // Use raw SQL to update location fields that may not be in TypeScript types yet
-      const { error } = await supabase.rpc('update_user_location', {
+      // Use RPC function to update location
+      const { error } = await (supabase.rpc as any)('update_user_location', {
         user_id: currentUser.id,
         lat: lat,
         lon: lon,
       });
 
       if (error) {
-        // Fallback to direct update if function doesn't exist
-        console.warn('RPC function not found, using direct update');
+        console.error('Error updating location via RPC:', error);
+        // Fallback to direct update
         const { error: updateError } = await supabase
           .from('users')
           .update({

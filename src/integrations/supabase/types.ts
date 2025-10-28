@@ -14,9 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
+      availability: {
+        Row: {
+          created_at: string | null
+          end_time: string
+          id: string
+          sitter_id: string
+          start_time: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time: string
+          id?: string
+          sitter_id: string
+          start_time: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          sitter_id?: string
+          start_time?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_sitter_id_fkey"
+            columns: ["sitter_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          cancellation_reason: string | null
+          commission_fee: number
+          created_at: string | null
+          dog_id: string
+          end_time: string
+          id: string
+          location: string | null
+          notes: string | null
+          owner_id: string
+          pet_id: string | null
+          service_type: string
+          sitter_id: string
+          start_time: string
+          status: string
+          total_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          commission_fee: number
+          created_at?: string | null
+          dog_id: string
+          end_time: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          owner_id: string
+          pet_id?: string | null
+          service_type?: string
+          sitter_id: string
+          start_time: string
+          status?: string
+          total_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          commission_fee?: number
+          created_at?: string | null
+          dog_id?: string
+          end_time?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          owner_id?: string
+          pet_id?: string | null
+          service_type?: string
+          sitter_id?: string
+          start_time?: string
+          status?: string
+          total_price?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_sitter_id_fkey"
+            columns: ["sitter_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           id: string
+          media_thumbnail_url: string | null
+          media_type: string | null
+          media_url: string | null
           message: string
           request_id: string
           sender_id: string
@@ -24,6 +151,9 @@ export type Database = {
         }
         Insert: {
           id?: string
+          media_thumbnail_url?: string | null
+          media_type?: string | null
+          media_url?: string | null
           message: string
           request_id: string
           sender_id: string
@@ -31,6 +161,9 @@ export type Database = {
         }
         Update: {
           id?: string
+          media_thumbnail_url?: string | null
+          media_type?: string | null
+          media_url?: string | null
           message?: string
           request_id?: string
           sender_id?: string
@@ -53,38 +186,145 @@ export type Database = {
           },
         ]
       }
+      discount_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          percentage: number
+          sitter_id: string
+          updated_at: string | null
+          usage_count: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          percentage: number
+          sitter_id: string
+          updated_at?: string | null
+          usage_count?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          percentage?: number
+          sitter_id?: string
+          updated_at?: string | null
+          usage_count?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_codes_sitter_id_fkey"
+            columns: ["sitter_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discount_usage: {
+        Row: {
+          booking_id: string | null
+          discount_amount: number | null
+          discount_code_id: string
+          id: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          discount_amount?: number | null
+          discount_code_id: string
+          id?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          discount_amount?: number | null
+          discount_code_id?: string
+          id?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_usage_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discount_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dogs: {
         Row: {
           age: string | null
           breed: string | null
           created_at: string | null
+          energy_level: string | null
           id: string
           image_url: string | null
           name: string
           notes: string
           owner_id: string
+          pet_type: string | null
+          special_needs: string | null
+          temperament: string[] | null
           updated_at: string | null
         }
         Insert: {
           age?: string | null
           breed?: string | null
           created_at?: string | null
+          energy_level?: string | null
           id?: string
           image_url?: string | null
           name: string
           notes: string
           owner_id: string
+          pet_type?: string | null
+          special_needs?: string | null
+          temperament?: string[] | null
           updated_at?: string | null
         }
         Update: {
           age?: string | null
           breed?: string | null
           created_at?: string | null
+          energy_level?: string | null
           id?: string
           image_url?: string | null
           name?: string
           notes?: string
           owner_id?: string
+          pet_type?: string | null
+          special_needs?: string | null
+          temperament?: string[] | null
           updated_at?: string | null
         }
         Relationships: [
@@ -129,10 +369,86 @@ export type Database = {
           },
         ]
       }
+      likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          liked_id: string
+          liker_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          liked_id: string
+          liker_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          liked_id?: string
+          liker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "likes_liked_id_fkey"
+            columns: ["liked_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "likes_liker_id_fkey"
+            columns: ["liker_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          created_at: string | null
+          id: string
+          matched_at: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          matched_at?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          matched_at?: string | null
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string | null
           id: string
+          is_read: boolean | null
           message: string
           read: boolean | null
           title: string
@@ -142,6 +458,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          is_read?: boolean | null
           message: string
           read?: boolean | null
           title: string
@@ -151,6 +468,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          is_read?: boolean | null
           message?: string
           read?: boolean | null
           title?: string
@@ -208,6 +526,62 @@ export type Database = {
           {
             foreignKeyName: "payment_methods_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pets: {
+        Row: {
+          age: string
+          breed: string | null
+          created_at: string | null
+          energy_level: string | null
+          id: string
+          image_url: string | null
+          name: string
+          notes: string | null
+          owner_id: string
+          pet_type: string
+          special_needs: string | null
+          temperament: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          age: string
+          breed?: string | null
+          created_at?: string | null
+          energy_level?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          notes?: string | null
+          owner_id: string
+          pet_type?: string
+          special_needs?: string | null
+          temperament?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          age?: string
+          breed?: string | null
+          created_at?: string | null
+          energy_level?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          pet_type?: string
+          special_needs?: string | null
+          temperament?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pets_owner_id_fkey"
+            columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -409,11 +783,23 @@ export type Database = {
       }
       users: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           city: string
           created_at: string | null
           email: string
+          filter_preferences: Json | null
+          hourly_rate: number | null
           id: string
+          latitude: number | null
+          location_enabled: boolean | null
+          location_updated_at: string | null
+          longitude: number | null
+          max_distance_km: number | null
+          max_hourly_rate: number | null
+          min_rating: number | null
           name: string
+          pet_preferences: Json | null
           phone: string
           postal_code: string
           profile_image: string | null
@@ -421,11 +807,23 @@ export type Database = {
           user_type: string
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           city: string
           created_at?: string | null
           email: string
+          filter_preferences?: Json | null
+          hourly_rate?: number | null
           id?: string
+          latitude?: number | null
+          location_enabled?: boolean | null
+          location_updated_at?: string | null
+          longitude?: number | null
+          max_distance_km?: number | null
+          max_hourly_rate?: number | null
+          min_rating?: number | null
           name: string
+          pet_preferences?: Json | null
           phone: string
           postal_code: string
           profile_image?: string | null
@@ -433,11 +831,23 @@ export type Database = {
           user_type: string
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           city?: string
           created_at?: string | null
           email?: string
+          filter_preferences?: Json | null
+          hourly_rate?: number | null
           id?: string
+          latitude?: number | null
+          location_enabled?: boolean | null
+          location_updated_at?: string | null
+          longitude?: number | null
+          max_distance_km?: number | null
+          max_hourly_rate?: number | null
+          min_rating?: number | null
           name?: string
+          pet_preferences?: Json | null
           phone?: string
           postal_code?: string
           profile_image?: string | null
@@ -565,6 +975,8 @@ export type Database = {
           availability: string[]
           bio: string
           created_at: string | null
+          discount_code: string | null
+          discount_percentage: number | null
           experience: string
           hourly_rate: number
           id: string
@@ -579,6 +991,8 @@ export type Database = {
           availability?: string[]
           bio: string
           created_at?: string | null
+          discount_code?: string | null
+          discount_percentage?: number | null
           experience: string
           hourly_rate: number
           id?: string
@@ -593,6 +1007,8 @@ export type Database = {
           availability?: string[]
           bio?: string
           created_at?: string | null
+          discount_code?: string | null
+          discount_percentage?: number | null
           experience?: string
           hourly_rate?: number
           id?: string
@@ -618,7 +1034,118 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_availability_slot: {
+        Args: { p_end_time: string; p_sitter_id: string; p_start_time: string }
+        Returns: string
+      }
+      apply_discount_code: {
+        Args: {
+          p_booking_id?: string
+          p_code: string
+          p_discount_amount?: number
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      calculate_distance: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
+      check_and_create_match: {
+        Args: { liked_user_id: string; liker_user_id: string }
+        Returns: boolean
+      }
+      create_booking: {
+        Args: {
+          p_dog_id: string
+          p_end_time: string
+          p_location: string
+          p_notes: string
+          p_owner_id: string
+          p_service_type: string
+          p_sitter_id: string
+          p_start_time: string
+          p_total_price: number
+        }
+        Returns: string
+      }
+      create_sitter_discount: {
+        Args: {
+          p_description?: string
+          p_max_uses?: number
+          p_percentage: number
+          p_sitter_id: string
+          p_sitter_name: string
+          p_valid_until?: string
+        }
+        Returns: {
+          code: string
+          message: string
+          percentage: number
+          success: boolean
+        }[]
+      }
+      generate_discount_code: { Args: { sitter_name: string }; Returns: string }
+      get_filtered_profiles: {
+        Args: {
+          p_global_mode?: boolean
+          p_max_distance_km?: number
+          p_max_hourly_rate?: number
+          p_min_rating?: number
+          p_pet_type?: string
+          p_sort_by?: string
+          p_user_id: string
+          p_user_lat?: number
+          p_user_lon?: number
+          p_user_type: string
+        }
+        Returns: {
+          bio: string
+          discount_code: string
+          discount_percentage: number
+          distance_km: number
+          hourly_rate: number
+          id: string
+          name: string
+          pet_types: string[]
+          profile_image: string
+          rating: number
+          user_type: string
+        }[]
+      }
+      get_nearby_users: {
+        Args: {
+          max_distance_km?: number
+          user_lat: number
+          user_lon: number
+          user_type_filter?: string
+        }
+        Returns: {
+          distance_km: number
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          user_type: string
+        }[]
+      }
+      update_booking_status: {
+        Args: { p_booking_id: string; p_new_status: string }
+        Returns: undefined
+      }
+      update_user_location: {
+        Args: { lat: number; lon: number; user_id: string }
+        Returns: undefined
+      }
+      validate_discount_code: {
+        Args: { p_code: string; p_user_id: string }
+        Returns: {
+          message: string
+          percentage: number
+          sitter_id: string
+          valid: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
