@@ -76,6 +76,8 @@ const AvailabilityPage: React.FC = () => {
   };
 
   const handleAddSlot = async () => {
+    if (!currentUser) return;
+    
     try {
       const startDateTime = new Date(`${selectedDate}T${newSlot.startTime}`);
       const endDateTime = new Date(`${selectedDate}T${newSlot.endTime}`);
@@ -89,13 +91,30 @@ const AvailabilityPage: React.FC = () => {
         return;
       }
 
-      const { error } = await supabase.rpc('add_availability_slot', {
+      // Try RPC function first, fallback to direct insert
+      let insertError = null;
+      const { error: rpcError } = await supabase.rpc('add_availability_slot', {
         p_sitter_id: currentUser?.id,
         p_start_time: startDateTime.toISOString(),
         p_end_time: endDateTime.toISOString(),
       });
 
-      if (error) throw error;
+      // If RPC doesn't exist, use direct insert
+      if (rpcError && (rpcError.message.includes('does not exist') || rpcError.message.includes('not find'))) {
+        const { error: directError } = await supabase
+          .from('availability')
+          .insert({
+            sitter_id: currentUser.id,
+            start_time: startDateTime.toISOString(),
+            end_time: endDateTime.toISOString(),
+            status: 'available',
+          });
+        insertError = directError;
+      } else {
+        insertError = rpcError;
+      }
+
+      if (insertError) throw insertError;
 
       toast({
         title: t('common.success'),
