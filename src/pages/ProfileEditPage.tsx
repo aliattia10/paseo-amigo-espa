@@ -18,13 +18,30 @@ const ProfileEditPage: React.FC = () => {
     phone: userProfile?.phone || '',
     city: userProfile?.city || '',
     postalCode: userProfile?.postalCode || '',
-    bio: '',
-    profilePictureUrl: '',
+    bio: userProfile?.bio || '',
+    profilePictureUrl: userProfile?.profileImage || '',
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  // Update form data when userProfile changes
+  React.useEffect(() => {
+    if (userProfile) {
+      setFormData({
+        name: userProfile.name || '',
+        phone: userProfile.phone || '',
+        city: userProfile.city || '',
+        postalCode: userProfile.postalCode || '',
+        bio: userProfile.bio || '',
+        profilePictureUrl: userProfile.profileImage || '',
+      });
+    }
+  }, [userProfile]);
+
   const handleImageUpload = async (file: File) => {
+    console.log('=== IMAGE UPLOAD START ===');
+    console.log('File:', file.name, file.type, file.size);
+    
     if (!currentUser) {
       toast({
         title: 'Error',
@@ -50,14 +67,17 @@ const ProfileEditPage: React.FC = () => {
       
       const fileExt = file.name.split('.').pop();
       const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
+      console.log('Uploading to:', fileName);
 
       // Delete old image if exists
       if (formData.profilePictureUrl) {
         const oldPath = formData.profilePictureUrl.split('/').slice(-2).join('/');
+        console.log('Deleting old image:', oldPath);
         await supabase.storage.from('avatars').remove([oldPath]);
       }
 
       // Upload new image
+      console.log('Uploading file to storage...');
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, {
@@ -73,28 +93,40 @@ const ProfileEditPage: React.FC = () => {
         throw uploadError;
       }
 
+      console.log('File uploaded successfully');
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
+      
+      console.log('Public URL:', publicUrl);
 
       // Update the profile picture in the database immediately
-      const { error: updateError } = await supabase
+      console.log('Updating database with new image URL...');
+      const { data: updateData, error: updateError } = await supabase
         .from('users')
         .update({ 
           profile_image: publicUrl,
           updated_at: new Date().toISOString()
         })
-        .eq('id', currentUser.id);
+        .eq('id', currentUser.id)
+        .select();
 
       if (updateError) {
-        console.error('Profile update error:', updateError);
-        throw new Error('Failed to update profile picture in database');
+        console.error('Profile update error:', {
+          message: updateError.message,
+          details: updateError.details,
+          hint: updateError.hint
+        });
+        throw new Error(`Failed to update profile picture: ${updateError.message}`);
       }
 
+      console.log('Database updated:', updateData);
       setFormData({ ...formData, profilePictureUrl: publicUrl });
       
       // Refresh the user profile in auth context
+      console.log('Refreshing user profile...');
       await refreshUserProfile();
+      console.log('Profile refreshed');
       
       toast({
         title: 'Success!',
@@ -109,6 +141,7 @@ const ProfileEditPage: React.FC = () => {
       });
     } finally {
       setUploadingImage(false);
+      console.log('=== IMAGE UPLOAD END ===');
     }
   };
 
@@ -121,6 +154,10 @@ const ProfileEditPage: React.FC = () => {
   };
 
   const handleSave = async () => {
+    console.log('=== SAVE PROFILE START ===');
+    console.log('Current user:', currentUser?.id);
+    console.log('Form data:', formData);
+    
     if (!currentUser) {
       toast({
         title: 'Error',
@@ -152,11 +189,17 @@ const ProfileEditPage: React.FC = () => {
         updated_at: new Date().toISOString(),
       };
 
+      // Add bio if it exists
+      if (formData.bio) {
+        updateData.bio = formData.bio.trim();
+      }
+
       if (formData.profilePictureUrl) {
         updateData.profile_image = formData.profilePictureUrl;
       }
 
       console.log('Updating profile with data:', updateData);
+      console.log('User ID:', currentUser.id);
 
       const { data, error } = await supabase
         .from('users')
@@ -165,21 +208,29 @@ const ProfileEditPage: React.FC = () => {
         .select();
 
       if (error) {
-        console.error('Update error:', error);
+        console.error('Update error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        
         // If table doesn't exist, provide helpful message
         if (error.message.includes('does not exist') || error.message.includes('not find')) {
           throw new Error('Database not set up. Please run: database/fix_profile_storage.sql');
         }
-        if (error.message.includes('permission')) {
-          throw new Error('Permission denied. Please check database RLS policies.');
+        if (error.message.includes('permission') || error.message.includes('denied')) {
+          throw new Error('Permission denied. You may not have access to update this profile.');
         }
-        throw error;
+        throw new Error(error.message);
       }
 
       console.log('Profile updated successfully:', data);
 
       // Refresh the user profile in auth context
+      console.log('Refreshing user profile...');
       await refreshUserProfile();
+      console.log('User profile refreshed');
 
       toast({
         title: '✓ Saved!',
@@ -188,6 +239,7 @@ const ProfileEditPage: React.FC = () => {
 
       // Navigate back without reload
       setTimeout(() => {
+        console.log('Navigating back to profile...');
         navigate('/profile');
       }, 500);
     } catch (error: any) {
@@ -199,6 +251,7 @@ const ProfileEditPage: React.FC = () => {
       });
     } finally {
       setLoading(false);
+      console.log('=== SAVE PROFILE END ===');
     }
   };
 
