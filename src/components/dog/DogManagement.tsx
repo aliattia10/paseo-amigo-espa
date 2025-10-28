@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from '@/contexts/AuthContext';
-import { getDogsByOwner, createDog, updateDog } from '@/lib/supabase-services';
+import { getDogsByOwner, createDog, updateDog, uploadImage } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Camera, Save, X, Dog } from 'lucide-react';
+import { Plus, Edit, Trash2, Camera, Save, X, Dog as DogIcon } from 'lucide-react';
 import type { Dog } from '@/types';
 
 const DogManagement: React.FC = () => {
@@ -19,6 +19,8 @@ const DogManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingDog, setEditingDog] = useState<Dog | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -55,8 +57,15 @@ const DogManagement: React.FC = () => {
     if (!userProfile) return;
 
     try {
+      let imageUrl = formData.imageUrl;
+
+      // Upload new image if selected
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile, userProfile.id, 'dogs');
+      }
+
       if (editingDog) {
-        await updateDog(editingDog.id, formData);
+        await updateDog(editingDog.id, { ...formData, imageUrl });
         toast({
           title: "Perro actualizado",
           description: "Los datos del perro se han actualizado correctamente.",
@@ -65,6 +74,7 @@ const DogManagement: React.FC = () => {
         await createDog({
           ...formData,
           ownerId: userProfile.id,
+          imageUrl,
         });
         toast({
           title: "Perro añadido",
@@ -74,6 +84,8 @@ const DogManagement: React.FC = () => {
 
       setShowForm(false);
       setEditingDog(null);
+      setImageFile(null);
+      setImagePreview(null);
       setFormData({ name: '', age: '', breed: '', notes: '', imageUrl: '' });
       loadDogs();
     } catch (error) {
@@ -95,23 +107,29 @@ const DogManagement: React.FC = () => {
       notes: dog.notes,
       imageUrl: dog.imageUrl || ''
     });
+    setImagePreview(dog.imageUrl || null);
+    setImageFile(null);
     setShowForm(true);
   };
 
   const handleCancel = () => {
     setShowForm(false);
     setEditingDog(null);
+    setImageFile(null);
+    setImagePreview(null);
     setFormData({ name: '', age: '', breed: '', notes: '', imageUrl: '' });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // In a real app, you would upload to Supabase Storage here
-    // For now, we'll just create a local URL
-    const imageUrl = URL.createObjectURL(file);
-    setFormData(prev => ({ ...prev, imageUrl }));
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   if (loading) {
@@ -131,9 +149,9 @@ const DogManagement: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-text">Mis Perros</h1>
+            <h1 className="text-3xl font-bold text-neutral-text">Mis Mascotas</h1>
             <p className="text-muted-foreground">
-              Gestiona los perfiles de tus perros
+              Gestiona los perfiles de tus mascotas
             </p>
           </div>
           <Button 
@@ -141,7 +159,7 @@ const DogManagement: React.FC = () => {
             className="bg-terracotta hover:bg-terracotta/90"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Añadir Perro
+            Añadir Mascota
           </Button>
         </div>
 
@@ -150,7 +168,7 @@ const DogManagement: React.FC = () => {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>
-                {editingDog ? 'Editar Perro' : 'Añadir Nuevo Perro'}
+                {editingDog ? 'Editar Mascota' : 'Añadir Nueva Mascota'}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -162,7 +180,7 @@ const DogManagement: React.FC = () => {
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Nombre del perro"
+                      placeholder="Nombre de la mascota"
                       required
                     />
                   </div>
@@ -201,34 +219,30 @@ const DogManagement: React.FC = () => {
 
                 <div>
                   <Label htmlFor="image">Foto del perro</Label>
-                  <div className="flex items-center gap-4">
+                  <div className="space-y-4">
                     <Input
                       id="image"
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
-                      className="flex-1"
+                      className="cursor-pointer"
                     />
-                    <Button type="button" variant="outline" size="sm">
-                      <Camera className="w-4 h-4 mr-2" />
-                      Subir
-                    </Button>
+                    {imagePreview && (
+                      <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
-                  {formData.imageUrl && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.imageUrl} 
-                        alt="Preview" 
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex gap-2">
                   <Button type="submit" className="bg-terracotta hover:bg-terracotta/90">
                     <Save className="w-4 h-4 mr-2" />
-                    {editingDog ? 'Actualizar' : 'Añadir Perro'}
+                    {editingDog ? 'Actualizar' : 'Añadir Mascota'}
                   </Button>
                   <Button type="button" variant="outline" onClick={handleCancel}>
                     <X className="w-4 h-4 mr-2" />
@@ -245,18 +259,18 @@ const DogManagement: React.FC = () => {
           <Card>
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-terracotta rounded-full flex items-center justify-center mx-auto mb-4">
-                <Dog className="w-8 h-8 text-white" />
+                <DogIcon className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No tienes perros registrados</h3>
+              <h3 className="text-xl font-semibold mb-2">No tienes mascotas registradas</h3>
               <p className="text-muted-foreground mb-4">
-                Añade tu primer perro para empezar a buscar paseadores.
+                Añade tu primera mascota para empezar a buscar cuidadores.
               </p>
               <Button 
                 onClick={() => setShowForm(true)}
                 className="bg-terracotta hover:bg-terracotta/90"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Añadir mi primer perro
+                Añadir mi primera mascota
               </Button>
             </CardContent>
           </Card>
@@ -283,7 +297,14 @@ const DogManagement: React.FC = () => {
                 </div>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-semibold">{dog.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold">{dog.name}</h3>
+                      {dog.petType && (
+                        <span className="text-xl">
+                          {dog.petType === 'cat' ? '🐱' : '🐕'}
+                        </span>
+                      )}
+                    </div>
                     <Badge variant="secondary">Activo</Badge>
                   </div>
                   <div className="space-y-1 text-sm text-muted-foreground mb-3">

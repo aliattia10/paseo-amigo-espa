@@ -166,7 +166,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
           {!showResetForm && (
             <div className="text-center">
               <button
-                onClick={() => setShowResetForm(true)}
+                onClick={() => window.location.href = '/forgot-password'}
                 className="text-sm text-primary hover:underline"
               >
                 {t('auth.forgotPassword')}

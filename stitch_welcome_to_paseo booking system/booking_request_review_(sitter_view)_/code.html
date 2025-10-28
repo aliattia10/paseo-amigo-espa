@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>New Booking Request</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#4CAF50",
+              "secondary": "#2196F3",
+              "destructive": "#F44336",
+              "background-light": "#f6f8f7",
+              "background-dark": "#112117",
+              "text-light-primary": "#1f2923",
+              "text-light-secondary": "#6b7280",
+              "text-dark-primary": "#e5e7eb",
+              "text-dark-secondary": "#9ca3af",
+              "border-light": "#e5e7eb",
+              "border-dark": "#374151"
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between bg-background-light dark:bg-background-dark sticky top-0 z-10 border-b border-border-light dark:border-border-dark">
+<div class="text-text-light-primary dark:text-dark-primary flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h1 class="text-text-light-primary dark:text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">New Booking Request</h1>
+</div>
+<main class="flex-grow px-4 pt-6 pb-40">
+<!-- Profile Header -->
+<div class="flex flex-col gap-4">
+<div class="flex w-full flex-col gap-4 @container sm:flex-row sm:items-center sm:justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-24 w-24 min-w-[96px]" data-alt="A photo of a happy Golden Retriever named Max." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA8MNkj0VOUu55lOXfHGFYE9PkLQ5ePLB_zDD2ezk5AXrPTDel18POH0k-oabk4SY3ajmJS55Zu7XZzOjKa7LQdV-0VOiUC6oQgdBoAI3AV9r02L6gw9m4Z-7RBjv1H0z8Tta-9lqcBIjwyKBtingZfmY-D1E1SV06uR4q6lke41WqBJVmkJpktJY7W9VeRhdGZEyL55ycrIddkmDqVzfPBaihE2BBP0CweBnBW8lx7gep7MJf7907-K1Qu6-sTqSxdXR_a-ZZlGS0");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-text-light-primary dark:text-dark-primary text-[22px] font-bold leading-tight tracking-[-0.015em]">Max</p>
+<p class="text-text-light-secondary dark:text-dark-secondary text-base font-normal leading-normal">Golden Retriever, 3 years old</p>
+</div>
+</div>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-primary/20 text-primary text-sm font-bold leading-normal tracking-[0.015em] w-full max-w-[480px] sm:w-auto">
+<span class="truncate">View Full Profile</span>
+</button>
+</div>
+</div>
+<!-- Booking Details Section -->
+<div class="mt-8">
+<h2 class="text-text-light-primary dark:text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em] pb-2">Booking Details</h2>
+<div class="flex flex-col gap-1 rounded-xl bg-white dark:bg-background-dark dark:border dark:border-border-dark shadow-sm overflow-hidden">
+<!-- Service Item -->
+<div class="flex items-center gap-4 p-4 min-h-[72px] justify-between">
+<div class="flex items-center gap-4">
+<div class="text-text-light-primary dark:text-dark-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
+<span class="material-symbols-outlined">footprint</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-normal leading-normal line-clamp-1">Service</p>
+<p class="text-text-light-primary dark:text-dark-primary text-base font-medium leading-normal line-clamp-2">30-Minute Dog Walk</p>
+</div>
+</div>
+</div>
+<!-- Date & Time Item -->
+<div class="flex items-center gap-4 p-4 min-h-[72px] justify-between border-t border-border-light dark:border-border-dark">
+<div class="flex items-center gap-4">
+<div class="text-text-light-primary dark:text-dark-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
+<span class="material-symbols-outlined">calendar_month</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-normal leading-normal line-clamp-1">When</p>
+<p class="text-text-light-primary dark:text-dark-primary text-base font-medium leading-normal line-clamp-2">Saturday, Oct 26, 2024<br/>2:00 PM - 2:30 PM</p>
+</div>
+</div>
+</div>
+<!-- Location Item -->
+<div class="flex items-center gap-4 p-4 min-h-[72px] justify-between border-t border-border-light dark:border-border-dark">
+<div class="flex items-center gap-4">
+<div class="text-text-light-primary dark:text-dark-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-normal leading-normal line-clamp-1">Where</p>
+<p class="text-text-light-primary dark:text-dark-primary text-base font-medium leading-normal line-clamp-2">123 Maple Street, Anytown</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Payout & Pricing Section -->
+<div class="mt-8">
+<h2 class="text-text-light-primary dark:text-dark-primary text-lg font-bold leading-tight tracking-[-0.015em] pb-2">Payment Details</h2>
+<div class="flex flex-col gap-4 rounded-xl bg-white dark:bg-background-dark dark:border dark:border-border-dark shadow-sm p-6">
+<div class="flex justify-between items-baseline">
+<p class="text-text-light-primary dark:text-dark-primary text-lg font-semibold">Your Payout</p>
+<p class="text-primary text-3xl font-bold">$25.00</p>
+</div>
+<div class="flex justify-between items-baseline border-t border-border-light dark:border-border-dark pt-4">
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm">Owner's Total Price</p>
+<p class="text-text-light-secondary dark:text-dark-secondary text-sm font-medium">$30.00</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Action Buttons Footer -->
+<footer class="fixed bottom-0 left-0 right-0 bg-background-light dark:bg-background-dark p-4 border-t border-border-light dark:border-border-dark z-20">
+<div class="flex items-center gap-4">
+<button class="flex-1 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-4 border border-destructive text-destructive text-base font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Decline</span>
+</button>
+<button class="flex-1 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-4 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Accept Booking</span>
+</button>
+</div>
+</footer>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-20 left-0 right-0 bg-transparent z-10 p-4">
+<div class="flex justify-around items-center h-16 bg-white/80 dark:bg-background-dark/80 backdrop-blur-lg rounded-full shadow-lg border border-border-light dark:border-border-dark mx-auto max-w-sm">
+<a class="flex flex-col items-center justify-center text-text-light-secondary dark:text-dark-secondary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-xs font-bold">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-light-secondary dark:text-dark-secondary" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-xs">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-light-secondary dark:text-dark-secondary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

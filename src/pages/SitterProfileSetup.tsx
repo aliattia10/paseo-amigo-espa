@@ -1,0 +1,317 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import PetPreferencesSelector from '@/components/sitter/PetPreferencesSelector';
+
+const SitterProfileSetup: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+  
+  const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  
+  const [sitterData, setSitterData] = useState({
+    bio: '',
+    hourlyRate: 15,
+    avatarUrl: '',
+    experience: [] as string[],
+    dogs: true, // Default to dogs only for backward compatibility
+    cats: false,
+    dogExperience: '',
+    catExperience: '',
+  });
+
+  const handleImageUpload = async (file: File) => {
+    if (!currentUser) return;
+    
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser.id}-avatar-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setSitterData({ ...sitterData, avatarUrl: publicUrl });
+      
+      toast({
+        title: t('common.success'),
+        description: 'Profile picture uploaded successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: t('common.error'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: t('common.error'),
+          description: 'Please select an image file',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: t('common.error'),
+          description: 'Image size must be less than 5MB',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      handleImageUpload(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!sitterData.bio.trim()) {
+      toast({
+        title: t('common.error'),
+        description: 'Please write a bio about yourself',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (sitterData.hourlyRate < 5 || sitterData.hourlyRate > 100) {
+      toast({
+        title: t('common.error'),
+        description: 'Hourly rate must be between $5 and $100',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!sitterData.dogs && !sitterData.cats) {
+      toast({
+        title: t('common.error'),
+        description: 'Please select at least one pet type you can care for',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const updateData: any = {
+        bio: sitterData.bio,
+        hourly_rate: sitterData.hourlyRate,
+      };
+
+      if (sitterData.avatarUrl) {
+        updateData.avatar_url = sitterData.avatarUrl;
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update(updateData)
+        .eq('id', currentUser!.id);
+
+      if (error) {
+        // If table doesn't exist, provide helpful message
+        if (error.message.includes('does not exist') || error.message.includes('not find')) {
+          throw new Error('Database not set up. Please contact support or run database migrations.');
+        }
+        throw error;
+      }
+
+      toast({
+        title: t('common.success'),
+        description: 'Sitter profile created successfully!',
+      });
+
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: t('common.error'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark max-w-md mx-auto">
+      {/* Top App Bar */}
+      <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
+        <div className="flex size-12 shrink-0 items-center justify-start">
+          <button onClick={() => navigate('/')}>
+            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
+              close
+            </span>
+          </button>
+        </div>
+        <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-text-primary-light dark:text-text-primary-dark">
+          Complete Your Sitter Profile
+        </h2>
+        <div className="flex w-12 items-center justify-end"></div>
+      </div>
+
+      {/* Main Content */}
+      <main className="flex-1 p-4 space-y-4">
+        <div className="text-center py-4">
+          <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
+            Tell pet owners about yourself and set your rate to start getting bookings!
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Profile Picture - Optional */}
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="relative">
+              <div 
+                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-lg"
+                style={{
+                  backgroundImage: sitterData.avatarUrl 
+                    ? `url("${sitterData.avatarUrl}")`
+                    : `url("https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.email || 'default'}")`
+                }}
+              />
+              {uploadingImage && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                </div>
+              )}
+            </div>
+            
+            <label htmlFor="profile-picture" className="cursor-pointer">
+              <input
+                id="profile-picture"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors" 
+                disabled={uploadingImage}
+              >
+                <span className="material-symbols-outlined mr-2">photo_camera</span>
+                {uploadingImage ? 'Uploading...' : sitterData.avatarUrl ? 'Change Photo' : 'Upload Photo'}
+              </Button>
+            </label>
+          </div>
+
+          {/* Bio - Required */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+              About You <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={sitterData.bio}
+              onChange={(e) => setSitterData({ ...sitterData, bio: e.target.value })}
+              className="w-full min-h-[120px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
+              placeholder="Tell pet owners about yourself, your experience with pets, and why you'd be a great sitter..."
+              required
+              maxLength={500}
+            />
+            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+              {sitterData.bio.length}/500 characters
+            </p>
+          </div>
+
+          {/* Hourly Rate - Required */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+              Hourly Rate <span className="text-red-500">*</span>
+            </label>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">$</span>
+              <Input
+                type="number"
+                value={sitterData.hourlyRate}
+                onChange={(e) => setSitterData({ ...sitterData, hourlyRate: parseInt(e.target.value) || 15 })}
+                className="w-full text-lg"
+                min="5"
+                max="100"
+                required
+              />
+              <span className="text-text-secondary-light dark:text-text-secondary-dark">/hour</span>
+            </div>
+            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2">
+              Set your base rate. You can adjust this anytime.
+            </p>
+          </div>
+
+          {/* Experience Tags - Optional */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+              Your Experience (Select all that apply)
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {['Large Dogs', 'Small Dogs', 'Puppies', 'Senior Dogs', 'Cats', 'Kittens', 'Basic Training', 'High Energy', 'Special Needs', 'Multiple Pets'].map((exp) => (
+                <button
+                  key={exp}
+                  type="button"
+                  onClick={() => {
+                    const newExperience = sitterData.experience.includes(exp)
+                      ? sitterData.experience.filter(e => e !== exp)
+                      : [...sitterData.experience, exp];
+                    setSitterData({ ...sitterData, experience: newExperience });
+                  }}
+                  className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    sitterData.experience.includes(exp)
+                      ? 'bg-primary text-white'
+                      : 'bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark border border-border-light dark:border-border-dark'
+                  }`}
+                >
+                  {exp}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-4 pb-8">
+            <Button
+              type="submit"
+              disabled={loading || uploadingImage}
+              className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-base font-bold"
+            >
+              {loading ? t('common.loading') : 'Complete Profile'}
+            </Button>
+            
+            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark text-center mt-3">
+              You can set your availability after completing your profile
+            </p>
+          </div>
+        </form>
+      </main>
+    </div>
+  );
+};
+
+export default SitterProfileSetup;

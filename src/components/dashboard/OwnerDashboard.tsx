@@ -312,7 +312,7 @@ const OwnerDashboard: React.FC = () => {
           <div className="bg-gradient-to-r from-stitch-primary to-stitch-secondary rounded-3xl p-8 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-3xl font-bold mb-2 font-display">{t('dashboard.yourPerfectCompanion')} 🐕</h2>
+                <h2 className="text-3xl font-bold mb-2 font-display">{t('dashboard.yourPerfectCompanion')} 🐾</h2>
                 <p className="text-white/90 mb-6 font-medium">{t('dashboard.findTrustedWalkers')}</p>
                 <Button 
                   size="lg" 
@@ -349,8 +349,8 @@ const OwnerDashboard: React.FC = () => {
               <div className="w-16 h-16 bg-stitch-primary rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-md">
                 <span className="material-symbols-outlined text-white text-3xl">add</span>
               </div>
-              <h3 className="text-lg font-bold text-stitch-text-primary-light mb-2 font-display">{t('dashboard.addDog')}</h3>
-              <p className="text-sm text-stitch-text-secondary-light">{t('dashboard.registerDogToFind')}</p>
+              <h3 className="text-lg font-bold text-stitch-text-primary-light mb-2 font-display">{t('dashboard.addPet')}</h3>
+              <p className="text-sm text-stitch-text-secondary-light">{t('dashboard.registerPetToFind')}</p>
             </CardContent>
           </Card>
 
@@ -368,7 +368,7 @@ const OwnerDashboard: React.FC = () => {
         {/* Dogs Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-stitch-text-primary-light font-display">{t('dashboard.myCompanions')} 🐕</h2>
+            <h2 className="text-3xl font-bold text-stitch-text-primary-light font-display">{t('dashboard.myCompanions')} 🐾</h2>
             <Button 
               onClick={() => setCurrentView('dogs')}
               className="bg-gradient-to-r from-stitch-primary to-stitch-secondary hover:from-stitch-primary/90 hover:to-stitch-secondary/90 text-white rounded-2xl shadow-md"

@@ -41,6 +41,9 @@ export interface Database {
           postal_code: string;
           user_type: 'owner' | 'walker';
           profile_image?: string;
+          bio?: string;
+          hourly_rate?: number;
+          avatar_url?: string;
           created_at: string;
           updated_at: string;
         };
@@ -53,6 +56,9 @@ export interface Database {
           postal_code: string;
           user_type: 'owner' | 'walker';
           profile_image?: string;
+          bio?: string;
+          hourly_rate?: number;
+          avatar_url?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -65,6 +71,9 @@ export interface Database {
           postal_code?: string;
           user_type?: 'owner' | 'walker';
           profile_image?: string;
+          bio?: string;
+          hourly_rate?: number;
+          avatar_url?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -78,6 +87,9 @@ export interface Database {
           breed?: string;
           notes: string;
           image_url?: string;
+          temperament?: string[];
+          special_needs?: string;
+          energy_level?: 'low' | 'medium' | 'high';
           created_at: string;
           updated_at: string;
         };
@@ -89,6 +101,9 @@ export interface Database {
           breed?: string;
           notes: string;
           image_url?: string;
+          temperament?: string[];
+          special_needs?: string;
+          energy_level?: 'low' | 'medium' | 'high';
           created_at?: string;
           updated_at?: string;
         };
@@ -100,6 +115,9 @@ export interface Database {
           breed?: string;
           notes?: string;
           image_url?: string;
+          temperament?: string[];
+          special_needs?: string;
+          energy_level?: 'low' | 'medium' | 'high';
           created_at?: string;
           updated_at?: string;
         };
@@ -324,6 +342,120 @@ export interface Database {
           cancel_at_period_end?: boolean;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      availability: {
+        Row: {
+          id: string;
+          sitter_id: string;
+          start_time: string;
+          end_time: string;
+          status: 'available' | 'booked' | 'unavailable';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          sitter_id: string;
+          start_time: string;
+          end_time: string;
+          status?: 'available' | 'booked' | 'unavailable';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          sitter_id?: string;
+          start_time?: string;
+          end_time?: string;
+          status?: 'available' | 'booked' | 'unavailable';
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      bookings: {
+        Row: {
+          id: string;
+          owner_id: string;
+          sitter_id: string;
+          dog_id: string;
+          start_time: string;
+          end_time: string;
+          service_type: 'walk' | 'care' | 'boarding';
+          location?: string;
+          notes?: string;
+          total_price: number;
+          commission_fee: number;
+          status: 'requested' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
+          cancellation_reason?: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          sitter_id: string;
+          dog_id: string;
+          start_time: string;
+          end_time: string;
+          service_type?: 'walk' | 'care' | 'boarding';
+          location?: string;
+          notes?: string;
+          total_price: number;
+          commission_fee: number;
+          status?: 'requested' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
+          cancellation_reason?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          owner_id?: string;
+          sitter_id?: string;
+          dog_id?: string;
+          start_time?: string;
+          end_time?: string;
+          service_type?: 'walk' | 'care' | 'boarding';
+          location?: string;
+          notes?: string;
+          total_price?: number;
+          commission_fee?: number;
+          status?: 'requested' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
+          cancellation_reason?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          title: string;
+          message: string;
+          related_id?: string;
+          is_read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: string;
+          title: string;
+          message: string;
+          related_id?: string;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?: string;
+          title?: string;
+          message?: string;
+          related_id?: string;
+          is_read?: boolean;
+          created_at?: string;
         };
       };
       payment_methods: {

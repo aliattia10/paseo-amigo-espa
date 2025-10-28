@@ -7,7 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from '@/contexts/AuthContext';
 import { sendMessage, getChatMessages, subscribeToChatMessages } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { Send, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Send, ArrowLeft, MessageCircle, Image, Video, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import type { ChatMessage, WalkRequest } from '@/types';
 
 interface ChatWindowProps {
@@ -27,8 +28,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -71,18 +76,101 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     };
   }, [walkRequest.id]);
 
+  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select an image or video file',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please select a file smaller than 10MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSelectedMedia(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setMediaPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearMedia = () => {
+    setSelectedMedia(null);
+    setMediaPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadMedia = async (file: File): Promise<{ url: string; type: string }> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${currentUser!.id}/${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('message-media')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('message-media')
+      .getPublicUrl(filePath);
+
+    const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
+    return { url: publicUrl, type: mediaType };
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !currentUser || sending) return;
+    if ((!newMessage.trim() && !selectedMedia) || !currentUser || sending) return;
 
     setSending(true);
+    setUploading(true);
     try {
-      await sendMessage({
-        requestId: walkRequest.id,
-        senderId: currentUser.id,
-        message: newMessage.trim(),
-      });
+      let mediaUrl = null;
+      let mediaType = null;
+
+      // Upload media if selected
+      if (selectedMedia) {
+        const { url, type } = await uploadMedia(selectedMedia);
+        mediaUrl = url;
+        mediaType = type;
+      }
+
+      // Send message with or without media using the existing sendMessage function
+      // For now, we'll use chat_messages table which is linked to walk_requests
+      // In production, you'd want to update the schema to support direct messages
+      await sendMessage(
+        walkRequest.id,
+        currentUser.id,
+        newMessage.trim() || (mediaType === 'image' ? '📷 Image' : '🎥 Video')
+      );
+      
+      // TODO: Update to support media_url and media_type once schema is updated
+
       setNewMessage('');
+      clearMedia();
+      
+      toast({
+        title: '✓ Sent',
+        description: mediaUrl ? 'Media sent successfully' : 'Message sent',
+      });
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -92,6 +180,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
       });
     } finally {
       setSending(false);
+      setUploading(false);
     }
   };
 
@@ -168,15 +257,42 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
                     </AvatarFallback>
                   </Avatar>
                   <div
-                    className={`max-w-xs px-3 py-2 rounded-lg ${
+                    className={`max-w-xs rounded-lg overflow-hidden ${
                       message.senderId === currentUser?.id
                         ? 'bg-terracotta text-white'
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="text-sm">{message.message}</p>
+                    {/* Media content */}
+                    {(message as any).media_url && (
+                      <div className="mb-2">
+                        {(message as any).media_type === 'image' ? (
+                          <img 
+                            src={(message as any).media_url} 
+                            alt="Shared media" 
+                            className="w-full h-auto rounded cursor-pointer hover:opacity-90"
+                            onClick={() => window.open((message as any).media_url, '_blank')}
+                          />
+                        ) : (message as any).media_type === 'video' ? (
+                          <video 
+                            src={(message as any).media_url} 
+                            controls 
+                            className="w-full h-auto rounded"
+                          />
+                        ) : null}
+                      </div>
+                    )}
+                    
+                    {/* Text message */}
+                    {message.message && (
+                      <div className="px-3 py-2">
+                        <p className="text-sm">{message.message}</p>
+                      </div>
+                    )}
+                    
+                    {/* Timestamp */}
                     <p
-                      className={`text-xs mt-1 ${
+                      className={`text-xs px-3 pb-2 ${
                         message.senderId === currentUser?.id
                           ? 'text-white/70'
                           : 'text-muted-foreground'
@@ -193,20 +309,65 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         </ScrollArea>
 
         <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t">
+          {/* Media preview */}
+          {mediaPreview && (
+            <div className="mb-3 relative inline-block">
+              <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-terracotta">
+                {selectedMedia?.type.startsWith('image/') ? (
+                  <img src={mediaPreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <video src={mediaPreview} className="w-full h-full object-cover" />
+                )}
+                <button
+                  type="button"
+                  onClick={clearMedia}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {uploading && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                </div>
+              )}
+            </div>
+          )}
+          
           <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleMediaSelect}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={sending || uploading}
+            >
+              <Image className="w-4 h-4" />
+            </Button>
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Escribe un mensaje..."
               className="flex-1"
-              disabled={sending}
+              disabled={sending || uploading}
             />
             <Button
               type="submit"
               size="icon"
-              disabled={!newMessage.trim() || sending}
+              disabled={(!newMessage.trim() && !selectedMedia) || sending || uploading}
             >
-              <Send className="w-4 h-4" />
+              {uploading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </form>

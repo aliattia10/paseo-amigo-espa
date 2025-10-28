@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#20df6c",
+            "background-light": "#f6f8f7",
+            "background-dark": "#112117",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+
+    .material-symbols-outlined.fill {
+      font-variation-settings:
+        'FILL' 1
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark">
+<div class="relative mx-auto flex h-auto min-h-screen w-full max-w-md flex-col bg-background-light font-display dark:bg-background-dark" style='font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif;'>
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between bg-background-light/80 px-4 backdrop-blur-sm dark:bg-background-dark/80">
+<div class="flex size-12 shrink-0 items-center">
+<!-- Placeholder for a potential back button or menu icon -->
+</div>
+<h1 class="flex-1 text-center text-lg font-bold text-slate-900 dark:text-white">Messages</h1>
+<div class="flex w-12 items-center justify-end">
+<button class="flex h-12 cursor-pointer items-center justify-center rounded-xl bg-transparent text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</header>
+<!-- Main Content: Conversation List -->
+<main class="flex-1 overflow-y-auto px-4">
+<div class="flex flex-col gap-2 pt-4">
+<!-- List Item 1: Unread Message -->
+<div class="flex cursor-pointer items-center gap-4 rounded-xl p-3 transition-colors hover:bg-slate-100 dark:hover:bg-white/5">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Profile picture of Jessica L." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDU-WaJJfF_jMPsn0ZphPBwb1ow4_aoH9rrEzO414L_mqsDfOSo2xIjm9wloARv6Wq31u7zmW2Y5BMVeJEk51OkjLOMwfKol8LnIurb1I8_cK7RQeHfdp7VQLpLHg-B9x95kEr3S1l5dOrNspGB65wP2ENj_vv2wXJ0c4E5Aja99YFptTONrfjF4Re1LKHffZiwmWNIN7kTE9h3zbQSX6xD9kMWLzWTsN_AUrYOeT18laKOeg4w2ovFaNPqaTKSbhOrPDEgCtcV0jQ");'></div>
+<div class="absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-background-light bg-green-500 dark:border-background-dark"></div>
+</div>
+<div class="flex-1">
+<div class="flex items-baseline justify-between">
+<p class="font-bold text-slate-900 dark:text-white">Jessica L.</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">5m ago</p>
+</div>
+<div class="flex items-start justify-between gap-2">
+<p class="line-clamp-1 text-sm text-slate-600 dark:text-slate-300">Great! Can't wait for you to meet...</p>
+<div class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">1</div>
+</div>
+</div>
+</div>
+<!-- List Item 2: Read Message -->
+<div class="flex cursor-pointer items-center gap-4 rounded-xl p-3 transition-colors hover:bg-slate-100 dark:hover:bg-white/5">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Profile picture of Mark P." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDddBj_IAyA8KqjNNlIetnMAgN47WCiELV7V-iABYkwGDHJKkoitNPtIGLkDkwKptrTcSMSexM1mPY5i9xSeRgQh8hjRtUQtt3S6bVH_u0wVg_VeKcd7sRWgq-IPI5HK-whPe6jRUACEhV0GNintBqR_aozA-YMaZczupLoDj_nljeP1TDKp3S8N4Ot1EvEqN5RIZxPmOWBmQkmaDgRg781TgC-aQku2GsiD5RxG19ojqZORDXPqaPNEEW9-taFtV2hXq-e2liaLtw");'></div>
+</div>
+<div class="flex-1">
+<div class="flex items-baseline justify-between">
+<p class="font-bold text-slate-900 dark:text-white">Mark P.</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">10:45 AM</p>
+</div>
+<div class="flex items-start justify-between gap-2">
+<p class="line-clamp-1 text-sm text-slate-500 dark:text-slate-400">Yes, tomorrow at 5 PM works perfectly.</p>
+</div>
+</div>
+</div>
+<!-- List Item 3: Read Message -->
+<div class="flex cursor-pointer items-center gap-4 rounded-xl p-3 transition-colors hover:bg-slate-100 dark:hover:bg-white/5">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Profile picture of Sarah B." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB4zYp40ER9UaFhkdsZxDOnb9d1XLVmKYPzAtVYSXL3pAH5Bxhi2xZ9cZDaLD-XztZx1t6lgoatnO93a1Kah4FrYuqqZrRpgFuCuh2T-LhgoxqDLQ_nExmfwBTcjWhF8fpBTn3Mu7oOUPsaJvTqGsrDtyMJvVe6pQGmv5Wk0vImYLs6DpkfMSlDw3ZSFZvJXI6E9T2-_l_dekbuLWo2s-CAov5Oia5Uc9FrU8aOdr_uL_itrwEsBGs8oYKxCkl0Xi1QLKQfdbaCGr0");'></div>
+</div>
+<div class="flex-1">
+<div class="flex items-baseline justify-between">
+<p class="font-bold text-slate-900 dark:text-white">Sarah B.</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Yesterday</p>
+</div>
+<div class="flex items-start justify-between gap-2">
+<p class="line-clamp-1 text-sm text-slate-500 dark:text-slate-400">He's a very friendly golden retriever!</p>
+</div>
+</div>
+</div>
+<!-- List Item 4: Read Message -->
+<div class="flex cursor-pointer items-center gap-4 rounded-xl p-3 transition-colors hover:bg-slate-100 dark:hover:bg-white/5">
+<div class="relative shrink-0">
+<div class="h-14 w-14 rounded-full bg-cover bg-center bg-no-repeat" data-alt="Profile picture of David K." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDKDqlm7-4OqhwqOxYzFtuzwpSI8J66Rv7SpVciV87vUOHQfxaut8_Ul7FJoRb4kTqEA3Izoc4cMybE2ct91ewkp7JM3Wmb4HkBMQvwOl3PJ94AZr1ryPzHA7bLWI-hvQtJMmInIdCaRHm7bdGUcDB1jiMcDc-i-nrMPGHHjFdVvS3KfGlY9G8enadO90xEztPx-C_8qoLmKSp3F4h-JjPD6K4RUwgopkZShd6ku5IueJ0vcF_pUnlTf6htJ1fNigHZA7o3f80lWcA");'></div>
+</div>
+<div class="flex-1">
+<div class="flex items-baseline justify-between">
+<p class="font-bold text-slate-900 dark:text-white">David K.</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Sun</p>
+</div>
+<div class="flex items-start justify-between gap-2">
+<p class="line-clamp-1 text-sm text-slate-500 dark:text-slate-400">Sounds good, thanks!</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="sticky bottom-0 mt-4 flex border-t border-slate-200 bg-background-light/80 px-4 pb-3 pt-2 backdrop-blur-sm dark:border-slate-800 dark:bg-background-dark/80">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<p class="text-xs font-medium tracking-[0.015em]">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary dark:text-primary" href="#">
+<span class="material-symbols-outlined fill text-2xl">chat_bubble</span>
+<p class="text-xs font-bold tracking-[0.015em]">Messages</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<p class="text-xs font-medium tracking-[0.015em]">Profile</p>
+</a>
+</nav>
+</div>
+</body></html>

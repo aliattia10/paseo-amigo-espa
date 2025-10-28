@@ -16,83 +16,200 @@ export type Database = {
     Tables: {
       chat_messages: {
         Row: {
-          created_at: string
           id: string
           message: string
+          request_id: string
           sender_id: string
-          walk_request_id: string
+          timestamp: string | null
         }
         Insert: {
-          created_at?: string
           id?: string
           message: string
+          request_id: string
           sender_id: string
-          walk_request_id: string
+          timestamp?: string | null
         }
         Update: {
-          created_at?: string
           id?: string
           message?: string
+          request_id?: string
           sender_id?: string
-          walk_request_id?: string
+          timestamp?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "walk_requests"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "chat_messages_walk_request_id_fkey"
-            columns: ["walk_request_id"]
-            isOneToOne: false
-            referencedRelation: "walk_requests"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
       }
       dogs: {
         Row: {
-          age_years: number
+          age: string | null
           breed: string | null
-          created_at: string
+          created_at: string | null
           id: string
+          image_url: string | null
           name: string
+          notes: string
           owner_id: string
-          photo_url: string | null
-          special_notes: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          age_years: number
+          age?: string | null
           breed?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
+          image_url?: string | null
           name: string
+          notes: string
           owner_id: string
-          photo_url?: string | null
-          special_notes?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          age_years?: number
+          age?: string | null
           breed?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
+          image_url?: string | null
           name?: string
+          notes?: string
           owner_id?: string
-          photo_url?: string | null
-          special_notes?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "dogs_owner_id_fkey"
             columns: ["owner_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geo_points: {
+        Row: {
+          id: string
+          latitude: number
+          longitude: number
+          session_id: string
+          timestamp: string | null
+        }
+        Insert: {
+          id?: string
+          latitude: number
+          longitude: number
+          session_id: string
+          timestamp?: string | null
+        }
+        Update: {
+          id?: string
+          latitude?: number
+          longitude?: number
+          session_id?: string
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_points_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "walk_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_methods: {
+        Row: {
+          card_brand: string
+          card_exp_month: number
+          card_exp_year: number
+          card_last4: string
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          stripe_payment_method_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          card_brand: string
+          card_exp_month: number
+          card_exp_year: number
+          card_last4: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          stripe_payment_method_id: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          card_brand?: string
+          card_exp_month?: number
+          card_exp_year?: number
+          card_last4?: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          stripe_payment_method_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -148,7 +265,7 @@ export type Database = {
       reviews: {
         Row: {
           comment: string | null
-          created_at: string
+          created_at: string | null
           id: string
           rating: number
           reviewed_id: string
@@ -158,7 +275,7 @@ export type Database = {
         }
         Insert: {
           comment?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
           rating: number
           reviewed_id: string
@@ -168,7 +285,7 @@ export type Database = {
         }
         Update: {
           comment?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
           rating?: number
           reviewed_id?: string
@@ -181,14 +298,14 @@ export type Database = {
             foreignKeyName: "reviews_reviewed_id_fkey"
             columns: ["reviewed_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
@@ -200,47 +317,182 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          created_at: string | null
+          features: string[]
+          id: string
+          interval: string
+          name: string
+          popular: boolean | null
+          price: number
+          stripe_price_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          features: string[]
+          id?: string
+          interval: string
+          name: string
+          popular?: boolean | null
+          price: number
+          stripe_price_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          features?: string[]
+          id?: string
+          interval?: string
+          name?: string
+          popular?: boolean | null
+          price?: number
+          stripe_price_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string
+          current_period_start: string
+          id: string
+          plan_id: string
+          status: string
+          stripe_subscription_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end: string
+          current_period_start: string
+          id?: string
+          plan_id: string
+          status: string
+          stripe_subscription_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan_id?: string
+          status?: string
+          stripe_subscription_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          city: string
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string
+          postal_code: string
+          profile_image: string | null
+          updated_at: string | null
+          user_type: string
+        }
+        Insert: {
+          city: string
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone: string
+          postal_code: string
+          profile_image?: string | null
+          updated_at?: string | null
+          user_type: string
+        }
+        Update: {
+          city?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          postal_code?: string
+          profile_image?: string | null
+          updated_at?: string | null
+          user_type?: string
+        }
+        Relationships: []
+      }
       walk_requests: {
         Row: {
-          created_at: string
+          created_at: string | null
           dog_id: string
-          duration_minutes: number | null
+          duration: number
           id: string
-          location_latitude: number | null
-          location_longitude: number | null
+          location: string
           notes: string | null
           owner_id: string
+          price: number
           service_type: string
-          status: string
-          updated_at: string
+          status: string | null
+          updated_at: string | null
+          walk_date: string
+          walk_time: string
           walker_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           dog_id: string
-          duration_minutes?: number | null
+          duration: number
           id?: string
-          location_latitude?: number | null
-          location_longitude?: number | null
+          location: string
           notes?: string | null
           owner_id: string
-          service_type?: string
-          status?: string
-          updated_at?: string
+          price: number
+          service_type: string
+          status?: string | null
+          updated_at?: string | null
+          walk_date: string
+          walk_time: string
           walker_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           dog_id?: string
-          duration_minutes?: number | null
+          duration?: number
           id?: string
-          location_latitude?: number | null
-          location_longitude?: number | null
+          location?: string
           notes?: string | null
           owner_id?: string
+          price?: number
           service_type?: string
-          status?: string
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
+          walk_date?: string
+          walk_time?: string
           walker_id?: string
         }
         Relationships: [
@@ -255,14 +507,108 @@ export type Database = {
             foreignKeyName: "walk_requests_owner_id_fkey"
             columns: ["owner_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "walk_requests_walker_id_fkey"
             columns: ["walker_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      walk_sessions: {
+        Row: {
+          created_at: string | null
+          distance: number | null
+          duration: number | null
+          end_time: string | null
+          id: string
+          start_time: string | null
+          status: string | null
+          walk_request_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          distance?: number | null
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          start_time?: string | null
+          status?: string | null
+          walk_request_id: string
+        }
+        Update: {
+          created_at?: string | null
+          distance?: number | null
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          start_time?: string | null
+          status?: string | null
+          walk_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "walk_sessions_walk_request_id_fkey"
+            columns: ["walk_request_id"]
+            isOneToOne: false
+            referencedRelation: "walk_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      walker_profiles: {
+        Row: {
+          availability: string[]
+          bio: string
+          created_at: string | null
+          experience: string
+          hourly_rate: number
+          id: string
+          rating: number | null
+          tags: string[] | null
+          total_walks: number | null
+          updated_at: string | null
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          availability?: string[]
+          bio: string
+          created_at?: string | null
+          experience: string
+          hourly_rate: number
+          id?: string
+          rating?: number | null
+          tags?: string[] | null
+          total_walks?: number | null
+          updated_at?: string | null
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          availability?: string[]
+          bio?: string
+          created_at?: string | null
+          experience?: string
+          hourly_rate?: number
+          id?: string
+          rating?: number | null
+          tags?: string[] | null
+          total_walks?: number | null
+          updated_at?: string | null
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "walker_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

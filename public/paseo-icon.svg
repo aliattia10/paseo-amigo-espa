@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="32" cy="32" r="32" fill="#0D9488"/>
+  <g transform="translate(16, 20)">
+    <!-- Paw print icon -->
+    <ellipse cx="16" cy="20" rx="8" ry="10" fill="white"/>
+    <circle cx="10" cy="8" r="4" fill="white"/>
+    <circle cx="22" cy="8" r="4" fill="white"/>
+    <circle cx="6" cy="14" r="3.5" fill="white"/>
+    <circle cx="26" cy="14" r="3.5" fill="white"/>
+  </g>
+</svg>

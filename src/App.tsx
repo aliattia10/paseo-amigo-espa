@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { LocationProvider } from "@/contexts/LocationContext";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import OwnerDashboard from "./components/dashboard/OwnerDashboard";
@@ -18,7 +20,19 @@ import AuthNew from "./pages/AuthNew";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
-import { useState } from "react";
+import ForgotPassword from "./pages/ForgotPassword";
+import WelcomeScreen from "./components/welcome/WelcomeScreen";
+import RoleSelectionPage from "./pages/RoleSelectionPage";
+import NewHomePage from "./components/dashboard/NewHomePage";
+import NewProfilePage from "./components/profile/NewProfilePage";
+import NotificationsPage from "./pages/NotificationsPage";
+import ProfileEditPage from "./pages/ProfileEditPage";
+import PetEditPage from "./pages/PetEditPage";
+import DogOwnerProfileSetup from "./pages/DogOwnerProfileSetup";
+import SitterProfileSetup from "./pages/SitterProfileSetup";
+import AvailabilityPage from "./pages/AvailabilityPage";
+import BookingsPage from "./pages/BookingsPage";
+import BookingRequestPage from "./pages/BookingRequestPage";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
@@ -193,14 +207,14 @@ const OnboardingFlow = () => {
         <div className="w-full max-w-md">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-terracotta rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white text-3xl">🐕</span>
+              <div className="w-20 h kasarangang0 bg-terracotta rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-white text-3xl">🐾</span>
               </div>
               <h1 className="text-3xl font-bold text-neutral-text mb-2">
-                ¡Bienvenido a Paseo!
+                ¡Bienvenido a Petflik!
               </h1>
               <p className="text-muted-foreground">
-                Completa tu perfil para comenzar a conectar con perros y paseadores
+                Completa tu perfil para comenzar a conectar con mascotas y cuidadores
               </p>
             </div>
 
@@ -259,7 +273,7 @@ const OnboardingFlow = () => {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-text mb-3">
-                  ¿Qué quieres hacer en Paseo? *
+                  ¿Qué quieres hacer en Petflik? *
                 </label>
                 <div className="space-y-3">
                   <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
@@ -646,21 +660,101 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <AuthProvider>
-        <SubscriptionProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+        <LocationProvider>
+          <SubscriptionProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
               <Routes>
+                {/* Public Routes */}
                 <Route path="/" element={<Index />} />
+                <Route path="/welcome" element={<WelcomeScreen />} />
+                <Route path="/select-role" element={<RoleSelectionPage />} />
                 <Route path="/auth" element={<AuthNew />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                
+                {/* Protected Routes */}
                 <Route 
                   path="/dashboard" 
                   element={
                     <ProtectedRoute>
-                      <DashboardRouter />
+                      <NewHomePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/profile" 
+                  element={
+                    <ProtectedRoute>
+                      <NewProfilePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/profile/edit" 
+                  element={
+                    <ProtectedRoute>
+                      <ProfileEditPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/pet/edit/:petId" 
+                  element={
+                    <ProtectedRoute>
+                      <PetEditPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/dog-profile-setup" 
+                  element={
+                    <ProtectedRoute>
+                      <DogOwnerProfileSetup />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/sitter-profile-setup" 
+                  element={
+                    <ProtectedRoute>
+                      <SitterProfileSetup />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/availability" 
+                  element={
+                    <ProtectedRoute>
+                      <AvailabilityPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/notifications" 
+                  element={
+                    <ProtectedRoute>
+                      <NotificationsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/bookings" 
+                  element={
+                    <ProtectedRoute>
+                      <BookingsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/booking/request" 
+                  element={
+                    <ProtectedRoute>
+                      <BookingRequestPage />
                     </ProtectedRoute>
                   } 
                 />
@@ -680,12 +774,14 @@ const App = () => (
                     </ProtectedRoute>
                   } 
                 />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                
+                {/* Catch-all route - must be last */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
-          </TooltipProvider>
-        </SubscriptionProvider>
+            </TooltipProvider>
+          </SubscriptionProvider>
+        </LocationProvider>
       </AuthProvider>
     </LanguageProvider>
   </QueryClientProvider>

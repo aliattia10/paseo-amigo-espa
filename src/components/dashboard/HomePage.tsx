@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from '@/contexts/AuthContext';
 import { getNearbyUsers, updateUserLocation } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, X, MapPin, Clock, Star, Phone, MessageCircle, Filter, User, RefreshCw, Switch } from 'lucide-react';
+import { Heart, X, MapPin, Clock, Star, Phone, MessageCircle, Filter, User, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { User as UserType } from '@/types';
 
@@ -108,9 +108,9 @@ const HomePage: React.FC = () => {
         // Show opposite role users
         const targetRole = userProfile.userType === 'owner' ? 'walker' : 'owner';
         const usersData = await getNearbyUsers(
+          targetRole,
           userLocation.latitude, 
           userLocation.longitude, 
-          targetRole, 
           maxDistance
         );
         setNearbyUsers(usersData);
@@ -346,6 +346,11 @@ const HomePage: React.FC = () => {
                   {currentUser.name}
                   {currentUser.userType === 'walker' && currentUser.hourlyRate && (
                     <span className="text-lg font-normal ml-2">€{currentUser.hourlyRate}/h</span>
+                  )}
+                  {currentUser.petType && (
+                    <span className="text-2xl ml-2">
+                      {currentUser.petType === 'cat' ? '🐱' : '🐕'}
+                    </span>
                   )}
                 </p>
                 <div className="flex items-center gap-1">

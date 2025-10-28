@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4A90E2",
+                        "secondary": "#F5A623",
+                        "background-light": "#F2F2F7",
+                        "background-dark": "#1C1C1E",
+                        "text-primary-light": "#1C1C1E",
+                        "text-primary-dark": "#FFFFFF",
+                        "text-secondary-light": "#8E8E93",
+                        "text-secondary-dark": "#8E8E93",
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#2C2C2E",
+                        "border-light": "#E5E5EA",
+                        "border-dark": "#3A3A3C",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-primary-light dark:text-text-primary-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
+<div class="flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">settings</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Profile</h2>
+<div class="flex w-12 items-center justify-end">
+<span class="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">logout</span>
+</div>
+</div>
+<!-- Main Content -->
+<main class="flex-1 pb-24">
+<!-- Profile Header -->
+<div class="flex p-4 @container">
+<div class="flex w-full flex-col gap-4 items-center">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md" data-alt="User profile picture of a person smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDyaX0lxsijvtyEWTAE_4siDuHblgHHPm1kSP2OQ4VzErYXvjggftgNWbbd4RAZ8ZnyimuJ8aDJUtqCJ_EbJLouHs0ciy0Py4Z7m0yoVy6DpoeTRF8Wp-FBxkhJKNhQTVb23HQc6ghcNJbzsISu5othkKVAMW-u6NYW3ZRP5puOpmlGh-IeXuK7a2hbKUBNhrv7xTnhYTi9pGZFbyVgWj1aMRIPlex_Vnbp9k9CjQ7GKpdsr_MBTDzL_Ba2TgkuWdfRxFA7Cb8t21M");'></div>
+<button class="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+<div class="flex flex-col items-center justify-center text-center">
+<p class="text-[22px] font-bold leading-tight tracking-[-0.015em]">Alex Doe</p>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">Austin, TX</p>
+<div class="mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined fill text-secondary text-base">star</span>
+<p class="font-bold text-base">4.8</p>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
+</div>
+</div>
+<div class="flex w-full max-w-[480px] gap-3">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] flex-1">
+<span class="truncate">Edit Profile</span>
+</button>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] flex-1">
+<span class="truncate">View Public Profile</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Segmented Control -->
+<div class="flex px-4 py-3">
+<div class="flex h-10 flex-1 items-center justify-center rounded-lg bg-border-light dark:bg-border-dark p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-md px-2 has-[:checked]:bg-card-light has-[:checked]:dark:bg-card-dark has-[:checked]:shadow-sm text-text-secondary-light dark:text-text-secondary-dark has-[:checked]:text-text-primary-light has-[:checked]:dark:text-text-primary-dark text-sm font-medium leading-normal transition-colors">
+<span class="truncate">Sitter</span>
+<input checked="" class="invisible w-0" name="role-toggle" type="radio" value="Sitter"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-md px-2 has-[:checked]:bg-card-light has-[:checked]:dark:bg-card-dark has-[:checked]:shadow-sm text-text-secondary-light dark:text-text-secondary-dark has-[:checked]:text-text-primary-light has-[:checked]:dark:text-text-primary-dark text-sm font-medium leading-normal transition-colors">
+<span class="truncate">Owner</span>
+<input class="invisible w-0" name="role-toggle" type="radio" value="Owner"/>
+</label>
+</div>
+</div>
+<!-- Information Cards/Sections -->
+<div class="flex flex-col gap-4 px-4">
+<!-- My Availability Card -->
+<div class="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+<div class="flex justify-between items-center mb-3">
+<h3 class="text-lg font-bold">My Availability</h3>
+<a class="text-primary font-bold text-sm" href="#">Manage</a>
+</div>
+<div class="grid grid-cols-7 gap-2 text-center">
+<div class="flex flex-col items-center"><p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">MON</p><p class="font-bold text-lg">18</p></div>
+<div class="flex flex-col items-center"><p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">TUE</p><p class="font-bold text-lg">19</p></div>
+<div class="flex flex-col items-center p-2 rounded-full bg-primary/20 dark:bg-primary/30"><p class="text-xs text-primary">WED</p><p class="font-bold text-lg text-primary">20</p></div>
+<div class="flex flex-col items-center"><p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">THU</p><p class="font-bold text-lg">21</p></div>
+<div class="flex flex-col items-center"><p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">FRI</p><p class="font-bold text-lg">22</p></div>
+<div class="flex flex-col items-center"><p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">SAT</p><p class="font-bold text-lg">23</p></div>
+<div class="flex flex-col items-center"><p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">SUN</p><p class="font-bold text-lg">24</p></div>
+</div>
+</div>
+<!-- Account Management List -->
+<div class="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
+<ul class="divide-y divide-border-light dark:divide-border-dark">
+<li class="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">person</span>
+<span class="font-medium">Personal Info</span>
+</div>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
+</li>
+<li class="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">payment</span>
+<span class="font-medium">Payment Methods</span>
+</div>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
+</li>
+<li class="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">notifications</span>
+<span class="font-medium">Notifications</span>
+</div>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
+</li>
+</ul>
+</div>
+<!-- Booking History -->
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5 pb-1">Booking History</h2>
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-4 rounded-xl bg-card-light dark:bg-card-dark p-3 shadow-sm">
+<div class="w-14 h-14 rounded-lg bg-cover bg-center" data-alt="Golden retriever dog sitting on grass" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEW5bloe3SRVmUyHJTOQeC6cuqpIXeWRgIizqi7nY-n8gA3-Rgg-eaxA2bc-sITrMFqh76Ou8Hl31hLpZglyhkS8-PIyyWRe3Pmo38awGxE7WVEpFj2Z7RyfIz4l5gQs2XR_6bPQKHEj_anphx2e-vqNowKyHhOj_6U6pisnZRmcBLaJBhw7xYERWV9MFb2bZNHmeknedW4SrPmF__Yrmw92qGgLwlN6MEPzWV-Mjv_iQ98bzIZ56Fyq7Z6aNWAcCtfqNlBqMD2X4')"></div>
+<div class="flex-1">
+<p class="font-bold">Walk with Max</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">With Jane Smith</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">June 15 - June 16, 2024</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-full">Completed</span>
+</div>
+</div>
+<div class="flex items-center gap-4 rounded-xl bg-card-light dark:bg-card-dark p-3 shadow-sm">
+<div class="w-14 h-14 rounded-lg bg-cover bg-center" data-alt="Siberian husky dog with blue eyes" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAt9p2KPpRYOClzW2wU5jqGzjBtsbRRxVTQdbNpyT0Q9iq45EnXePdlsLTZu46zRt8yGylMYePGLyWLi1PA-yyC6aJl40De3KeQ1WLULCqf8v8toKE3tJndANQ8fk0z-Rjhp7x5nQu0OTTG5PCsjrvZYaOr9bwfSQi_rs0y1JCdH2_GC-O2SyioEglmBYglCZTeUlg1502Q2E7HgVqXAOSVtulSWDAeDHuDbaenrOSmUVDzFXmFpXRyj3079MrOI1l2nEWi64Spy7s')"></div>
+<div class="flex-1">
+<p class="font-bold">Sitting for Luna</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">With Mark Johnson</p>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">May 20, 2024</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded-full">Cancelled</span>
+</div>
+</div>
+</div>
+<!-- Reviews -->
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5 pb-1">Reviews Received</h2>
+<div class="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-cover bg-center" data-alt="Portrait of a smiling woman" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCWNymkOSF9JJYjvga5GBF5DHDZRAik7XkewGlHOKmmdi8xKr_iG1e2xVcSybBzRxLokpds65iOAzBdxzuN_GMjd2hjFT_utxGkaf6QQylrwecHM7yNfjgbtQ_FTGkUh8qI9z6Xc1oQyPmm8lneLrL8tuHE50ZMKTtmrZPtsm33shOrRD1NmxVNcvytRXHJdDAebVW3b78yVCzWO4vqLBdL7hjhaJwHPJnMoy62WfgesqE79hjnU7bXpkjnfgAvBQEGxabTjOn2ZSc')"></div>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<p class="font-bold">Jane Smith</p>
+<div class="flex gap-0.5">
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+</div>
+</div>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">"Alex was absolutely amazing with Max! He came back happy and tired. Highly recommend!"</p>
+</div>
+</div>
+<div class="border-t border-border-light dark:border-border-dark my-4"></div>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-cover bg-center" data-alt="Portrait of a smiling man" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDkH8z5PQuJFj5zi47ocUVWScPK3mzSXD2Cggl-oc0h7OCy_6Uzc1HPrVfaA16UU8ZorU36yyBqOB-ZYpeQiTcaC392bPIYZr6so7vqaFvp22Uq5cS4JUNcgQtFaJ2iHUS6sQvWhJJXnpGO2hKZQl37AJw40O79Ki4s-sz5Tea3F8QUzmRzNOWo1eY1xUaIEfsX_YnMMjmPCD2OdFZSL2Hj__kghd6KlpyctNTuqrg09CesUBa8Sl17mHqtESeENSMTrTePhIihTP4')"></div>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<p class="font-bold">Mark Johnson</p>
+<div class="flex gap-0.5">
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+<span class="material-symbols-outlined fill text-secondary text-sm">star</span>
+<span class="material-symbols-outlined text-secondary text-sm">star_half</span>
+</div>
+</div>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">"Great communication and very reliable. Would book again."</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Persistent Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-10 bg-card-light/90 dark:bg-card-dark/90 border-t border-border-light dark:border-border-dark backdrop-blur-sm">
+<div class="flex justify-around items-center h-16 px-4">
+<a class="flex flex-col items-center justify-center text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-2xl">chat_bubble</span>
+<span class="text-xs font-medium">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary" href="#">
+<span class="material-symbols-outlined text-2xl fill">person</span>
+<span class="text-xs font-bold">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

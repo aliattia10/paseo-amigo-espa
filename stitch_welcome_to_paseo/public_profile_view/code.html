@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4A90E2",
+            "background-light": "#F2F2F7",
+            "background-dark": "#1a1a1f",
+            "card-light": "#ffffff",
+            "card-dark": "#242429",
+            "text-light": "#333333",
+            "text-dark": "#E0E0E0",
+            "text-muted-light": "#666666",
+            "text-muted-dark": "#AAAAAA",
+            "accent": "#F8E71C",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 24px;
+    }
+    .material-symbols-outlined.fill {
+        font-variation-settings: 'FILL' 1;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden" style='font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif;'>
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<div class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-text-light dark:text-text-dark gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<div class="pb-24">
+<!-- Profile Header -->
+<div class="flex p-4 @container bg-background-light dark:bg-background-dark">
+<div class="flex w-full flex-col gap-4 items-center">
+<div class="flex gap-4 flex-col items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-white dark:border-card-dark shadow-md" data-alt="Profile picture of Alex Taylor" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAC1oFLFCw2wnpPppQS8obqVz4Srfv94yPbHiJhqz0h9Fnlix_m-FjZz4-cKsOYc38LXMTcv9RGPSXurN6sxyuOeWK9arH1Zakz7NPR2-AKCx5BNevfE3WjpZsV8pGylWCkHs8yFpagNEMAmT72A4SCc59c2wJRvm0TWLVjicGas24TEH-IF5FrgeVoeDq84whweh-wYYiMiCFgQYvb1xRxqWOdky_O0OWAqAkrPcvhn-l0pJ_Fruf0Aec1MakGlirGuZHMbQifCUo");'></div>
+<div class="flex flex-col items-center justify-center">
+<p class="text-text-light dark:text-text-dark text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">Alex Taylor</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-base font-normal leading-normal text-center">Dog Sitter | San Francisco, CA</p>
+</div>
+</div>
+<div class="flex w-full max-w-[480px] gap-3 @[480px]:w-auto">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-4 bg-primary/20 text-primary text-sm font-bold leading-normal tracking-[0.015em] flex-1 @[480px]:flex-auto">
+<span class="truncate">Message</span>
+</button>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] flex-1 @[480px]:flex-auto">
+<span class="truncate">Book Now</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Summary Section -->
+<div class="px-4 py-2">
+<div class="bg-card-light dark:bg-card-dark rounded-xl p-4">
+<div class="flex flex-wrap gap-x-8 gap-y-6 items-center justify-center sm:justify-between">
+<div class="flex flex-col gap-2 items-center">
+<p class="text-text-light dark:text-text-dark text-4xl font-black leading-tight tracking-[-0.033em]">4.8</p>
+<div class="flex gap-0.5">
+<span class="material-symbols-outlined fill text-accent">star</span>
+<span class="material-symbols-outlined fill text-accent">star</span>
+<span class="material-symbols-outlined fill text-accent">star</span>
+<span class="material-symbols-outlined fill text-accent">star</span>
+<span class="material-symbols-outlined text-accent">star</span>
+</div>
+<p class="text-text-muted-light dark:text-text-muted-dark text-base font-normal leading-normal">25 reviews</p>
+</div>
+<div class="flex gap-6 text-center">
+<div class="flex flex-col gap-1">
+<p class="text-text-light dark:text-text-dark text-xl font-bold">5</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm">Years Exp.</p>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-text-light dark:text-text-dark text-xl font-bold">100%</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm">Response</p>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-primary/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+<span class="text-primary font-bold text-sm">Background Checked</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Tabbed Content -->
+<div class="sticky top-[72px] bg-background-light dark:bg-background-dark z-10 pt-4">
+<div class="flex border-b border-gray-200 dark:border-gray-700 px-4 justify-between">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary pb-[13px] pt-4 flex-1" href="#">
+<p class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">About</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-muted-light dark:text-text-muted-dark pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Services</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-muted-light dark:text-text-muted-dark pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Photos</p>
+</a>
+</div>
+</div>
+<!-- About Section -->
+<div class="p-4 flex flex-col gap-4">
+<h2 class="text-text-light dark:text-text-dark text-xl font-bold">About Me</h2>
+<p class="text-text-muted-light dark:text-text-muted-dark text-base leading-relaxed">
+            Hi, I'm Alex! As a lifelong dog lover and a responsible university student, I've been happily dog sitting for over 5 years. I believe every dog deserves love, attention, and plenty of playtime. Your furry friend will be in safe and caring hands!
+          </p>
+</div>
+<!-- Availability Section -->
+<div class="p-4 flex flex-col gap-4">
+<h2 class="text-text-light dark:text-text-dark text-xl font-bold">My Availability</h2>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-xl flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-3xl">calendar_month</span>
+<div>
+<p class="text-text-light dark:text-text-dark font-semibold">Generally Available</p>
+<p class="text-text-muted-light dark:text-text-muted-dark">Weekends &amp; Weekday Evenings</p>
+</div>
+</div>
+</div>
+<!-- Reviews Section -->
+<div class="p-4 flex flex-col gap-4">
+<h2 class="text-text-light dark:text-text-dark text-xl font-bold">Reviews (25)</h2>
+<!-- Review Item -->
+<div class="flex flex-col gap-4 bg-card-light dark:bg-card-dark p-4 rounded-xl">
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 rounded-full bg-cover bg-center" data-alt="Profile picture of reviewer Jane Doe" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC0xeV_fbQFM77i0wkPD5FQUL6S46kADX2OYm2BxcK0GoW2s8zM2mQYDZAO14a58ce92S4BMEluPb3PSp5XBI_lt9V-X8c6DThJp7E-c8yMqhgghCsBmHRy-nKmqgGTvRMZwKMuGWp_fzm1dBuxg76o2LlNPgJFZBhzwIRpqY5Qfh1FPuHPt3n0IzyipWNthZ2JFN9gCy9tIqeWTiJoiu1tKmXOzlDQ6fukmMSSI0UIW7lCMoFJ8PIbVwp5i812wMI-KOO8s-SzEoA')"></div>
+<div class="flex-1">
+<p class="text-text-light dark:text-text-dark font-bold">Jane D.</p>
+<div class="flex items-center gap-0.5">
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+</div>
+</div>
+</div>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm leading-relaxed">"Alex was fantastic with our golden retriever, Buddy. We received daily updates and photos, which gave us great peace of mind. We came home to a very happy pup. Highly recommend!"</p>
+</div>
+<!-- Review Item -->
+<div class="flex flex-col gap-4 bg-card-light dark:bg-card-dark p-4 rounded-xl">
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 rounded-full bg-cover bg-center" data-alt="Profile picture of reviewer Mark S." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCNyLywFwwwltlFWB0wo7IsjHiJw_VV5IMOsnHe634nT6xsuxsQ9XzwcMPsyLTZDZ6ZeGC5qWuXosUHUtHUGtRG-r6jup091BOCClBmioz2i6Sj1GwBDBDNAVAggiMmgmwMcsR1CC5EsJEXk5dQeQXVbxudwYaKNXo3w2OJMLx3_Hpwkc5OmP72uKrCcs3oBxqn9yFPMc9ImBVRMRjSlOCB-ExvshcLQ6Bv_5EXgcRyVJ_kSVYarU2tcE80f8WLDMfgOTFlz8BN-M8')"></div>
+<div class="flex-1">
+<p class="text-text-light dark:text-text-dark font-bold">Mark S.</p>
+<div class="flex items-center gap-0.5">
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined fill text-accent" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined text-accent" style="font-size: 16px;">star</span>
+</div>
+</div>
+</div>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm leading-relaxed">"Great communication and very reliable. Alex took great care of our two small dogs. Will definitely book again."</p>
+</div>
+<button class="w-full text-center py-3 text-primary font-bold">Show all reviews</button>
+</div>
+</div>
+<!-- Persistent Bottom Tab Bar -->
+<div class="fixed bottom-0 left-0 right-0 h-20 bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 z-20">
+<div class="flex h-full justify-around items-center px-4">
+<a class="flex flex-col items-center justify-center text-text-muted-light dark:text-text-muted-dark gap-1" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted-light dark:text-text-muted-dark gap-1" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-xs font-medium">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary gap-1" href="#">
+<span class="material-symbols-outlined fill">person</span>
+<span class="text-xs font-bold">Profile</span>
+</a>
+</div>
+</div>
+</div>
+</body></html>

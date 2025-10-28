@@ -26,16 +26,25 @@ export interface User {
   updatedAt: Date;
 }
 
-export interface Dog {
+export interface Pet {
   id: string;
   ownerId: string;
   name: string;
+  petType: 'dog' | 'cat';
   age: string;
   breed?: string;
   notes: string;
   imageUrl?: string;
+  temperament?: string[];
+  specialNeeds?: string;
+  energyLevel?: 'low' | 'medium' | 'high';
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Keep Dog interface for backward compatibility
+export interface Dog extends Omit<Pet, 'petType'> {
+  petType?: 'dog' | 'cat';
 }
 
 export interface WalkerProfile {
@@ -52,6 +61,14 @@ export interface WalkerProfile {
   totalWalks: number;
   verified: boolean;
   tags: string[];
+  // Pet preferences
+  petPreferences?: {
+    dogs: boolean;
+    cats: boolean;
+    both?: boolean;
+  };
+  dogExperience?: string;
+  catExperience?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -161,7 +178,7 @@ export interface Match {
 export interface ActivityFeedItem {
   id: string;
   userId: string;
-  activityType: 'walk_completed' | 'new_match' | 'review_received' | 'profile_updated' | 'new_dog';
+  activityType: 'walk_completed' | 'new_match' | 'review_received' | 'profile_updated' | 'new_pet' | 'new_dog';
   activityData: {
     [key: string]: any;
   };
