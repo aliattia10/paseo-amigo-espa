@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS pets (
   age TEXT NOT NULL,
   breed TEXT,
   notes TEXT,
-  image_url TEXT NOT NULL,
+  image_url TEXT, -- Allow NULL for migration, can be made NOT NULL later
   temperament TEXT[] DEFAULT '{}',
   special_needs TEXT,
   energy_level TEXT CHECK (energy_level IN ('low', 'medium', 'high')),
@@ -34,8 +34,27 @@ CREATE TABLE IF NOT EXISTS pets (
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pets LIMIT 1) THEN
+    -- First, update any NULL image_urls in dogs table with a placeholder
+    UPDATE dogs 
+    SET image_url = 'https://api.dicebear.com/7.x/bottts/svg?seed=' || id::text
+    WHERE image_url IS NULL;
+    
+    -- Now migrate all data
     INSERT INTO pets (id, owner_id, name, pet_type, age, breed, notes, image_url, temperament, special_needs, energy_level, created_at, updated_at)
-    SELECT id, owner_id, name, COALESCE(pet_type, 'dog'), age, breed, notes, image_url, temperament, special_needs, energy_level, created_at, updated_at
+    SELECT 
+      id, 
+      owner_id, 
+      name, 
+      COALESCE(pet_type, 'dog'), 
+      age, 
+      breed, 
+      notes, 
+      COALESCE(image_url, 'https://api.dicebear.com/7.x/bottts/svg?seed=' || id::text), 
+      temperament, 
+      special_needs, 
+      energy_level, 
+      created_at, 
+      updated_at
     FROM dogs;
   END IF;
 END $$;
