@@ -97,6 +97,9 @@ const NewHomePage: React.FC = () => {
   const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ id: string; name: string; imageUrl: string } | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   // Load saved state from localStorage on mount
   React.useEffect(() => {
@@ -213,6 +216,48 @@ const NewHomePage: React.FC = () => {
     // TODO: Navigate to walker profile page
   };
 
+  // Swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!dragStart) return;
+    const deltaX = e.touches[0].clientX - dragStart.x;
+    const deltaY = e.touches[0].clientY - dragStart.y;
+    setDragOffset({ x: deltaX, y: deltaY });
+  };
+
+  const handleTouchEnd = () => {
+    if (!dragStart) return;
+    
+    // If swiped more than 100px, trigger action
+    if (Math.abs(dragOffset.x) > 100) {
+      if (dragOffset.x > 0) {
+        // Swiped right - like
+        setSwipeDirection('right');
+        setTimeout(() => {
+          handleLike();
+          setSwipeDirection(null);
+          setDragOffset({ x: 0, y: 0 });
+        }, 300);
+      } else {
+        // Swiped left - pass
+        setSwipeDirection('left');
+        setTimeout(() => {
+          handlePass();
+          setSwipeDirection(null);
+          setDragOffset({ x: 0, y: 0 });
+        }, 300);
+      }
+    } else {
+      // Reset if swipe wasn't far enough
+      setDragOffset({ x: 0, y: 0 });
+    }
+    
+    setDragStart(null);
+  };
+
   const currentProfile = profiles[currentIndex];
 
   return (
@@ -263,8 +308,8 @@ const NewHomePage: React.FC = () => {
       </header>
 
       {/* Main Content: Card Stack */}
-      <main className="flex-1 flex flex-col items-center p-4 pt-0 overflow-hidden max-w-md mx-auto w-full">
-        <div className="relative w-full max-w-[400px] h-[450px] flex items-center justify-center">
+      <main className="flex-1 flex flex-col items-center px-4 pt-2 pb-2 overflow-hidden max-w-md mx-auto w-full">
+        <div className="relative w-full max-w-[400px] flex-1 flex items-center justify-center" style={{ maxHeight: 'calc(100vh - 280px)' }}>
           {profiles.length === 0 ? (
             /* No more profiles message */
             <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 text-center">
@@ -300,33 +345,50 @@ const NewHomePage: React.FC = () => {
               {/* Main Card */}
               {currentProfile && (
             <div 
-              className="absolute bg-cover bg-center flex flex-col items-stretch justify-end rounded-xl shadow-xl w-full h-full"
+              className="absolute bg-cover bg-center flex flex-col items-stretch justify-end rounded-xl shadow-xl w-full h-full cursor-grab active:cursor-grabbing transition-transform"
               style={{
-                backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 40%), url("${currentProfile.imageUrl}")`
+                backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 50%), url("${currentProfile.imageUrl}")`,
+                transform: `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.05}deg)`,
+                opacity: swipeDirection ? 0.5 : 1
               }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
-              <div className="flex w-full items-end justify-between gap-4 p-4">
-                <div className="flex max-w-[440px] flex-1 flex-col gap-1">
-                  <p className="text-white text-base font-medium leading-normal bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full self-start">
-                    {currentProfile.distance} miles away
+              {/* Swipe indicators */}
+              {dragOffset.x > 50 && (
+                <div className="absolute top-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform rotate-12 shadow-lg">
+                  LIKE
+                </div>
+              )}
+              {dragOffset.x < -50 && (
+                <div className="absolute top-8 left-8 bg-red-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform -rotate-12 shadow-lg">
+                  NOPE
+                </div>
+              )}
+              
+              <div className="flex w-full items-end justify-between gap-4 p-4 pb-6">
+                <div className="flex max-w-[440px] flex-1 flex-col gap-2">
+                  <p className="text-white text-base font-medium leading-normal bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full self-start">
+                    📍 {currentProfile.distance} miles away
                   </p>
-                  <p className="text-white tracking-tight text-3xl font-bold leading-tight max-w-[440px]">
+                  <p className="text-white tracking-tight text-3xl font-bold leading-tight max-w-[440px] drop-shadow-lg">
                     {currentProfile.name}{currentProfile.age ? `, ${currentProfile.age}` : ''}
                   </p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
                       <span 
-                        className="material-symbols-outlined text-yellow-400" 
+                        className="material-symbols-outlined text-yellow-400 text-lg" 
                         style={{ fontVariationSettings: '"FILL" 1' }}
                       >
                         star
                       </span>
-                      <p className="text-white text-lg font-medium leading-normal">
+                      <p className="text-white text-base font-bold leading-normal">
                         {currentProfile.rating}
                       </p>
                     </div>
                     {currentProfile.hourlyRate && (
-                      <div className="bg-home-primary text-white px-3 py-1 rounded-full">
+                      <div className="bg-home-primary text-white px-3 py-1.5 rounded-full shadow-lg">
                         <p className="text-base font-bold">
                           ${currentProfile.hourlyRate}/hr
                         </p>
@@ -334,7 +396,7 @@ const NewHomePage: React.FC = () => {
                     )}
                   </div>
                   {currentProfile.bio && (
-                    <p className="text-white text-sm bg-black/30 backdrop-blur-sm px-3 py-2 rounded-lg">
+                    <p className="text-white text-sm leading-relaxed bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg mt-1 line-clamp-2">
                       {currentProfile.bio}
                     </p>
                   )}
@@ -347,27 +409,30 @@ const NewHomePage: React.FC = () => {
         </div>
       </main>
 
-      {/* Action Buttons - Positioned Higher */}
-      <div className="flex flex-shrink-0 gap-6 px-4 py-6 justify-center items-center bg-home-background-light dark:bg-home-background-dark max-w-md mx-auto w-full mb-4">
+      {/* Action Buttons - Fixed at bottom, above nav */}
+      <div className="flex flex-shrink-0 gap-6 px-4 py-4 justify-center items-center bg-home-background-light dark:bg-home-background-dark max-w-md mx-auto w-full" style={{ marginBottom: '64px' }}>
         <button 
           onClick={handlePass}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-red-500 shadow-lg hover:bg-red-50 dark:hover:bg-red-900/50 transition-all hover:scale-110 active:scale-95"
+          disabled={profiles.length === 0}
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-red-500 shadow-lg hover:bg-red-50 dark:hover:bg-red-900/50 transition-all hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="material-symbols-outlined text-4xl font-bold">close</span>
         </button>
         
         <button 
           onClick={handleLike}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-20 w-20 bg-home-primary text-white shadow-xl shadow-home-primary/40 hover:opacity-90 transition-all hover:scale-110 active:scale-95"
+          disabled={profiles.length === 0}
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-20 w-20 bg-home-primary text-white shadow-xl shadow-home-primary/40 hover:opacity-90 transition-all hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="material-symbols-outlined text-5xl font-bold">favorite</span>
         </button>
         
         <button 
           onClick={handleInfo}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-blue-500 shadow-lg hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-all hover:scale-110 active:scale-95"
+          disabled={profiles.length === 0}
+          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-blue-500 shadow-lg hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-all hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span className="material-symbols-outlined text-4xl font-bold">chat_bubble</span>
+          <span className="material-symbols-outlined text-4xl font-bold">info</span>
         </button>
       </div>
 
