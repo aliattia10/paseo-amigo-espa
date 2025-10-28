@@ -32,21 +32,8 @@ const RoleSelectionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Logo */}
-      <div className="flex justify-center px-4 pt-6 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-            <span className="material-symbols-outlined text-white text-3xl">pets</span>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-role-text-light dark:text-role-text-dark">Paseo</h2>
-            <p className="text-sm text-primary">Trusted sitters, happy pups.</p>
-          </div>
-        </div>
-      </div>
-
       {/* HeadlineText */}
-      <h1 className="text-role-text-light dark:text-role-text-dark tracking-tight text-[32px] font-bold leading-tight px-4 text-center pb-3 pt-2">
+      <h1 className="text-role-text-light dark:text-role-text-dark tracking-tight text-[32px] font-bold leading-tight px-4 text-center pb-3 pt-6">
         Join Paseo. Are you a...
       </h1>
 
