@@ -22,14 +22,20 @@ To enable cat support, you need to run the database migration in Supabase:
    - Navigate to SQL Editor
    - Copy the contents of `database/add_cat_support.sql`
    - Paste and run the SQL
+   - If you get errors about NULL image_url, the script will automatically fix them with placeholder images
 
 3. **What the Migration Does:**
    - Creates a new `pets` table (replacing `dogs`)
    - Adds `pet_type` column ('dog' or 'cat')
+   - Fixes any NULL image URLs with placeholder images
    - Migrates existing dog data to pets table
    - Updates bookings table to reference pets
    - Expands service types: walk, sitting, boarding, daycare, visit
    - Sets up proper RLS policies
+
+4. **Optional: Fix Existing Images**
+   - If you want to clean up placeholder images later
+   - Run `database/fix_pet_images.sql` to verify all images are set
 
 ## Features Added
 
