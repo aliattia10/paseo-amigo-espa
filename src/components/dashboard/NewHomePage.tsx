@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from '@/contexts/LocationContext';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import MatchModal from '@/components/ui/MatchModal';
@@ -22,7 +23,9 @@ interface Profile {
 const NewHomePage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const { location, locationEnabled, isGlobalMode, requestLocation, toggleGlobalMode } = useLocation();
   const { toast } = useToast();
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   
   // Dog profiles for sitters to browse
   const dogProfiles: Profile[] = [
@@ -111,7 +114,22 @@ const NewHomePage: React.FC = () => {
     if (savedRole) setUserRole(savedRole);
     if (savedPassed) setPassedProfiles(new Set(JSON.parse(savedPassed)));
     if (savedLiked) setLikedProfiles(new Set(JSON.parse(savedLiked)));
+    
+    // Show location prompt if not enabled and not in global mode
+    if (!locationEnabled && !isGlobalMode) {
+      setShowLocationPrompt(true);
+    }
   }, []);
+  
+  // Request location on mount if not in global mode
+  React.useEffect(() => {
+    if (!locationEnabled && !isGlobalMode && !showLocationPrompt) {
+      const timer = setTimeout(() => {
+        setShowLocationPrompt(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [locationEnabled, isGlobalMode]);
 
   // Get profiles based on user role, filtering out passed/liked ones
   const allProfiles = userRole === 'owner' ? walkerProfiles : dogProfiles;
@@ -275,8 +293,18 @@ const NewHomePage: React.FC = () => {
             Petflik
           </h1>
           <div className="flex w-12 items-center justify-end">
-            <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <span className="material-symbols-outlined">tune</span>
+            <button 
+              onClick={toggleGlobalMode}
+              className={`flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 p-0 transition-all ${
+                isGlobalMode 
+                  ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                  : 'bg-transparent text-[#0e1b13] dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+              title={isGlobalMode ? 'Global mode: See everyone' : 'Local mode: See nearby only'}
+            >
+              <span className="material-symbols-outlined">
+                {isGlobalMode ? 'public' : 'location_on'}
+              </span>
             </button>
           </div>
         </div>
@@ -449,6 +477,59 @@ const NewHomePage: React.FC = () => {
           onClose={() => setShowMatchModal(false)}
           matchedUser={matchedUser}
         />
+      )}
+      
+      {/* Location Permission Prompt */}
+      {showLocationPrompt && !locationEnabled && !isGlobalMode && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400">
+                  location_on
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Enable Location
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Allow location access to find nearby {userRole === 'owner' ? 'sitters' : 'pets'} in your area. 
+                You can also browse globally without location.
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <button
+                onClick={async () => {
+                  await requestLocation();
+                  setShowLocationPrompt(false);
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined">location_on</span>
+                Enable Location
+              </button>
+              
+              <button
+                onClick={() => {
+                  toggleGlobalMode();
+                  setShowLocationPrompt(false);
+                }}
+                className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined">public</span>
+                Browse Globally
+              </button>
+              
+              <button
+                onClick={() => setShowLocationPrompt(false)}
+                className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium py-2 transition-colors"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
