@@ -89,6 +89,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_time ON bookings(start_time, end_time);
 -- 4. NOTIFICATIONS TABLE (if not exists)
 -- ============================================
 
+-- Create notifications table if it doesn't exist
 CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -96,12 +97,33 @@ CREATE TABLE IF NOT EXISTS notifications (
   title TEXT NOT NULL,
   message TEXT NOT NULL,
   related_id UUID, -- Can reference bookings, reviews, etc.
-  is_read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Add is_read column if it doesn't exist
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'notifications' AND column_name = 'is_read'
+  ) THEN
+    ALTER TABLE notifications ADD COLUMN is_read BOOLEAN DEFAULT FALSE;
+  END IF;
+END $$;
+
+-- Create indexes
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications(user_id, is_read) WHERE is_read = FALSE;
+
+-- Create conditional index only if is_read column exists
+DO $$ 
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'notifications' AND column_name = 'is_read'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications(user_id, is_read) WHERE is_read = FALSE;
+  END IF;
+END $$;
 
 -- ============================================
 -- 5. STORED PROCEDURES / RPC FUNCTIONS
