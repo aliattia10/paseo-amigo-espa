@@ -11,6 +11,8 @@ const NewProfilePage: React.FC = () => {
   const { toast } = useToast();
   const [activeRole, setActiveRole] = useState<'sitter' | 'owner'>('sitter');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [pets, setPets] = useState<Array<{ id: string; name: string; breed: string; age: string; image_url: string; pet_type: 'dog' | 'cat' }>>([]);
+  const [loadingPets, setLoadingPets] = useState(true);
 
   const handleLogout = async () => {
     const { supabase } = await import('@/integrations/supabase/client');
@@ -89,6 +91,46 @@ const NewProfilePage: React.FC = () => {
       handleImageUpload(file);
     }
   };
+
+  // Load user's pets
+  React.useEffect(() => {
+    const fetchPets = async () => {
+      if (!currentUser || activeRole !== 'owner') {
+        setLoadingPets(false);
+        return;
+      }
+      
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data, error } = await supabase
+          .from('pets')
+          .select('id, name, breed, age, image_url, pet_type')
+          .eq('owner_id', currentUser.id);
+
+        if (error) {
+          // If table doesn't exist, try dogs table
+          if (error.message.includes('does not exist')) {
+            const { data: dogsData, error: dogsError } = await supabase
+              .from('dogs')
+              .select('id, name, breed, age, image_url')
+              .eq('owner_id', currentUser.id);
+            
+            if (!dogsError && dogsData) {
+              setPets(dogsData.map(dog => ({ ...dog, pet_type: 'dog' as const })));
+            }
+          }
+        } else {
+          setPets(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching pets:', error);
+      } finally {
+        setLoadingPets(false);
+      }
+    };
+
+    fetchPets();
+  }, [currentUser, activeRole]);
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark">
@@ -234,22 +276,42 @@ const NewProfilePage: React.FC = () => {
                 </button>
               </div>
               <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-background-light dark:bg-background-dark">
-                  <div 
-                    className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-primary/20"
-                    style={{ backgroundImage: "url('https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200')" }}
-                  />
-                  <div className="flex-1">
-                    <p className="font-bold text-text-primary-light dark:text-text-primary-dark">Max</p>
-                    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">Golden Retriever • 2 years</p>
+                {loadingPets ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                   </div>
-                  <button className="text-text-secondary-light dark:text-text-secondary-dark">
-                    <span className="material-symbols-outlined">edit</span>
-                  </button>
-                </div>
-                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center py-2">
-                  Add your dog's profile to find the perfect sitter
-                </p>
+                ) : pets.length > 0 ? (
+                  pets.map((pet) => (
+                    <div key={pet.id} className="flex items-center gap-3 p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                      <div 
+                        className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-primary/20"
+                        style={{ 
+                          backgroundImage: pet.image_url 
+                            ? `url('${pet.image_url}')` 
+                            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        }}
+                      />
+                      <div className="flex-1">
+                        <p className="font-bold text-text-primary-light dark:text-text-primary-dark">
+                          {pet.pet_type === 'cat' ? '🐱' : '🐶'} {pet.name}
+                        </p>
+                        <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                          {pet.breed || 'Mixed'} • {pet.age}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => navigate(`/pet/edit/${pet.id}`)}
+                        className="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined">edit</span>
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center py-2">
+                    Add your pet's profile to find the perfect sitter
+                  </p>
+                )}
               </div>
             </div>
           )}

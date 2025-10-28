@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 
 interface BottomNavigationProps {
   unreadCount?: number;
+  unreadNotifications?: number;
 }
 
-const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0 }) => {
+const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0, unreadNotifications = 0 }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -86,7 +87,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0 }) 
               : 'text-text-secondary-light dark:text-text-secondary-dark'
           }`}
         >
-          <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+          {unreadNotifications > 0 && (
+            <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold text-[10px]">
+              {unreadNotifications > 9 ? '9+' : unreadNotifications}
+            </span>
+          )}
           <span 
             className="material-symbols-outlined text-2xl"
             style={isActive('/notifications') ? { fontVariationSettings: '"FILL" 1' } : {}}

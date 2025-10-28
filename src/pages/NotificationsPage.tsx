@@ -366,7 +366,7 @@ const NotificationsPage: React.FC = () => {
       </main>
 
       {/* Bottom Navigation */}
-      <BottomNavigation />
+      <BottomNavigation unreadNotifications={notifications.filter(n => !n.isRead).length} />
     </div>
   );
 };

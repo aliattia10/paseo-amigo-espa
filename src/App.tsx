@@ -26,6 +26,7 @@ import NewHomePage from "./components/dashboard/NewHomePage";
 import NewProfilePage from "./components/profile/NewProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
+import PetEditPage from "./pages/PetEditPage";
 import DogOwnerProfileSetup from "./pages/DogOwnerProfileSetup";
 import SitterProfileSetup from "./pages/SitterProfileSetup";
 import AvailabilityPage from "./pages/AvailabilityPage";
@@ -696,6 +697,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <ProfileEditPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/pet/edit/:petId" 
+                  element={
+                    <ProtectedRoute>
+                      <PetEditPage />
                     </ProtectedRoute>
                   } 
                 />
