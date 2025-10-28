@@ -10,6 +10,12 @@
 5. Paste and click **Run**
 6. Wait for "✅ Migration completed successfully!" message
 
+### Step 1.5: Add Matches System (1 min)
+1. Click **New query** again
+2. Copy ALL content from `database/add_matches_table.sql`
+3. Paste and click **Run**
+4. Wait for "✅ Matches system created successfully!" message
+
 ### Step 2: Set Up Storage (1 min)
 1. Go to **Storage** in sidebar
 2. Check if `avatars` bucket exists

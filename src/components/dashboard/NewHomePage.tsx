@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
+import MatchModal from '@/components/ui/MatchModal';
 
 interface Profile {
   id: string;
@@ -17,6 +20,8 @@ interface Profile {
 
 const NewHomePage: React.FC = () => {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
   
   // Dog profiles for sitters to browse
   const dogProfiles: Profile[] = [
@@ -90,6 +95,8 @@ const NewHomePage: React.FC = () => {
   const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
   const [passedProfiles, setPassedProfiles] = useState<Set<string>>(new Set());
   const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
+  const [showMatchModal, setShowMatchModal] = useState(false);
+  const [matchedUser, setMatchedUser] = useState<{ id: string; name: string; imageUrl: string } | null>(null);
 
   // Load saved state from localStorage on mount
   React.useEffect(() => {
@@ -122,8 +129,17 @@ const NewHomePage: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleLike = () => {
+  const handleLike = async () => {
     const profile = profiles[currentIndex];
+    
+    if (!currentUser) {
+      toast({
+        title: 'Error',
+        description: 'Please sign in to like profiles',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     // Add to liked profiles
     const newLiked = new Set(likedProfiles);
@@ -131,13 +147,48 @@ const NewHomePage: React.FC = () => {
     setLikedProfiles(newLiked);
     localStorage.setItem('likedProfiles', JSON.stringify(Array.from(newLiked)));
     
-    // Move to next profile or stay at current if it's the last one
+    // Check for match in database
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Call the match function
+      const { data: isMatch, error } = await supabase.rpc('check_and_create_match', {
+        p_liker_id: currentUser.id,
+        p_liked_id: profile.id
+      });
+      
+      if (error && !error.message.includes('does not exist')) {
+        console.error('Match check error:', error);
+      }
+      
+      // If it's a match, show the modal
+      if (isMatch) {
+        setMatchedUser({
+          id: profile.id,
+          name: profile.name,
+          imageUrl: profile.imageUrl
+        });
+        setShowMatchModal(true);
+      } else {
+        // No match yet, just show success toast
+        toast({
+          title: '❤️ Liked!',
+          description: `You liked ${profile.name}`,
+        });
+      }
+    } catch (error) {
+      console.error('Error checking match:', error);
+      // Still show success even if match check fails
+      toast({
+        title: '❤️ Liked!',
+        description: `You liked ${profile.name}`,
+      });
+    }
+    
+    // Move to next profile
     if (currentIndex < profiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
-    
-    // Navigate to booking request page
-    navigate(`/booking/request?walkerId=${profile.id}&walkerName=${profile.name}&rate=${profile.hourlyRate || 15}`);
   };
 
   const handlePass = () => {
@@ -322,6 +373,15 @@ const NewHomePage: React.FC = () => {
 
       {/* Bottom Navigation Bar */}
       <BottomNavigation />
+      
+      {/* Match Modal */}
+      {matchedUser && (
+        <MatchModal
+          isOpen={showMatchModal}
+          onClose={() => setShowMatchModal(false)}
+          matchedUser={matchedUser}
+        />
+      )}
     </div>
   );
 };
