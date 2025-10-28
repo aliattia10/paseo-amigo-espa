@@ -2,17 +2,92 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const NewProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeRole, setActiveRole] = useState<'sitter' | 'owner'>('sitter');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const handleLogout = async () => {
     const { supabase } = await import('@/integrations/supabase/client');
     await supabase.auth.signOut();
     navigate('/auth?mode=login');
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!currentUser) return;
+    
+    setUploadingImage(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
+      const filePath = `profiles/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update user profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ profile_image: publicUrl })
+        .eq('id', currentUser.id);
+
+      if (updateError) throw updateError;
+      
+      toast({
+        title: t('common.success'),
+        description: 'Profile picture updated successfully',
+      });
+
+      // Reload page to show new image
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: t('common.error'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: t('common.error'),
+          description: 'Please select an image file',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: t('common.error'),
+          description: 'Image size must be less than 5MB',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      handleImageUpload(file);
+    }
   };
 
   return (
@@ -53,12 +128,30 @@ const NewProfilePage: React.FC = () => {
               <div 
                 className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md"
                 style={{
-                  backgroundImage: 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")'
+                  backgroundImage: userProfile?.profileImage 
+                    ? `url("${userProfile.profileImage}")`
+                    : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")'
                 }}
-              />
-              <button className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg">
-                <span className="material-symbols-outlined text-lg">edit</span>
-              </button>
+              >
+                {uploadingImage && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                  </div>
+                )}
+              </div>
+              <label htmlFor="profile-picture-upload" className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg cursor-pointer hover:bg-primary/90 transition-colors">
+                <input
+                  id="profile-picture-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  disabled={uploadingImage}
+                />
+                <span className="material-symbols-outlined text-lg">
+                  {uploadingImage ? 'hourglass_empty' : 'edit'}
+                </span>
+              </label>
             </div>
             
             <div className="flex flex-col items-center justify-center text-center">
