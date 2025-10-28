@@ -51,12 +51,26 @@ const AuthNew = () => {
 
     try {
       if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
-        navigate('/dashboard');
+        
+        console.log('Login successful, user:', data.user?.id);
+        
+        // Show success message
+        toast({
+          title: "Success!",
+          description: "Logged in successfully!",
+        });
+        
+        // Small delay to ensure auth state is updated
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Force hard redirect to dashboard to ensure clean state
+        window.location.href = '/dashboard';
+        return; // Prevent any further execution
       } else {
         // Signup
         const { data, error } = await supabase.auth.signUp({

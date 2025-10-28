@@ -110,26 +110,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
           console.log('AuthContext: Profile data in auth state change:', profile);
           setUserProfile(profile);
-          
-          // Redirect to dashboard after successful login - immediate redirect with navigate instead of reload
-          if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
-            console.log('AuthContext: Redirecting to dashboard after sign in');
-            // Use navigate instead of window.location for faster transition
-            window.history.pushState({}, '', '/dashboard');
-            window.location.reload(); // Still need reload to ensure proper state initialization
-          }
         } catch (error) {
           console.error('Error fetching user profile in auth state change:', error);
           // If profile doesn't exist or times out, set userProfile to null but don't fail
           setUserProfile(null);
-          
-          // Still redirect to dashboard even if profile fetch fails
-          if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
-            console.log('AuthContext: Redirecting to dashboard after sign in (profile fetch failed)');
-            // Use navigate instead of window.location for faster transition
-            window.history.pushState({}, '', '/dashboard');
-            window.location.reload();
-          }
         }
       } else {
         setUserProfile(null);
