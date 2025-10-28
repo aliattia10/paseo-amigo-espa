@@ -75,27 +75,19 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!currentUser) return;
 
     try {
-      // Use RPC function to update location
-      const { error } = await (supabase.rpc as any)('update_user_location', {
-        user_id: currentUser.id,
-        lat: lat,
-        lon: lon,
-      });
-
+      // Direct update to users table
+      const { error } = await supabase
+        .from('users')
+        .update({
+          latitude: lat,
+          longitude: lon,
+          location_enabled: true,
+          location_updated_at: new Date().toISOString(),
+        })
+        .eq('id', currentUser.id);
+      
       if (error) {
-        console.error('Error updating location via RPC:', error);
-        // Fallback to direct update
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            latitude: lat,
-            longitude: lon,
-            location_enabled: true,
-            location_updated_at: new Date().toISOString(),
-          } as any)
-          .eq('id', currentUser.id);
-        
-        if (updateError) throw updateError;
+        console.error('Error updating location:', error);
       }
     } catch (error) {
       console.error('Error updating location:', error);
