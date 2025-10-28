@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
+import { playNotificationSound } from '@/lib/sounds';
 
 interface Notification {
   id: string;
@@ -29,6 +30,19 @@ const NotificationsPage: React.FC = () => {
   useEffect(() => {
     fetchNotifications();
   }, [currentUser]);
+
+  // Play sound when new unread notifications arrive
+  useEffect(() => {
+    const unreadCount = notifications.filter(n => !n.isRead).length;
+    if (unreadCount > 0 && notifications.length > 0) {
+      // Only play on subsequent loads (not initial load)
+      const hasPlayedSound = sessionStorage.getItem('notificationSoundPlayed');
+      if (!hasPlayedSound) {
+        playNotificationSound();
+        sessionStorage.setItem('notificationSoundPlayed', 'true');
+      }
+    }
+  }, [notifications]);
 
   const fetchNotifications = async () => {
     if (!currentUser) return;

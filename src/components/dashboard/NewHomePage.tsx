@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import MatchModal from '@/components/ui/MatchModal';
+import { playMatchSound, playLikeSound } from '@/lib/sounds';
 
 interface Profile {
   id: string;
@@ -166,6 +167,7 @@ const NewHomePage: React.FC = () => {
       
       // If it's a match, show the modal
       if (isMatch) {
+        playMatchSound(); // Play celebration sound
         setMatchedUser({
           id: profile.id,
           name: profile.name,
@@ -174,6 +176,7 @@ const NewHomePage: React.FC = () => {
         setShowMatchModal(true);
       } else {
         // No match yet, just show success toast
+        playLikeSound(); // Play like sound
         toast({
           title: '❤️ Liked!',
           description: `You liked ${profile.name}`,

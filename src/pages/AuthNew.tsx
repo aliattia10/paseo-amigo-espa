@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
 import RoleSelection from '@/components/auth/RoleSelection';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import { playNotificationSound } from '@/lib/sounds';
 
 const AuthNew = () => {
   const [searchParams] = useSearchParams();
@@ -108,6 +109,9 @@ const AuthNew = () => {
                 message: `Hi ${name}! We're excited to have you join our community. ${selectedRole === 'owner' ? 'Start browsing sitters for your furry friend!' : 'Start connecting with dog owners in your area!'}`,
                 read: false
               });
+            
+            // Play welcome sound
+            setTimeout(() => playNotificationSound(), 500);
           } catch (notifError) {
             console.warn('Could not create welcome notification:', notifError);
           }
