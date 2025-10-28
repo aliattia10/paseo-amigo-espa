@@ -33,6 +33,11 @@ const BookingsPage: React.FC = () => {
   }, [currentUser]);
 
   const fetchBookings = async () => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data, error } = await supabase
@@ -46,7 +51,16 @@ const BookingsPage: React.FC = () => {
         .or(`owner_id.eq.${currentUser?.id},sitter_id.eq.${currentUser?.id}`)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, show empty state instead of error
+        if (error.message.includes('does not exist') || error.message.includes('not find')) {
+          console.warn('Bookings table not found. Please run database migrations.');
+          setBookings([]);
+          setLoading(false);
+          return;
+        }
+        throw error;
+      }
       
       const formattedBookings = data?.map((booking: any) => ({
         id: booking.id,
@@ -130,7 +144,7 @@ const BookingsPage: React.FC = () => {
         ))}
       </div>
       <main className="flex-1 space-y-3 px-4 pb-24">
-        {loading ? <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div> : filteredBookings.length === 0 ? <div className="flex flex-col items-center justify-center py-12 text-center"><span className="material-symbols-outlined text-6xl mb-4">event_busy</span><p className="font-medium">No bookings found</p></div> : filteredBookings.map((booking) => (
+        {loading ? <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div> : filteredBookings.length === 0 ? <div className="flex flex-col items-center justify-center py-12 text-center"><span className="material-symbols-outlined text-6xl mb-4 text-text-secondary-light dark:text-text-secondary-dark">event_busy</span><p className="font-medium text-text-primary-light dark:text-text-primary-dark mb-2">No bookings found</p><p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4">Start browsing sitters to make your first booking!</p></div> : filteredBookings.map((booking) => (
           <div key={booking.id} className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm space-y-3">
             <div className="flex justify-between items-start">
               <div><p className="text-lg font-bold">{booking.walker_name}</p><p className="text-sm">{booking.dog_name}</p></div>
