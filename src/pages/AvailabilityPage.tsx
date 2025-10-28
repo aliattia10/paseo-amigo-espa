@@ -33,6 +33,11 @@ const AvailabilityPage: React.FC = () => {
   }, [selectedDate]);
 
   const fetchAvailability = async () => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const startOfDay = new Date(selectedDate);
       startOfDay.setHours(0, 0, 0, 0);
@@ -48,7 +53,16 @@ const AvailabilityPage: React.FC = () => {
         .lte('end_time', endOfDay.toISOString())
         .order('start_time');
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, show empty state instead of error
+        if (error.message.includes('does not exist') || error.message.includes('not find')) {
+          console.warn('Availability table not found. Please run database migrations.');
+          setSlots([]);
+          setLoading(false);
+          return;
+        }
+        throw error;
+      }
       setSlots(data || []);
     } catch (error: any) {
       toast({

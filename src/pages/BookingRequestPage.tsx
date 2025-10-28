@@ -30,6 +30,8 @@ const BookingRequestPage: React.FC = () => {
   // Fetch user's dogs
   React.useEffect(() => {
     const fetchDogs = async () => {
+      if (!currentUser) return;
+      
       try {
         const { supabase } = await import('@/integrations/supabase/client');
         const { data, error } = await supabase
@@ -37,7 +39,15 @@ const BookingRequestPage: React.FC = () => {
           .select('id, name, image_url')
           .eq('owner_id', currentUser?.id);
         
-        if (error) throw error;
+        if (error) {
+          // If table doesn't exist, show empty state
+          if (error.message.includes('does not exist') || error.message.includes('not find')) {
+            console.warn('Dogs table not found. Please run database migrations.');
+            setDogs([]);
+            return;
+          }
+          throw error;
+        }
         setDogs(data || []);
         
         // Auto-select first dog if only one
@@ -46,6 +56,11 @@ const BookingRequestPage: React.FC = () => {
         }
       } catch (error: any) {
         console.error('Error fetching dogs:', error);
+        toast({
+          title: t('common.error'),
+          description: 'Failed to load your dogs',
+          variant: 'destructive',
+        });
       }
     };
     
@@ -80,8 +95,11 @@ const BookingRequestPage: React.FC = () => {
       const startDateTime = new Date(`${formData.date}T${formData.startTime}`);
       const endDateTime = new Date(startDateTime.getTime() + formData.duration * 60 * 60 * 1000);
 
-      // Create booking using RPC function
-      const { data: bookingId, error } = await supabase.rpc('create_booking', {
+      // Create booking using RPC function or direct insert
+      let bookingError = null;
+      
+      // Try RPC function first
+      const { data: bookingId, error: rpcError } = await supabase.rpc('create_booking', {
         p_owner_id: currentUser?.id,
         p_sitter_id: walkerId,
         p_dog_id: formData.dogId,
@@ -93,7 +111,29 @@ const BookingRequestPage: React.FC = () => {
         p_total_price: total,
       });
 
-      if (error) throw error;
+      // If RPC doesn't exist, try direct insert
+      if (rpcError && (rpcError.message.includes('does not exist') || rpcError.message.includes('not find'))) {
+        const { error: insertError } = await supabase
+          .from('bookings')
+          .insert({
+            owner_id: currentUser?.id,
+            sitter_id: walkerId,
+            dog_id: formData.dogId,
+            start_time: startDateTime.toISOString(),
+            end_time: endDateTime.toISOString(),
+            service_type: 'walk',
+            location: 'TBD',
+            notes: formData.notes || '',
+            total_price: total,
+            commission_fee: platformFee,
+            status: 'requested',
+          });
+        bookingError = insertError;
+      } else {
+        bookingError = rpcError;
+      }
+
+      if (bookingError) throw bookingError;
 
       toast({
         title: 'Booking Request Sent!',

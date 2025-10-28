@@ -137,7 +137,13 @@ const DogOwnerProfileSetup: React.FC = () => {
           energy_level: dogData.energyLevel,
         });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, provide helpful message
+        if (error.message.includes('does not exist') || error.message.includes('not find')) {
+          throw new Error('Database not set up. Please contact support or run database migrations.');
+        }
+        throw error;
+      }
 
       toast({
         title: t('common.success'),

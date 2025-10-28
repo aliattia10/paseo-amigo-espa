@@ -89,7 +89,13 @@ const ProfileEditPage: React.FC = () => {
         .update(updateData)
         .eq('id', currentUser?.id);
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, provide helpful message
+        if (error.message.includes('does not exist') || error.message.includes('not find')) {
+          throw new Error('Database not set up. Please contact support or run database migrations.');
+        }
+        throw error;
+      }
 
       toast({
         title: t('common.success'),

@@ -83,7 +83,12 @@ const AuthNew = () => {
             });
           
           if (profileError) {
-            console.error('Profile creation error:', profileError);
+            // Log error but don't block signup if table doesn't exist
+            if (profileError.message.includes('does not exist') || profileError.message.includes('not find')) {
+              console.warn('Users table not found. Profile will be created on first login. Please run database migrations.');
+            } else {
+              console.error('Profile creation error:', profileError);
+            }
           }
         }
         
