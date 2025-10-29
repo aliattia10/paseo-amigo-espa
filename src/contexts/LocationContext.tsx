@@ -61,7 +61,28 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return;
     }
 
+    // Check if permission is already granted
+    if (navigator.permissions) {
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+        console.log('Location permission status:', permissionStatus.state);
+        
+        if (permissionStatus.state === 'denied') {
+          toast({
+            title: 'Location blocked',
+            description: 'Please click the location icon (🔒) in your browser address bar and allow location access',
+            variant: 'destructive',
+            duration: 6000,
+          });
+          return;
+        }
+      } catch (e) {
+        console.log('Permissions API not supported, continuing with geolocation request');
+      }
+    }
+
     try {
+      console.log('Requesting location...');
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
@@ -70,6 +91,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
       });
 
+      console.log('Location received:', position.coords);
       const { latitude, longitude } = position.coords;
       setLocation({ latitude, longitude });
       setLocationEnabled(true);
@@ -89,15 +111,26 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (error: any) {
       console.error('Error getting location:', error);
       
-      // Only show toast if user explicitly denied (not if it just timed out or unavailable)
+      let errorMessage = 'Unable to get your location';
+      let errorDescription = 'Please try again or browse globally';
+      
       if (error?.code === 1) { // PERMISSION_DENIED
-        toast({
-          title: 'Location access denied',
-          description: 'To enable location, click the location icon in your browser address bar',
-          variant: 'destructive',
-        });
+        errorMessage = 'Location access denied';
+        errorDescription = 'Click the location icon (🔒) in your browser address bar to allow location access';
+      } else if (error?.code === 2) { // POSITION_UNAVAILABLE
+        errorMessage = 'Location unavailable';
+        errorDescription = 'Your location could not be determined. Try again or browse globally';
+      } else if (error?.code === 3) { // TIMEOUT
+        errorMessage = 'Location request timed out';
+        errorDescription = 'Please check your connection and try again';
       }
-      // For other errors, fail silently - the UI will show the prompt
+      
+      toast({
+        title: errorMessage,
+        description: errorDescription,
+        variant: 'destructive',
+        duration: 6000,
+      });
     }
   };
 

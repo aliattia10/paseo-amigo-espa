@@ -676,14 +676,17 @@ const NewHomePage: React.FC = () => {
                 Allow location access to find nearby {userRole === 'owner' ? 'sitters' : 'pets'} in your area. 
                 You can also browse globally without location.
               </p>
-              <details className="text-xs text-gray-500 dark:text-gray-400">
-                <summary className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">
-                  Having trouble enabling location?
+              <details className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                <summary className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 font-medium">
+                  📍 How to enable location on desktop
                 </summary>
-                <div className="mt-2 pl-2 space-y-1">
-                  <p>1. Click the 🔒 or location icon in your browser's address bar</p>
-                  <p>2. Select "Allow" or "Always allow" for location</p>
-                  <p>3. Refresh the page if needed</p>
+                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg space-y-2 text-left">
+                  <p className="font-medium text-gray-700 dark:text-gray-300">When you click "Enable Location":</p>
+                  <p>1. Your browser will show a popup asking for permission</p>
+                  <p>2. Click <strong>"Allow"</strong> in the popup</p>
+                  <p className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <strong>If blocked:</strong> Look for the 🔒 or 📍 icon in your browser's address bar (top left), click it, and select "Allow location"
+                  </p>
                 </div>
               </details>
             </div>
