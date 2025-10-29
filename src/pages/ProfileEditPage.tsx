@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
 
 const ProfileEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -21,8 +22,11 @@ const ProfileEditPage: React.FC = () => {
     bio: userProfile?.bio || '',
     profilePictureUrl: userProfile?.profileImage || '',
   });
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  
+  // Tinder-style multiple photos (max 6)
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const MAX_PHOTOS = 6;
 
   // Update form data when userProfile changes
   React.useEffect(() => {
@@ -35,12 +39,26 @@ const ProfileEditPage: React.FC = () => {
         bio: userProfile.bio || '',
         profilePictureUrl: userProfile.profileImage || '',
       });
+      
+      // Load existing photos from profile_image (stored as JSON array)
+      if (userProfile.profileImage) {
+        try {
+          const parsed = JSON.parse(userProfile.profileImage);
+          if (Array.isArray(parsed)) {
+            setPhotos(parsed);
+          } else {
+            setPhotos([userProfile.profileImage]);
+          }
+        } catch {
+          setPhotos([userProfile.profileImage]);
+        }
+      }
     }
   }, [userProfile]);
 
-  const handleImageUpload = async (file: File) => {
+  const handleImageUpload = async (file: File, index: number) => {
     console.log('=== IMAGE UPLOAD START ===');
-    console.log('File:', file.name, file.type, file.size);
+    console.log('File:', file.name, file.type, file.size, 'Index:', index);
     
     if (!currentUser) {
       toast({
@@ -51,7 +69,7 @@ const ProfileEditPage: React.FC = () => {
       return;
     }
 
-    setUploadingImage(true);
+    setUploadingIndex(index);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
@@ -74,12 +92,12 @@ const ProfileEditPage: React.FC = () => {
       }
       
       const fileExt = file.name.split('.').pop();
-      const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${currentUser.id}/photo-${index}-${Date.now()}.${fileExt}`;
       console.log('Uploading to:', fileName);
 
-      // Delete old image if exists
-      if (formData.profilePictureUrl) {
-        const oldPath = formData.profilePictureUrl.split('/').slice(-2).join('/');
+      // Delete old image at this index if exists
+      if (photos[index]) {
+        const oldPath = photos[index].split('/').slice(-2).join('/');
         console.log('Deleting old image:', oldPath);
         await supabase.storage.from('avatars').remove([oldPath]);
       }
@@ -111,12 +129,19 @@ const ProfileEditPage: React.FC = () => {
       
       console.log('Public URL:', publicUrl);
 
-      // Update the profile picture in the database immediately
-      console.log('Updating database with new image URL...');
+      // Update photos array
+      const newPhotos = [...photos];
+      newPhotos[index] = publicUrl;
+      setPhotos(newPhotos);
+
+      // Update the profile pictures in the database immediately
+      console.log('Updating database with new photos array...');
+      const photosJson = JSON.stringify(newPhotos.filter(p => p)); // Remove empty slots
+      
       const { data: updateData, error: updateError } = await supabase
         .from('users')
         .update({ 
-          profile_image: publicUrl,
+          profile_image: photosJson,
           updated_at: new Date().toISOString()
         })
         .eq('id', currentUser.id)
@@ -132,7 +157,7 @@ const ProfileEditPage: React.FC = () => {
       }
 
       console.log('Database updated:', updateData);
-      setFormData({ ...formData, profilePictureUrl: publicUrl });
+      setFormData({ ...formData, profilePictureUrl: newPhotos[0] || publicUrl });
       
       // Refresh the user profile in auth context
       console.log('Refreshing user profile...');
@@ -141,7 +166,7 @@ const ProfileEditPage: React.FC = () => {
       
       toast({
         title: 'Success!',
-        description: 'Profile picture updated successfully',
+        description: `Photo ${index + 1} uploaded successfully`,
       });
     } catch (error: any) {
       console.error('Image upload error:', error);
@@ -312,43 +337,33 @@ const ProfileEditPage: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-4 space-y-4">
-        {/* Profile Picture */}
-        <div className="flex flex-col items-center gap-4 py-4">
-          <div className="relative">
-            <div 
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md"
-              style={{
-                backgroundImage: formData.profilePictureUrl 
-                  ? `url("${formData.profilePictureUrl}")`
-                  : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")'
-              }}
-            />
-            {uploadingImage && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-              </div>
-            )}
-          </div>
-          <input
-            id="profile-picture"
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-            disabled={uploadingImage}
-          />
-          <label 
-            htmlFor="profile-picture"
-            className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 text-primary ${uploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-            onClick={(e) => {
-              if (uploadingImage) {
-                e.preventDefault();
+        {/* Tinder-Style Photo Gallery */}
+        <div className="mb-4">
+          <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark px-4 mb-2">
+            Your Photos
+          </h3>
+          <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4 mb-3">
+            Add up to 6 photos. Your first photo will be your main profile picture.
+          </p>
+          <TinderPhotoGallery
+            photos={photos}
+            onPhotosChange={async (newPhotos) => {
+              setPhotos(newPhotos);
+              // Update database
+              try {
+                const { supabase } = await import('@/integrations/supabase/client');
+                const photosJson = JSON.stringify(newPhotos.filter(p => p));
+                await supabase
+                  .from('users')
+                  .update({ profile_image: photosJson })
+                  .eq('id', currentUser!.id);
+                await refreshUserProfile();
+              } catch (error) {
+                console.error('Failed to update photos:', error);
               }
             }}
-          >
-            <span className="material-symbols-outlined mr-2">photo_camera</span>
-            {uploadingImage ? 'Uploading...' : 'Change Photo'}
-          </label>
+            maxPhotos={MAX_PHOTOS}
+          />
         </div>
 
         {/* Form Fields */}
