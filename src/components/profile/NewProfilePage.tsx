@@ -186,8 +186,8 @@ const NewProfilePage: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 pb-24">
-        {/* Profile Header */}
-        <div className="px-4 pt-4">
+        {/* Profile Header - Centered */}
+        <div className="flex flex-col items-center justify-center px-4 pt-4 max-w-md mx-auto">
           {/* Name and Info */}
           <div className="flex flex-col items-center justify-center text-center mb-3">
             <p className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
@@ -205,8 +205,8 @@ const NewProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Photo Gallery - Super Compact */}
-          <div className="mb-1.5">
+          {/* Photo Gallery - Super Compact & Centered */}
+          <div className="mb-1.5 w-full">
             <h3 className="text-[8px] font-medium text-text-secondary-light dark:text-text-secondary-dark mb-0.5 uppercase tracking-wider opacity-70">
               Photos
             </h3>
@@ -252,22 +252,17 @@ const NewProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex w-full max-w-[480px] gap-3">
+          {/* Action Buttons - Centered */}
+          <div className="flex w-full gap-3 justify-center mt-3">
             <button 
               onClick={() => navigate('/profile/edit')}
-              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] flex-1"
+              className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em]"
             >
               <span className="truncate">{t('dashboard.editProfile')}</span>
             </button>
             <button 
-              onClick={() => {
-                // TODO: Navigate to public profile view
-                toast({
-                  title: 'Coming Soon',
-                  description: 'Public profile view will be available soon!',
-                });
-              }}
-              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] flex-1"
+              onClick={() => navigate('/profile/public')}
+              className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]"
             >
               <span className="truncate">View Public Profile</span>
             </button>
