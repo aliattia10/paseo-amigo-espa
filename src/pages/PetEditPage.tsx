@@ -199,28 +199,40 @@ const PetEditPage: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('=== FILE CHANGE EVENT ===');
     const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: t('common.error'),
-          description: 'Please select an image file',
-          variant: 'destructive',
-        });
-        return;
-      }
-      
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: t('common.error'),
-          description: 'Image size must be less than 5MB',
-          variant: 'destructive',
-        });
-        return;
-      }
-      
-      handleImageUpload(file);
+    console.log('File selected:', file);
+    
+    if (!file) {
+      console.log('No file selected');
+      return;
     }
+    
+    if (!file.type.startsWith('image/')) {
+      console.error('Invalid file type:', file.type);
+      toast({
+        title: t('common.error'),
+        description: 'Please select an image file',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      console.error('File too large:', file.size);
+      toast({
+        title: t('common.error'),
+        description: 'Image size must be less than 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    console.log('File validation passed, starting upload...');
+    handleImageUpload(file);
+    
+    // Reset input so same file can be selected again
+    e.target.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -538,25 +550,24 @@ const PetEditPage: React.FC = () => {
             )}
             
             {/* Upload Button */}
-            <label htmlFor="pet-picture" className="cursor-pointer block">
-              <input
-                id="pet-picture"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-                disabled={uploadingImage || petData.imageUrls.length >= 6}
-              />
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors" 
-                disabled={uploadingImage || petData.imageUrls.length >= 6}
-              >
-                <span className="material-symbols-outlined mr-2">add_photo_alternate</span>
-                {uploadingImage ? 'Uploading...' : petData.imageUrls.length >= 6 ? 'Maximum 6 photos' : `Add Photo (${petData.imageUrls.length}/6)`}
-              </Button>
-            </label>
+            <input
+              id="pet-picture"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              disabled={uploadingImage || petData.imageUrls.length >= 6}
+            />
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => document.getElementById('pet-picture')?.click()}
+              className="w-full text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors" 
+              disabled={uploadingImage || petData.imageUrls.length >= 6}
+            >
+              <span className="material-symbols-outlined mr-2">add_photo_alternate</span>
+              {uploadingImage ? 'Uploading...' : petData.imageUrls.length >= 6 ? 'Maximum 6 photos' : `Add Photo (${petData.imageUrls.length}/6)`}
+            </Button>
             
             {uploadingImage && (
               <div className="flex items-center justify-center gap-2 mt-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
