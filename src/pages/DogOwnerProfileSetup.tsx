@@ -270,52 +270,21 @@ const DogOwnerProfileSetup: React.FC = () => {
             <PetTypeSelector value={petType} onChange={setPetType} />
           </div>
 
-          {/* Pet Picture - Required */}
-          <div className="flex flex-col items-center gap-4 py-4">
-            <div className="relative">
-              <div 
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-40 w-40 border-4 border-card-light dark:border-card-dark shadow-lg"
-                style={{
-                  backgroundImage: petData.imageUrl 
-                    ? `url("${petData.imageUrl}")`
-                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                }}
-              >
-                {!petData.imageUrl && (
-                  <div className="flex items-center justify-center h-full">
-                    <span className="material-symbols-outlined text-white text-6xl">pets</span>
-                  </div>
-                )}
-              </div>
-              {uploadingImage && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                </div>
-              )}
-            </div>
-            
-            <label htmlFor="pet-picture" className="cursor-pointer">
-              <input
-                id="pet-picture"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-                required
-              />
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors" 
-                disabled={uploadingImage}
-              >
-                <span className="material-symbols-outlined mr-2">photo_camera</span>
-                {uploadingImage ? 'Uploading...' : petData.imageUrl ? 'Change Photo' : 'Upload Photo *'}
-              </Button>
-            </label>
-            
-            {!petData.imageUrl && (
-              <p className="text-xs text-red-500 font-medium">* Photo is required</p>
+          {/* Tinder-Style Pet Photo Gallery */}
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark px-4 mb-2">
+              {petType === 'dog' ? 'Dog' : 'Cat'} Photos <span className="text-red-500">*</span>
+            </h3>
+            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4 mb-3">
+              Add up to 6 photos of your {petType}. At least one photo is required.
+            </p>
+            <TinderPhotoGallery
+              photos={photos}
+              onPhotosChange={(newPhotos) => setPhotos(newPhotos)}
+              maxPhotos={MAX_PHOTOS}
+            />
+            {photos.filter(p => p).length === 0 && (
+              <p className="text-xs text-red-500 font-medium text-center mt-2">* At least one photo is required</p>
             )}
           </div>
 

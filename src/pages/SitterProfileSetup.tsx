@@ -194,42 +194,19 @@ const SitterProfileSetup: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Profile Picture - Optional */}
-          <div className="flex flex-col items-center gap-4 py-4">
-            <div className="relative">
-              <div 
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-lg"
-                style={{
-                  backgroundImage: sitterData.avatarUrl 
-                    ? `url("${sitterData.avatarUrl}")`
-                    : `url("https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.email || 'default'}")`
-                }}
-              />
-              {uploadingImage && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                </div>
-              )}
-            </div>
-            
-            <label htmlFor="profile-picture" className="cursor-pointer">
-              <input
-                id="profile-picture"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors" 
-                disabled={uploadingImage}
-              >
-                <span className="material-symbols-outlined mr-2">photo_camera</span>
-                {uploadingImage ? 'Uploading...' : sitterData.avatarUrl ? 'Change Photo' : 'Upload Photo'}
-              </Button>
-            </label>
+          {/* Tinder-Style Photo Gallery */}
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark px-4 mb-2">
+              Your Photos
+            </h3>
+            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4 mb-3">
+              Add up to 6 photos. Your first photo will be your main profile picture.
+            </p>
+            <TinderPhotoGallery
+              photos={photos}
+              onPhotosChange={(newPhotos) => setPhotos(newPhotos)}
+              maxPhotos={MAX_PHOTOS}
+            />
           </div>
 
           {/* Bio - Required */}
