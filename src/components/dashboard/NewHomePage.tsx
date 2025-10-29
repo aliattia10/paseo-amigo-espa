@@ -40,7 +40,7 @@ const NewHomePage: React.FC = () => {
         const { data: pets, error: petsError } = await supabase
           .from('pets')
           .select('id, name, age, image_url, owner_id')
-          .limit(20);
+          .order('created_at', { ascending: false });
 
         console.log('=== LOADING PET PROFILES ===');
         console.log('Pets data:', pets);
@@ -62,7 +62,7 @@ const NewHomePage: React.FC = () => {
               name: pet.name,
               age: pet.age ? parseInt(pet.age) : undefined,
               distance: Math.random() * 10, // TODO: Calculate real distance
-              rating: 0, // No fake ratings - will be based on actual reviews
+              rating: 5.0, // Default good rating for new profiles
               imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
               type: 'dog' as const,
             };
@@ -76,9 +76,9 @@ const NewHomePage: React.FC = () => {
         // Load sitter profiles (for pet owners to browse)
         const { data: sitters, error: sittersError } = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, location_lat, location_lng')
-          .eq('role', 'sitter')
-          .limit(20);
+          .select('id, name, bio, profile_image, hourly_rate, latitude as location_lat, longitude as location_lng, user_type')
+          .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
+          .order('created_at', { ascending: false });
 
         console.log('=== LOADING SITTER PROFILES ===');
         console.log('Sitters data:', sitters);
@@ -107,7 +107,7 @@ const NewHomePage: React.FC = () => {
               id: sitter.id,
               name: sitter.name || 'Pet Sitter',
               distance: Math.random() * 10, // TODO: Calculate real distance based on location_lat/lng
-              rating: 0, // No fake ratings - will be based on actual reviews
+              rating: 5.0, // Default good rating for new profiles
               imageUrls: imageUrls,
               bio: sitter.bio || undefined,
               hourlyRate: sitter.hourly_rate || 15,
@@ -128,6 +128,33 @@ const NewHomePage: React.FC = () => {
     };
 
     loadProfiles();
+
+    // Subscribe to real-time updates for new profiles
+    const petsSubscription = supabase
+      .channel('pets-changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pets' }, (payload) => {
+        console.log('New pet profile detected!', payload);
+        loadProfiles(); // Reload profiles when new pet is added
+      })
+      .subscribe();
+
+    const usersSubscription = supabase
+      .channel('users-changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
+        console.log('New user profile detected!', payload);
+        loadProfiles(); // Reload profiles when new user is added
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, (payload) => {
+        console.log('User profile updated!', payload);
+        loadProfiles(); // Reload profiles when user is updated
+      })
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      petsSubscription.unsubscribe();
+      usersSubscription.unsubscribe();
+    };
   }, []);
   
   // No mock data - only show real profiles from database
