@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import PetTypeSelector from '@/components/pet/PetTypeSelector';
 import BreedSelector from '@/components/pet/BreedSelector';
+import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
 
 const DogOwnerProfileSetup: React.FC = () => {
   const { t } = useTranslation();
@@ -29,6 +30,8 @@ const DogOwnerProfileSetup: React.FC = () => {
     specialNeeds: '',
     energyLevel: 'medium' as 'low' | 'medium' | 'high',
   });
+  const [photos, setPhotos] = useState<string[]>([]);
+  const MAX_PHOTOS = 6;
 
   const handleImageUpload = async (file: File) => {
     if (!currentUser) return;
@@ -115,10 +118,10 @@ const DogOwnerProfileSetup: React.FC = () => {
       return;
     }
     
-    if (!petData.imageUrl) {
+    if (photos.filter(p => p).length === 0) {
       toast({
         title: t('common.error'),
-        description: `Please upload a picture of your ${petType}`,
+        description: `Please upload at least one picture of your ${petType}`,
         variant: 'destructive',
       });
       return;
@@ -129,8 +132,8 @@ const DogOwnerProfileSetup: React.FC = () => {
       console.log('=== CREATING PET PROFILE ===');
       console.log('Pet data:', petData);
       
-      // Wrap image URL in array for consistency with multi-image support
-      const imageUrlJson = JSON.stringify([petData.imageUrl]);
+      // Use photos array for multi-image support
+      const imageUrlJson = JSON.stringify(photos.filter(p => p));
       
       // Try pets table first (new structure)
       const { error: petsError } = await supabase

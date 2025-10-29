@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import PetPreferencesSelector from '@/components/sitter/PetPreferencesSelector';
+import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
 
 const SitterProfileSetup: React.FC = () => {
   const { t } = useTranslation();
@@ -28,6 +29,8 @@ const SitterProfileSetup: React.FC = () => {
     dogExperience: '',
     catExperience: '',
   });
+  const [photos, setPhotos] = useState<string[]>([]);
+  const MAX_PHOTOS = 6;
 
   const handleImageUpload = async (file: File) => {
     if (!currentUser) return;
@@ -127,8 +130,11 @@ const SitterProfileSetup: React.FC = () => {
         hourly_rate: sitterData.hourlyRate,
       };
 
-      if (sitterData.avatarUrl) {
-        updateData.avatar_url = sitterData.avatarUrl;
+      // Save photos as JSON array
+      if (photos.filter(p => p).length > 0) {
+        updateData.profile_image = JSON.stringify(photos.filter(p => p));
+      } else if (sitterData.avatarUrl) {
+        updateData.profile_image = JSON.stringify([sitterData.avatarUrl]);
       }
 
       const { error } = await supabase

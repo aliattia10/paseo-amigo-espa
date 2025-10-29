@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
 
 const PetEditPage: React.FC = () => {
   const { t } = useTranslation();
