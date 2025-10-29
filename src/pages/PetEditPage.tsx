@@ -143,12 +143,46 @@ const PetEditPage: React.FC = () => {
       
       // Add new image to the array
       const newImageUrls = [...petData.imageUrls, publicUrl];
+      
+      // Save to database immediately
+      console.log('Saving to database...');
+      const imageUrlJson = JSON.stringify(newImageUrls);
+      const { error: updateError } = await supabase
+        .from('pets')
+        .update({
+          image_url: imageUrlJson,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', petId);
+
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        // Try dogs table as fallback
+        if (updateError.message.includes('does not exist')) {
+          const { error: dogError } = await supabase
+            .from('dogs')
+            .update({
+              image_url: imageUrlJson,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', petId);
+          
+          if (dogError) {
+            console.error('Dogs table update error:', dogError);
+            throw new Error('Failed to save image to database');
+          }
+        } else {
+          throw updateError;
+        }
+      }
+      
+      console.log('Database updated successfully');
       setPetData({ ...petData, imageUrls: newImageUrls });
       setCurrentImageIndex(newImageUrls.length - 1); // Show the newly uploaded image
       
       toast({
         title: t('common.success'),
-        description: `${petData.petType === 'cat' ? 'Cat' : 'Pet'} picture uploaded successfully`,
+        description: `${petData.petType === 'cat' ? 'Cat' : 'Pet'} picture uploaded and saved successfully`,
       });
       
       console.log('=== IMAGE UPLOAD END ===');
@@ -425,14 +459,52 @@ const PetEditPage: React.FC = () => {
                   {petData.imageUrls.length > 0 && (
                     <button
                       type="button"
-                      onClick={() => {
-                        const newUrls = petData.imageUrls.filter((_, i) => i !== currentImageIndex);
-                        setPetData({ ...petData, imageUrls: newUrls });
-                        setCurrentImageIndex(Math.max(0, currentImageIndex - 1));
-                        toast({
-                          title: 'Photo removed',
-                          description: 'Photo will be deleted when you save',
-                        });
+                      onClick={async () => {
+                        if (!confirm('Delete this photo?')) return;
+                        
+                        try {
+                          const newUrls = petData.imageUrls.filter((_, i) => i !== currentImageIndex);
+                          
+                          // Save to database immediately
+                          const imageUrlJson = JSON.stringify(newUrls);
+                          const { error: updateError } = await supabase
+                            .from('pets')
+                            .update({
+                              image_url: imageUrlJson,
+                              updated_at: new Date().toISOString(),
+                            })
+                            .eq('id', petId);
+
+                          if (updateError) {
+                            // Try dogs table as fallback
+                            if (updateError.message.includes('does not exist')) {
+                              const { error: dogError } = await supabase
+                                .from('dogs')
+                                .update({
+                                  image_url: imageUrlJson,
+                                  updated_at: new Date().toISOString(),
+                                })
+                                .eq('id', petId);
+                              
+                              if (dogError) throw dogError;
+                            } else {
+                              throw updateError;
+                            }
+                          }
+                          
+                          setPetData({ ...petData, imageUrls: newUrls });
+                          setCurrentImageIndex(Math.max(0, currentImageIndex - 1));
+                          toast({
+                            title: 'Photo deleted',
+                            description: 'Photo has been removed successfully',
+                          });
+                        } catch (error: any) {
+                          toast({
+                            title: 'Error',
+                            description: 'Failed to delete photo',
+                            variant: 'destructive',
+                          });
+                        }
                       }}
                       className="absolute bottom-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors backdrop-blur-sm"
                     >
