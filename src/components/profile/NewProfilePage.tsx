@@ -205,12 +205,12 @@ const NewProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Photo Gallery - Extra Tiny */}
-          <div className="mb-2">
-            <h3 className="text-[10px] font-semibold text-text-primary-light dark:text-text-primary-dark mb-1 uppercase tracking-wide">
+          {/* Photo Gallery - Super Compact */}
+          <div className="mb-1.5">
+            <h3 className="text-[8px] font-medium text-text-secondary-light dark:text-text-secondary-dark mb-0.5 uppercase tracking-wider opacity-70">
               Photos
             </h3>
-            <div className="grid grid-cols-3 gap-0.5">
+            <div className="grid grid-cols-6 gap-0.5">
               {(() => {
                 try {
                   let photoArray = [];
@@ -224,27 +224,27 @@ const NewProfilePage: React.FC = () => {
                   return Array.from({ length: 6 }).map((_, index) => (
                     <div key={index} className="relative aspect-square">
                       {photoArray[index] ? (
-                        <div className="relative w-full h-full rounded overflow-hidden bg-gray-200 dark:bg-gray-800">
+                        <div className="relative w-full h-full rounded-sm overflow-hidden bg-gray-200 dark:bg-gray-800">
                           <img
                             src={photoArray[index]}
                             alt={`Photo ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
                           {index === 0 && (
-                            <div className="absolute bottom-0 left-0 bg-primary text-white text-[7px] font-bold px-0.5 py-0.5 rounded-br">
-                              M
+                            <div className="absolute bottom-0 left-0 bg-primary text-white text-[6px] font-bold px-0.5 py-0.5 rounded-br">
+                              1
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="w-full h-full rounded border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
+                        <div className="w-full h-full rounded-sm border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-30"></div>
                       )}
                     </div>
                   ));
                 } catch {
                   return Array.from({ length: 6 }).map((_, index) => (
                     <div key={index} className="relative aspect-square">
-                      <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
+                      <div className="w-full h-full rounded-sm border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-30"></div>
                     </div>
                   ));
                 }
@@ -342,28 +342,28 @@ const NewProfilePage: React.FC = () => {
                     }
                     
                     return (
-                      <div key={pet.id} className="flex items-center gap-3 p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                      <div key={pet.id} className="flex items-center gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
                         <div 
-                          className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-primary/20"
+                          className="w-12 h-12 rounded-full bg-cover bg-center border border-primary/20 flex-shrink-0"
                           style={{ 
                             backgroundImage: imageUrl 
                               ? `url('${imageUrl}')` 
                               : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                           }}
                         />
-                        <div className="flex-1">
-                          <p className="font-bold text-text-primary-light dark:text-text-primary-dark">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-text-primary-light dark:text-text-primary-dark truncate">
                             {pet.pet_type === 'cat' ? '🐱' : '🐶'} {pet.name}
                           </p>
-                          <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                          <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">
                             {pet.breed || 'Mixed'} • {pet.age}
                           </p>
                         </div>
                         <button 
                           onClick={() => navigate(`/pet/${pet.id}/edit`)}
-                          className="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors"
+                          className="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors flex-shrink-0"
                         >
-                          <span className="material-symbols-outlined">edit</span>
+                          <span className="material-symbols-outlined text-lg">edit</span>
                         </button>
                       </div>
                     );
@@ -449,16 +449,16 @@ const NewProfilePage: React.FC = () => {
           <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5 pb-1 text-text-primary-light dark:text-text-primary-dark">
             Booking History
           </h2>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-4 rounded-xl bg-card-light dark:bg-card-dark p-3 shadow-sm">
-              <div className="w-14 h-14 rounded-lg bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200')" }} />
-              <div className="flex-1">
-                <p className="font-bold text-text-primary-light dark:text-text-primary-dark">Walk with Max</p>
-                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">With Jane Smith</p>
-                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">June 15 - June 16, 2024</p>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 rounded-xl bg-card-light dark:bg-card-dark p-2 shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-cover bg-center flex-shrink-0" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200')" }} />
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm text-text-primary-light dark:text-text-primary-dark">Walk with Max</p>
+                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">With Jane Smith</p>
+                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">June 15 - June 16, 2024</p>
               </div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-full">Completed</span>
+              <div className="flex flex-col items-end flex-shrink-0">
+                <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full">Completed</span>
               </div>
             </div>
           </div>
@@ -467,9 +467,9 @@ const NewProfilePage: React.FC = () => {
           <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5 pb-1 text-text-primary-light dark:text-text-primary-dark">
             Reviews Received
           </h2>
-          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-cover bg-center" style={{ backgroundImage: "url('https://api.dicebear.com/7.x/avataaars/svg?seed=Jane')" }} />
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-3 shadow-sm">
+            <div className="flex items-start gap-2">
+              <div className="w-10 h-10 rounded-full bg-cover bg-center flex-shrink-0" style={{ backgroundImage: "url('https://api.dicebear.com/7.x/avataaars/svg?seed=Jane')" }} />
               <div className="flex-1">
                 <div className="flex justify-between items-center">
                   <p className="font-bold text-text-primary-light dark:text-text-primary-dark">Jane Smith</p>
