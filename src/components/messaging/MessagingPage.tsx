@@ -11,12 +11,13 @@ import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 const MessagingPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedChat, setSelectedChat] = useState<{
-    walkRequest: WalkRequest;
-    otherUser: { id: string; name: string; profileImage?: string };
+    walkRequest: WalkRequest | null;
+    otherUser: { id: string; name: string; profileImage?: string; role?: string };
+    matchId?: string;
   } | null>(null);
 
-  const handleSelectChat = (walkRequest: WalkRequest, otherUser: { id: string; name: string; profileImage?: string }) => {
-    setSelectedChat({ walkRequest, otherUser });
+  const handleSelectChat = (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string }, matchId?: string) => {
+    setSelectedChat({ walkRequest, otherUser, matchId });
   };
 
   const handleCloseChat = () => {

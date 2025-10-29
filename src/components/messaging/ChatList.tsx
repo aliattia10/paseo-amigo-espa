@@ -7,37 +7,89 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from '@/contexts/AuthContext';
 import { getWalkRequestsByOwner, getWalkRequestsByWalker } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { MessageCircle, Clock, MapPin, Dog } from 'lucide-react';
+import { MessageCircle, Clock, MapPin, Dog, Heart } from 'lucide-react';
 import type { WalkRequest } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Match {
+  id: string;
+  user1_id: string;
+  user2_id: string;
+  created_at: string;
+  otherUser?: {
+    id: string;
+    name: string;
+    profile_image?: string;
+    role?: string;
+  };
+}
 
 interface ChatListProps {
-  onSelectChat: (walkRequest: WalkRequest, otherUser: { id: string; name: string; profileImage?: string }) => void;
+  onSelectChat: (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string }, matchId?: string) => void;
 }
 
 const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
-  const { userProfile } = useAuth();
+  const { userProfile, currentUser } = useAuth();
   const { toast } = useToast();
   const [walkRequests, setWalkRequests] = useState<WalkRequest[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadWalkRequests = async () => {
-      if (!userProfile) return;
+    const loadChats = async () => {
+      if (!userProfile || !currentUser) return;
 
       try {
+        // Load matches
+        const { data: matchesData, error: matchesError } = await supabase
+          .from('matches')
+          .select('*')
+          .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id}`)
+          .order('created_at', { ascending: false });
+
+        if (matchesError) {
+          console.error('Error loading matches:', matchesError);
+        } else if (matchesData) {
+          // Load other user details for each match
+          const matchesWithUsers = await Promise.all(
+            matchesData.map(async (match) => {
+              const otherUserId = match.user1_id === currentUser.id ? match.user2_id : match.user1_id;
+              
+              const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('id, name, profile_image, role')
+                .eq('id', otherUserId)
+                .single();
+
+              if (!userError && userData) {
+                return {
+                  ...match,
+                  otherUser: {
+                    id: userData.id,
+                    name: userData.name || 'User',
+                    profile_image: userData.profile_image,
+                    role: userData.role,
+                  },
+                };
+              }
+              return match;
+            })
+          );
+          setMatches(matchesWithUsers);
+        }
+
+        // Also load walk requests for existing bookings
         const requests = userProfile.userType === 'owner' 
           ? await getWalkRequestsByOwner(userProfile.id)
           : await getWalkRequestsByWalker(userProfile.id);
         
-        // Filter requests that are relevant for chat. Include 'pending' so owners and walkers can
-        // message each other before a request is accepted.
         const activeRequests = requests.filter(
           request => ['pending', 'accepted', 'in-progress'].includes(request.status)
         );
         
         setWalkRequests(activeRequests);
       } catch (error) {
-        console.error('Error loading walk requests:', error);
+        console.error('Error loading chats:', error);
         toast({
           title: "Error",
           description: "No se pudieron cargar las conversaciones.",
@@ -48,8 +100,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       }
     };
 
-    loadWalkRequests();
-  }, [userProfile, toast]);
+    loadChats();
+  }, [userProfile, currentUser, toast]);
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -104,17 +156,14 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     );
   }
 
-  if (walkRequests.length === 0) {
+  if (matches.length === 0 && walkRequests.length === 0) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">No hay conversaciones</h3>
           <p className="text-muted-foreground">
-            {userProfile?.userType === 'owner' 
-              ? 'Cuando acepten una solicitud de paseo, podrás chatear aquí.'
-              : 'Cuando aceptes una solicitud, podrás chatear con el dueño aquí.'
-            }
+            Cuando hagas match con alguien, podrás chatear aquí y coordinar servicios.
           </p>
         </CardContent>
       </Card>
@@ -133,9 +182,42 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       <CardContent className="flex-1 p-0">
         <ScrollArea className="h-full">
           <div className="space-y-1">
+            {/* Show matches first */}
+            {matches.map((match) => {
+              if (!match.otherUser) return null;
+
+              return (
+                <div
+                  key={match.id}
+                  className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => onSelectChat(null, match.otherUser!, match.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={match.otherUser.profile_image} />
+                      <AvatarFallback>{match.otherUser.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-semibold truncate">{match.otherUser.name}</h3>
+                        <Badge className="bg-pink-100 text-pink-800">
+                          <Heart className="w-3 h-3 mr-1" />
+                          Match
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>{match.otherUser.role === 'sitter' ? '🐾 Sitter' : '🏠 Owner'}</span>
+                        <span>•</span>
+                        <span>{formatDate(new Date(match.created_at))}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Show walk requests */}
             {walkRequests.map((request) => {
-              // For demo purposes, we'll use placeholder data for the other user
-              // In a real app, you'd fetch this from the database
               const otherUser = {
                 id: userProfile?.userType === 'owner' ? request.walkerId : request.ownerId,
                 name: userProfile?.userType === 'owner' ? 'Compañero' : 'Dueño',

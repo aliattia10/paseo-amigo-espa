@@ -74,35 +74,50 @@ const NewHomePage: React.FC = () => {
         }
 
         // Load sitter profiles (for pet owners to browse)
-        const sittersQuery: any = await supabase
+        const { data: sitters, error: sittersError } = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate')
+          .select('id, name, bio, profile_image, hourly_rate, location_lat, location_lng')
           .eq('role', 'sitter')
           .limit(20);
-        
-        const sitters: any = sittersQuery.data;
-        const sittersError: any = sittersQuery.error;
 
         console.log('=== LOADING SITTER PROFILES ===');
         console.log('Sitters data:', sitters);
         console.log('Sitters error:', sittersError);
         
-        if (!sittersError && sitters) {
+        if (!sittersError && sitters && sitters.length > 0) {
           console.log(`Found ${sitters.length} sitters in database`);
-          const sitterProfiles: Profile[] = sitters.map(sitter => ({
-            id: sitter.id,
-            name: sitter.name || 'Pet Sitter',
-            distance: Math.random() * 10, // TODO: Calculate real distance
-            rating: 4.5 + Math.random() * 0.5,
-            imageUrls: sitter.profile_image ? [sitter.profile_image] : ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800'],
-            bio: sitter.bio || undefined,
-            hourlyRate: sitter.hourly_rate || 15,
-            type: 'walker' as const,
-          }));
+          const sitterProfiles: Profile[] = sitters.map(sitter => {
+            // Parse profile_image - it might be a JSON array or a single URL
+            let imageUrls: string[] = [];
+            try {
+              if (sitter.profile_image) {
+                const parsed = JSON.parse(sitter.profile_image);
+                imageUrls = Array.isArray(parsed) ? parsed : [sitter.profile_image];
+              }
+            } catch {
+              imageUrls = sitter.profile_image ? [sitter.profile_image] : [];
+            }
+            
+            // If no images, use a default
+            if (imageUrls.length === 0) {
+              imageUrls = ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800'];
+            }
+
+            return {
+              id: sitter.id,
+              name: sitter.name || 'Pet Sitter',
+              distance: Math.random() * 10, // TODO: Calculate real distance based on location_lat/lng
+              rating: 4.5 + Math.random() * 0.5,
+              imageUrls: imageUrls,
+              bio: sitter.bio || undefined,
+              hourlyRate: sitter.hourly_rate || 15,
+              type: 'walker' as const,
+            };
+          });
           console.log('Processed sitter profiles:', sitterProfiles);
           setRealSitterProfiles(sitterProfiles);
         } else {
-          console.log('No sitters found or error occurred');
+          console.log('No sitters found or error occurred:', sittersError);
         }
       } catch (error) {
         console.error('Error loading profiles:', error);
