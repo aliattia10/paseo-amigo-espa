@@ -205,12 +205,12 @@ const NewProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Photo Gallery - Same size as Edit Profile */}
-          <div className="mb-4">
-            <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+          {/* Photo Gallery - Small Size */}
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark mb-2">
               Photos
             </h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {(() => {
                 try {
                   let photoArray = [];
@@ -224,20 +224,20 @@ const NewProfilePage: React.FC = () => {
                   return Array.from({ length: 6 }).map((_, index) => (
                     <div key={index} className="relative aspect-square">
                       {photoArray[index] ? (
-                        <div className="relative w-full h-full rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800">
+                        <div className="relative w-full h-full rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800">
                           <img
                             src={photoArray[index]}
                             alt={`Photo ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
                           {index === 0 && (
-                            <div className="absolute bottom-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
+                            <div className="absolute bottom-1 left-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                               Main
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="w-full h-full rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
+                        <div className="w-full h-full rounded-lg border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
                       )}
                     </div>
                   ));

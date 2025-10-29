@@ -704,7 +704,7 @@ const App = () => (
                   } 
                 />
                 <Route 
-                  path="/pet/edit/:petId" 
+                  path="/pet/:petId/edit" 
                   element={
                     <ProtectedRoute>
                       <PetEditPage />
