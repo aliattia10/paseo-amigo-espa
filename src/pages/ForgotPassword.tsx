@@ -89,7 +89,7 @@ const ForgotPassword: React.FC = () => {
             }
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 pb-6">
           {emailSent ? (
             <div className="text-center space-y-4">
               <div className="flex justify-center">
@@ -111,34 +111,45 @@ const ForgotPassword: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">{t('auth.email')}</Label>
+                <Label htmlFor="email" className="text-sm font-medium">
+                  {t('auth.email')}
+                </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder={t('auth.email')}
+                    placeholder="tu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-11"
                     required
                   />
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg font-semibold"
-                disabled={loading}
-              >
-                {loading ? t('common.loading') : t('auth.sendResetLink')}
-              </Button>
-              
-              <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
-                We'll send you an email with instructions to reset your password
-              </p>
+              <div className="space-y-3">
+                <Button 
+                  type="submit" 
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg font-semibold text-base"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin">⏳</span>
+                      {t('common.loading')}
+                    </span>
+                  ) : (
+                    t('auth.sendResetLink')
+                  )}
+                </Button>
+                
+                <p className="text-xs text-center text-gray-500 dark:text-gray-400 px-4">
+                  Te enviaremos un correo con instrucciones para restablecer tu contraseña
+                </p>
+              </div>
             </form>
           )}
         </CardContent>
