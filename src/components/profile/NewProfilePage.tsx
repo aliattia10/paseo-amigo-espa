@@ -303,32 +303,45 @@ const NewProfilePage: React.FC = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                   </div>
                 ) : pets.length > 0 ? (
-                  pets.map((pet) => (
-                    <div key={pet.id} className="flex items-center gap-3 p-3 rounded-lg bg-background-light dark:bg-background-dark">
-                      <div 
-                        className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-primary/20"
-                        style={{ 
-                          backgroundImage: pet.image_url 
-                            ? `url('${pet.image_url}')` 
-                            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                        }}
-                      />
-                      <div className="flex-1">
-                        <p className="font-bold text-text-primary-light dark:text-text-primary-dark">
-                          {pet.pet_type === 'cat' ? '🐱' : '🐶'} {pet.name}
-                        </p>
-                        <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                          {pet.breed || 'Mixed'} • {pet.age}
-                        </p>
+                  pets.map((pet) => {
+                    // Parse image URL - support both JSON array and single URL
+                    let imageUrl = '';
+                    if (pet.image_url) {
+                      try {
+                        const parsed = JSON.parse(pet.image_url);
+                        imageUrl = Array.isArray(parsed) ? parsed[0] : pet.image_url;
+                      } catch {
+                        imageUrl = pet.image_url;
+                      }
+                    }
+                    
+                    return (
+                      <div key={pet.id} className="flex items-center gap-3 p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                        <div 
+                          className="w-16 h-16 rounded-full bg-cover bg-center border-2 border-primary/20"
+                          style={{ 
+                            backgroundImage: imageUrl 
+                              ? `url('${imageUrl}')` 
+                              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                          }}
+                        />
+                        <div className="flex-1">
+                          <p className="font-bold text-text-primary-light dark:text-text-primary-dark">
+                            {pet.pet_type === 'cat' ? '🐱' : '🐶'} {pet.name}
+                          </p>
+                          <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                            {pet.breed || 'Mixed'} • {pet.age}
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => navigate(`/pet/${pet.id}/edit`)}
+                          className="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors"
+                        >
+                          <span className="material-symbols-outlined">edit</span>
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => navigate(`/pet/edit/${pet.id}`)}
-                        className="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors"
-                      >
-                        <span className="material-symbols-outlined">edit</span>
-                      </button>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center py-2">
                     Add your pet's profile to find the perfect sitter
