@@ -65,6 +65,14 @@ const ProfileEditPage: React.FC = () => {
         throw new Error('Image must be less than 5MB');
       }
       
+      // Check if avatars bucket exists
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      console.log('Available buckets:', buckets);
+      
+      if (bucketsError || !buckets?.some(b => b.name === 'avatars')) {
+        throw new Error('Storage bucket not configured. Please run: database/fix_profile_storage.sql or database/fix_storage_bucket.sql');
+      }
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
       console.log('Uploading to:', fileName);
@@ -145,12 +153,13 @@ const ProfileEditPage: React.FC = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent any event bubbling
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      handleImageUpload(file);
+      await handleImageUpload(file);
     }
     // Reset input to allow same file selection
     e.target.value = '';
