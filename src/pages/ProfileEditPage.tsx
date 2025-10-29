@@ -95,10 +95,13 @@ const ProfileEditPage: React.FC = () => {
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        if (uploadError.message.includes('not found')) {
-          throw new Error('Storage bucket not configured. Please run: database/fix_profile_storage.sql');
+        if (uploadError.message.includes('not found') || uploadError.message.includes('bucket')) {
+          throw new Error('Storage not configured. Please contact support or run database/fix_profile_storage.sql in Supabase SQL Editor');
         }
-        throw uploadError;
+        if (uploadError.message.includes('policy') || uploadError.message.includes('permission')) {
+          throw new Error('Upload permission denied. Please check storage policies in Supabase');
+        }
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
       console.log('File uploaded successfully');
