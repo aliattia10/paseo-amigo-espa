@@ -694,14 +694,19 @@ const NewHomePage: React.FC = () => {
             <div className="space-y-3 mt-4">
               <button
                 onClick={async () => {
+                  console.log('Enable Location button clicked');
                   await requestLocation();
-                  // Don't close immediately - let the permission prompt show
+                  // Modal will close automatically via useEffect when locationEnabled becomes true
                 }}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined">location_on</span>
                 Enable Location
               </button>
+              
+              <div className="text-xs text-gray-500 dark:text-gray-400 text-center px-2">
+                After allowing location in your browser, click "Enable Location" again if the modal doesn't close
+              </div>
               
               <button
                 onClick={() => {

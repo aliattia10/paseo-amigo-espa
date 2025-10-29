@@ -50,6 +50,55 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
+  // Set up permission change listener
+  useEffect(() => {
+    if (!navigator.permissions) return;
+
+    let permissionStatus: PermissionStatus | null = null;
+
+    const setupListener = async () => {
+      try {
+        permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+        console.log('Initial permission state:', permissionStatus.state);
+        
+        const handleChange = () => {
+          if (!permissionStatus) return;
+          console.log('Permission changed to:', permissionStatus.state);
+          
+          // If permission was granted, automatically get location
+          if (permissionStatus.state === 'granted' && !locationEnabled) {
+            console.log('Permission granted, requesting location...');
+            // Use a small delay to ensure the permission is fully granted
+            setTimeout(() => {
+              requestLocation();
+            }, 100);
+          }
+          
+          // If permission was denied, clear saved state
+          if (permissionStatus.state === 'denied') {
+            console.log('Permission denied, clearing saved state');
+            localStorage.removeItem('locationEnabled');
+            setLocationEnabled(false);
+            setLocation(null);
+          }
+        };
+
+        permissionStatus.addEventListener('change', handleChange);
+        
+        // Cleanup
+        return () => {
+          if (permissionStatus) {
+            permissionStatus.removeEventListener('change', handleChange);
+          }
+        };
+      } catch (e) {
+        console.log('Permissions API not supported:', e);
+      }
+    };
+
+    setupListener();
+  }, [locationEnabled]);
+
   // Request location permission
   const requestLocation = async () => {
     if (!navigator.geolocation) {
