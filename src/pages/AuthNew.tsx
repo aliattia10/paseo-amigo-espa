@@ -27,6 +27,35 @@ const AuthNew = () => {
   const [postalCode, setPostalCode] = useState('');
   const [phone, setPhone] = useState('');
 
+  // Handle email confirmation redirect
+  useEffect(() => {
+    const checkConfirmation = async () => {
+      const confirmed = searchParams.get('confirmed');
+      if (confirmed === 'true') {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user && user.email_confirmed_at) {
+          const role = user.user_metadata?.role || user.user_metadata?.user_type;
+          
+          toast({
+            title: "Email Confirmed!",
+            description: "Let's complete your profile setup",
+          });
+          
+          if (role === 'owner') {
+            navigate('/pet-profile-setup');
+          } else if (role === 'walker' || role === 'sitter') {
+            navigate('/sitter-profile-setup');
+          } else {
+            navigate('/dashboard');
+          }
+        }
+      }
+    };
+    
+    checkConfirmation();
+  }, [searchParams, navigate, toast]);
+
   // If mode is login or role is provided in URL, skip role selection
   useEffect(() => {
     const roleFromUrl = searchParams.get('role') as 'owner' | 'walker' | null;
@@ -77,12 +106,13 @@ const AuthNew = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/auth?confirmed=true`,
             data: {
               name,
               city,
               postal_code: postalCode,
               phone,
+              role: selectedRole || 'owner',
               user_type: selectedRole || 'owner'
             }
           }

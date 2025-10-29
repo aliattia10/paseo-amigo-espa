@@ -205,12 +205,12 @@ const NewProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Photo Gallery - Tiny Size */}
+          {/* Photo Gallery - Extra Tiny */}
           <div className="mb-2">
-            <h3 className="text-xs font-semibold text-text-primary-light dark:text-text-primary-dark mb-1.5">
+            <h3 className="text-[10px] font-semibold text-text-primary-light dark:text-text-primary-dark mb-1 uppercase tracking-wide">
               Photos
             </h3>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-0.5">
               {(() => {
                 try {
                   let photoArray = [];
@@ -224,20 +224,20 @@ const NewProfilePage: React.FC = () => {
                   return Array.from({ length: 6 }).map((_, index) => (
                     <div key={index} className="relative aspect-square">
                       {photoArray[index] ? (
-                        <div className="relative w-full h-full rounded-md overflow-hidden bg-gray-200 dark:bg-gray-800">
+                        <div className="relative w-full h-full rounded overflow-hidden bg-gray-200 dark:bg-gray-800">
                           <img
                             src={photoArray[index]}
                             alt={`Photo ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
                           {index === 0 && (
-                            <div className="absolute bottom-0.5 left-0.5 bg-primary text-white text-[8px] font-bold px-1 py-0.5 rounded">
-                              Main
+                            <div className="absolute bottom-0 left-0 bg-primary text-white text-[7px] font-bold px-0.5 py-0.5 rounded-br">
+                              M
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="w-full h-full rounded-md border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
+                        <div className="w-full h-full rounded border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
                       )}
                     </div>
                   ));
