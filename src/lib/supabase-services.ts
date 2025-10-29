@@ -4,10 +4,11 @@ import type { Dog, User, WalkerProfile } from '@/types';
 // User Services
 export const createUser = async (userId: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {
   const { data, error } = await supabase
-    .from('profiles')
+    .from('users')
     .insert({
-      user_id: userId,
+      id: userId,
       name: userData.name,
+      email: userData.email,
       phone: userData.phone,
       city: userData.city,
       postal_code: userData.postalCode,
@@ -23,10 +24,10 @@ export const createUser = async (userId: string, userData: Omit<User, 'id' | 'cr
 
 export const getUser = async (userId: string): Promise<User | null> => {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
+    const { data, error} = await supabase
+      .from('users')
       .select('*')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single();
 
     if (error) {
@@ -35,18 +36,20 @@ export const getUser = async (userId: string): Promise<User | null> => {
     }
 
     return {
-      id: data.user_id,
+      id: data.id,
       name: data.name,
-      email: '',
-      phone: data.phone,
-      city: data.city,
-      postalCode: data.postal_code,
+      email: data.email || '',
+      phone: data.phone || '',
+      city: data.city || '',
+      postalCode: data.postal_code || '',
       userType: data.user_type as 'owner' | 'walker',
-      bio: data.bio,
-      rating: data.rating || 0,
-      verified: data.verified || false,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
+      bio: data.bio || '',
+      profileImage: data.profile_image || data.avatar_url || undefined,
+      hourlyRate: data.hourly_rate || undefined,
+      latitude: data.latitude || undefined,
+      longitude: data.longitude || undefined,
+      createdAt: new Date(data.created_at || new Date()),
+      updatedAt: new Date(data.updated_at || new Date()),
     };
   } catch (error) {
     console.error('Error fetching user:', error);
@@ -63,22 +66,23 @@ export const updateUser = async (userId: string, userData: Partial<User>) => {
   if (userData.postalCode) updateData.postal_code = userData.postalCode;
   if (userData.userType) updateData.user_type = userData.userType;
   if (userData.bio) updateData.bio = userData.bio;
+  if (userData.profileImage) updateData.profile_image = userData.profileImage;
   
   updateData.updated_at = new Date().toISOString();
 
   const { error } = await supabase
-    .from('profiles')
+    .from('users')
     .update(updateData)
-    .eq('user_id', userId);
+    .eq('id', userId);
 
   if (error) throw error;
 };
 
 export const switchUserRole = async (userId: string, newRole: 'owner' | 'walker') => {
   const { error } = await supabase
-    .from('profiles')
+    .from('users')
     .update({ user_type: newRole })
-    .eq('user_id', userId);
+    .eq('id', userId);
 
   if (error) throw error;
 };
