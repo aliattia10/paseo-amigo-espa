@@ -205,51 +205,44 @@ const NewProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Photo Gallery - Super Compact & Centered */}
-          <div className="mb-1.5 w-full">
-            <h3 className="text-[8px] font-medium text-text-secondary-light dark:text-text-secondary-dark mb-0.5 uppercase tracking-wider opacity-70">
-              Photos
-            </h3>
-            <div className="grid grid-cols-6 gap-0.5">
-              {(() => {
-                try {
-                  let photoArray = [];
-                  if (typeof userProfile?.profileImage === 'string') {
-                    photoArray = JSON.parse(userProfile.profileImage);
-                  } else if (Array.isArray(userProfile?.profileImage)) {
-                    photoArray = userProfile.profileImage;
-                  }
-                  photoArray = photoArray.filter(p => p).slice(0, 6);
-                  
-                  return Array.from({ length: 6 }).map((_, index) => (
-                    <div key={index} className="relative aspect-square">
-                      {photoArray[index] ? (
-                        <div className="relative w-full h-full rounded-sm overflow-hidden bg-gray-200 dark:bg-gray-800">
-                          <img
-                            src={photoArray[index]}
-                            alt={`Photo ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                          {index === 0 && (
-                            <div className="absolute bottom-0 left-0 bg-primary text-white text-[6px] font-bold px-0.5 py-0.5 rounded-br">
-                              1
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="w-full h-full rounded-sm border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-30"></div>
-                      )}
-                    </div>
-                  ));
-                } catch {
-                  return Array.from({ length: 6 }).map((_, index) => (
-                    <div key={index} className="relative aspect-square">
-                      <div className="w-full h-full rounded-sm border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-30"></div>
-                    </div>
-                  ));
+          {/* Profile Avatar - Main Picture Only */}
+          <div className="mb-4 w-full flex justify-center">
+            {(() => {
+              try {
+                let photoArray = [];
+                if (typeof userProfile?.profileImage === 'string') {
+                  photoArray = JSON.parse(userProfile.profileImage);
+                } else if (Array.isArray(userProfile?.profileImage)) {
+                  photoArray = userProfile.profileImage;
                 }
-              })()}
-            </div>
+                photoArray = photoArray.filter(p => p);
+                
+                const mainPhoto = photoArray[0] || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (userProfile?.name || 'User');
+                
+                return (
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20 dark:border-primary/30 shadow-xl">
+                    <img
+                      src={mainPhoto}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-1 right-1 bg-primary text-white rounded-full p-1.5 shadow-lg">
+                      <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>
+                        favorite
+                      </span>
+                    </div>
+                  </div>
+                );
+              } catch {
+                return (
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center border-4 border-primary/20 dark:border-primary/30 shadow-xl">
+                    <span className="material-symbols-outlined text-6xl text-white">
+                      person
+                    </span>
+                  </div>
+                );
+              }
+            })()}
           </div>
 
           {/* Action Buttons - Centered */}

@@ -59,30 +59,61 @@ const PublicProfilePage: React.FC = () => {
           />
         </div>
 
-        {/* Profile Info Below Image */}
+        {/* Profile Info Below Image - Dashboard Style */}
         <div className="w-full max-w-[400px] bg-card-light dark:bg-card-dark rounded-3xl shadow-xl p-6 mt-4 -mb-2">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-1">
-                {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
-              </h2>
-              <div className="flex items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark mb-2">
-                <span className="material-symbols-outlined text-base">location_on</span>
-                <span className="text-sm">{userProfile?.city || 'Location not set'}</span>
-              </div>
-              <div className="flex items-center gap-1">
+          {/* Name and Basic Info */}
+          <div className="mb-4">
+            <h2 className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+              {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
+            </h2>
+            
+            {/* Location */}
+            <div className="flex items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark mb-3">
+              <span className="material-symbols-outlined text-lg">location_on</span>
+              <span className="text-sm font-medium">
+                📍 {userProfile?.city || 'Location not set'}
+              </span>
+            </div>
+
+            {/* Rating, Experience & Price */}
+            <div className="flex items-center gap-3 flex-wrap mb-3">
+              {/* Rating */}
+              <div className="flex items-center gap-1 bg-secondary/20 dark:bg-secondary/30 px-3 py-1.5 rounded-full">
                 <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
                   star
                 </span>
-                <span className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</span>
-                <span className="text-text-secondary-light dark:text-text-secondary-dark text-sm">(32 reviews)</span>
+                <span className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">
+                  {userProfile?.rating ? userProfile.rating.toFixed(1) : '5.0'}
+                </span>
+                <span className="text-text-secondary-light dark:text-text-secondary-dark text-xs">
+                  ({userProfile?.totalWalks || '0'} reviews)
+                </span>
               </div>
+
+              {/* Hourly Rate - for sitters */}
+              {userProfile?.hourlyRate && (userProfile?.userType === 'walker' || userProfile?.userType === 'sitter' || userProfile?.userType === 'both') && (
+                <div className="bg-primary text-white px-3 py-1.5 rounded-full shadow-lg">
+                  <p className="text-base font-bold">
+                    ${userProfile.hourlyRate}/hr
+                  </p>
+                </div>
+              )}
             </div>
+
+            {/* Experience - for sitters */}
+            {userProfile?.experience && (userProfile?.userType === 'walker' || userProfile?.userType === 'sitter' || userProfile?.userType === 'both') && (
+              <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined text-primary">work</span>
+                <span className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">
+                  {userProfile.experience} {userProfile.experience === 1 ? 'year' : 'years'} of experience
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Bio */}
           {userProfile?.bio && (
-            <div className="mb-4">
+            <div className="mb-4 p-4 bg-background-light dark:bg-background-dark rounded-xl">
               <h3 className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark mb-2">About</h3>
               <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">
                 {userProfile.bio}
@@ -90,16 +121,20 @@ const PublicProfilePage: React.FC = () => {
             </div>
           )}
 
-          {/* User Type Badge */}
+          {/* User Type Badges */}
           <div className="flex gap-2 flex-wrap">
             <div className="bg-primary/20 dark:bg-primary/30 text-primary px-3 py-1.5 rounded-full text-xs font-bold">
               {userProfile?.userType === 'owner' ? '🐾 Pet Owner' : 
                userProfile?.userType === 'walker' ? '🚶 Pet Sitter' : 
-               userProfile?.userType === 'both' ? '🐾 Pet Owner & Sitter' : 
+               userProfile?.userType === 'sitter' ? '🏠 Pet Sitter' : 
+               userProfile?.userType === 'both' ? '🐾 Owner & Sitter' : 
                '🐾 Pet Lover'}
             </div>
-            <div className="bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-full text-xs font-bold">
-              ✓ Verified
+            <div className="bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>
+                verified
+              </span>
+              Verified
             </div>
           </div>
         </div>
