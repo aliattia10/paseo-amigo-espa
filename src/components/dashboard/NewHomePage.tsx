@@ -62,7 +62,7 @@ const NewHomePage: React.FC = () => {
               name: pet.name,
               age: pet.age ? parseInt(pet.age) : undefined,
               distance: Math.random() * 10, // TODO: Calculate real distance
-              rating: 4.5 + Math.random() * 0.5,
+              rating: 0, // No fake ratings - will be based on actual reviews
               imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
               type: 'dog' as const,
             };
@@ -107,7 +107,7 @@ const NewHomePage: React.FC = () => {
               id: sitter.id,
               name: sitter.name || 'Pet Sitter',
               distance: Math.random() * 10, // TODO: Calculate real distance based on location_lat/lng
-              rating: 4.5 + Math.random() * 0.5,
+              rating: 0, // No fake ratings - will be based on actual reviews
               imageUrls: imageUrls,
               bio: sitter.bio || undefined,
               hourlyRate: sitter.hourly_rate || 15,
@@ -130,91 +130,7 @@ const NewHomePage: React.FC = () => {
     loadProfiles();
   }, []);
   
-  // Fallback mock data if no real profiles loaded
-  const mockDogProfiles: Profile[] = [
-    {
-      id: '1',
-      name: 'Max',
-      age: 4,
-      distance: 2,
-      rating: 4.9,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800',
-        'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800',
-        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800',
-      ],
-      type: 'dog',
-    },
-    {
-      id: '2',
-      name: 'Luna',
-      age: 3,
-      distance: 1.5,
-      rating: 4.8,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800',
-        'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800',
-      ],
-      type: 'dog',
-    },
-    {
-      id: '3',
-      name: 'Charlie',
-      age: 5,
-      distance: 3,
-      rating: 4.7,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800',
-      ],
-      type: 'dog',
-    },
-  ];
-
-  // Mock walker profiles for dog owners to browse (fallback)
-  const mockWalkerProfiles: Profile[] = [
-    {
-      id: 'w1',
-      name: 'Sarah',
-      age: 28,
-      distance: 1.2,
-      rating: 4.9,
-      hourlyRate: 15,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800',
-      ],
-      bio: 'Experienced dog walker with 5+ years',
-      type: 'walker',
-    },
-    {
-      id: 'w2',
-      name: 'Mike',
-      age: 32,
-      distance: 2.5,
-      rating: 4.8,
-      hourlyRate: 18,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
-      ],
-      bio: 'Professional pet care specialist',
-      type: 'walker',
-    },
-    {
-      id: 'w3',
-      name: 'Emma',
-      age: 25,
-      distance: 1.8,
-      rating: 5.0,
-      hourlyRate: 20,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800',
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
-      ],
-      bio: 'Certified dog trainer and walker',
-      type: 'walker',
-    },
-  ];
+  // No mock data - only show real profiles from database
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
@@ -345,10 +261,9 @@ const NewHomePage: React.FC = () => {
     return filtered;
   };
 
-  // Get profiles based on user role, filtering out passed/liked ones
-  // Use real profiles if available, otherwise fall back to mock data
-  const dogProfiles = realPetProfiles.length > 0 ? realPetProfiles : mockDogProfiles;
-  const walkerProfiles = realSitterProfiles.length > 0 ? realSitterProfiles : mockWalkerProfiles;
+  // Get profiles based on user role - only real profiles from database
+  const dogProfiles = realPetProfiles;
+  const walkerProfiles = realSitterProfiles;
   
   const allProfiles = userRole === 'owner' ? walkerProfiles : dogProfiles;
   const profiles = applyFilters(allProfiles);
@@ -699,17 +614,26 @@ const NewHomePage: React.FC = () => {
                     {currentProfile.name}{currentProfile.age ? `, ${currentProfile.age}` : ''}
                   </p>
                   <div className="flex items-center gap-3 flex-wrap">
-                    <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
-                      <span 
-                        className="material-symbols-outlined text-yellow-400 text-lg" 
-                        style={{ fontVariationSettings: '"FILL" 1' }}
-                      >
-                        star
-                      </span>
-                      <p className="text-white text-base font-bold leading-normal">
-                        {currentProfile.rating}
-                      </p>
-                    </div>
+                    {currentProfile.rating > 0 && (
+                      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
+                        <span 
+                          className="material-symbols-outlined text-yellow-400 text-lg" 
+                          style={{ fontVariationSettings: '"FILL" 1' }}
+                        >
+                          star
+                        </span>
+                        <p className="text-white text-base font-bold leading-normal">
+                          {currentProfile.rating.toFixed(1)}
+                        </p>
+                      </div>
+                    )}
+                    {!currentProfile.rating && (
+                      <div className="bg-blue-500/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full shadow-lg">
+                        <p className="text-sm font-medium">
+                          ✨ New Profile
+                        </p>
+                      </div>
+                    )}
                     {currentProfile.hourlyRate && (
                       <div className="bg-home-primary text-white px-3 py-1.5 rounded-full shadow-lg">
                         <p className="text-base font-bold">
