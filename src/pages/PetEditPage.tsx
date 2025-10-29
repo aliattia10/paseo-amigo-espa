@@ -17,6 +17,7 @@ const PetEditPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const [petData, setPetData] = useState({
     name: '',
@@ -24,7 +25,7 @@ const PetEditPage: React.FC = () => {
     age: '',
     breed: '',
     notes: '',
-    imageUrl: '',
+    imageUrls: [] as string[], // Changed to array for multiple images
   });
 
   useEffect(() => {
@@ -54,25 +55,47 @@ const PetEditPage: React.FC = () => {
           
           if (dogError) throw dogError;
           
+          // Parse image URLs for dogs table too
+          let imageUrls: string[] = [];
+          if (dogData.image_url) {
+            try {
+              imageUrls = JSON.parse(dogData.image_url);
+            } catch {
+              imageUrls = [dogData.image_url];
+            }
+          }
+          
           setPetData({
             name: dogData.name || '',
             petType: 'dog',
             age: dogData.age || '',
             breed: dogData.breed || '',
             notes: dogData.notes || '',
-            imageUrl: dogData.image_url || '',
+            imageUrls: imageUrls,
           });
         } else {
           throw error;
         }
       } else {
+        // Parse image URLs - support both single image and array
+        let imageUrls: string[] = [];
+        if (data.image_url) {
+          try {
+            // Try to parse as JSON array first
+            imageUrls = JSON.parse(data.image_url);
+          } catch {
+            // If not JSON, treat as single URL
+            imageUrls = [data.image_url];
+          }
+        }
+        
         setPetData({
           name: data.name || '',
           petType: (data.pet_type as 'cat' | 'dog') || 'dog',
           age: data.age || '',
           breed: data.breed || '',
           notes: data.notes || '',
-          imageUrl: data.image_url || '',
+          imageUrls: imageUrls,
         });
       }
     } catch (error: any) {
@@ -92,30 +115,48 @@ const PetEditPage: React.FC = () => {
     
     setUploadingImage(true);
     try {
+      console.log('=== IMAGE UPLOAD START ===');
+      console.log('File:', file.name, file.type, file.size);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${currentUser.id}-${petData.petType}-${Date.now()}.${fileExt}`;
       const filePath = `pets/${fileName}`;
 
+      console.log('Uploading to:', filePath);
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      setPetData({ ...petData, imageUrl: publicUrl });
+      console.log('Public URL:', publicUrl);
+      
+      // Add new image to the array
+      const newImageUrls = [...petData.imageUrls, publicUrl];
+      setPetData({ ...petData, imageUrls: newImageUrls });
+      setCurrentImageIndex(newImageUrls.length - 1); // Show the newly uploaded image
       
       toast({
         title: t('common.success'),
-        description: `${petData.petType === 'cat' ? 'Cat' : 'Dog'} picture uploaded successfully`,
+        description: `${petData.petType === 'cat' ? 'Cat' : 'Pet'} picture uploaded successfully`,
       });
+      
+      console.log('=== IMAGE UPLOAD END ===');
     } catch (error: any) {
+      console.error('Image upload error:', error);
       toast({
         title: t('common.error'),
-        description: error.message,
+        description: error.message || 'Failed to upload image',
         variant: 'destructive',
       });
     } finally {
@@ -171,6 +212,12 @@ const PetEditPage: React.FC = () => {
     
     setLoading(true);
     try {
+      console.log('=== SAVE PET START ===');
+      console.log('Pet data:', petData);
+      
+      // Convert image URLs array to JSON string
+      const imageUrlJson = JSON.stringify(petData.imageUrls);
+      
       const { error } = await supabase
         .from('pets')
         .update({
@@ -179,11 +226,13 @@ const PetEditPage: React.FC = () => {
           age: petData.age,
           breed: petData.breed || null,
           notes: petData.notes,
-          image_url: petData.imageUrl,
+          image_url: imageUrlJson,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', petId);
 
       if (error) {
+        console.error('Update error:', error);
         // Try dogs table if pets doesn't exist
         if (error.message.includes('does not exist')) {
           const { error: dogError } = await supabase
@@ -193,7 +242,8 @@ const PetEditPage: React.FC = () => {
               age: petData.age,
               breed: petData.breed || null,
               notes: petData.notes,
-              image_url: petData.imageUrl,
+              image_url: imageUrlJson,
+              updated_at: new Date().toISOString(),
             })
             .eq('id', petId);
           
@@ -203,20 +253,23 @@ const PetEditPage: React.FC = () => {
         }
       }
 
+      console.log('Pet updated successfully');
       toast({
         title: t('common.success'),
-        description: `${petData.petType === 'cat' ? 'Cat' : 'Dog'} profile updated successfully!`,
+        description: `${petData.petType === 'cat' ? 'Cat' : 'Pet'} profile updated successfully!`,
       });
 
       navigate('/profile');
     } catch (error: any) {
+      console.error('Save error:', error);
       toast({
         title: t('common.error'),
-        description: error.message,
+        description: error.message || 'Failed to update pet profile',
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
+      console.log('=== SAVE PET END ===');
     }
   };
 
@@ -283,7 +336,7 @@ const PetEditPage: React.FC = () => {
           </button>
         </div>
         <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-text-primary-light dark:text-text-primary-dark">
-          Edit {petData.petType === 'cat' ? 'Cat' : 'Dog'} Profile
+          Edit Pet Profile
         </h2>
         <div className="flex w-12 items-center justify-end"></div>
       </div>
@@ -291,48 +344,160 @@ const PetEditPage: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 p-4 space-y-4 pb-8">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Pet Picture */}
-          <div className="flex flex-col items-center gap-4 py-4">
-            <div className="relative">
-              <div 
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-lg"
-                style={{
-                  backgroundImage: petData.imageUrl 
-                    ? `url("${petData.imageUrl}")`
-                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                }}
-              />
-              {uploadingImage && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                </div>
-              )}
+          {/* Pet Type Selector */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-3">
+              Pet Type <span className="text-red-500">*</span>
+            </label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setPetData({ ...petData, petType: 'dog' })}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                  petData.petType === 'dog'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark border-2 border-border-light dark:border-border-dark'
+                }`}
+              >
+                <span className="text-2xl">🐕</span>
+                <span>Dog</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPetData({ ...petData, petType: 'cat' })}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                  petData.petType === 'cat'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark border-2 border-border-light dark:border-border-dark'
+                }`}
+              >
+                <span className="text-2xl">🐈</span>
+                <span>Cat</span>
+              </button>
             </div>
+          </div>
+
+          {/* Pet Pictures - Tinder Style Gallery */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-3">
+              Pet Photos
+            </label>
             
-            <label htmlFor="pet-picture" className="cursor-pointer">
+            {/* Image Gallery */}
+            {petData.imageUrls.length > 0 ? (
+              <div className="relative mb-4">
+                {/* Main Image Display */}
+                <div className="relative aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-purple-400 to-pink-400">
+                  <img
+                    src={petData.imageUrls[currentImageIndex]}
+                    alt={`${petData.name} photo ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  
+                  {/* Image Counter */}
+                  <div className="absolute top-2 right-2 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
+                    {currentImageIndex + 1} / {petData.imageUrls.length}
+                  </div>
+                  
+                  {/* Navigation Arrows */}
+                  {petData.imageUrls.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentImageIndex(Math.max(0, currentImageIndex - 1))}
+                        disabled={currentImageIndex === 0}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-sm"
+                      >
+                        <span className="material-symbols-outlined">chevron_left</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentImageIndex(Math.min(petData.imageUrls.length - 1, currentImageIndex + 1))}
+                        disabled={currentImageIndex === petData.imageUrls.length - 1}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-sm"
+                      >
+                        <span className="material-symbols-outlined">chevron_right</span>
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Delete Current Image Button */}
+                  {petData.imageUrls.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newUrls = petData.imageUrls.filter((_, i) => i !== currentImageIndex);
+                        setPetData({ ...petData, imageUrls: newUrls });
+                        setCurrentImageIndex(Math.max(0, currentImageIndex - 1));
+                        toast({
+                          title: 'Photo removed',
+                          description: 'Photo will be deleted when you save',
+                        });
+                      }}
+                      className="absolute bottom-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors backdrop-blur-sm"
+                    >
+                      <span className="material-symbols-outlined">delete</span>
+                    </button>
+                  )}
+                </div>
+                
+                {/* Dot Indicators */}
+                {petData.imageUrls.length > 1 && (
+                  <div className="flex justify-center gap-2 mt-3">
+                    {petData.imageUrls.map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`h-2 rounded-full transition-all ${
+                          index === currentImageIndex
+                            ? 'w-8 bg-primary'
+                            : 'w-2 bg-gray-300 dark:bg-gray-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="aspect-square rounded-xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-white text-6xl">pets</span>
+              </div>
+            )}
+            
+            {/* Upload Button */}
+            <label htmlFor="pet-picture" className="cursor-pointer block">
               <input
                 id="pet-picture"
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
                 className="hidden"
+                disabled={uploadingImage || petData.imageUrls.length >= 6}
               />
               <Button 
                 type="button" 
                 variant="outline" 
-                className="text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors" 
-                disabled={uploadingImage}
+                className="w-full text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors" 
+                disabled={uploadingImage || petData.imageUrls.length >= 6}
               >
-                <span className="material-symbols-outlined mr-2">photo_camera</span>
-                {uploadingImage ? 'Uploading...' : 'Change Photo'}
+                <span className="material-symbols-outlined mr-2">add_photo_alternate</span>
+                {uploadingImage ? 'Uploading...' : petData.imageUrls.length >= 6 ? 'Maximum 6 photos' : `Add Photo (${petData.imageUrls.length}/6)`}
               </Button>
             </label>
+            
+            {uploadingImage && (
+              <div className="flex items-center justify-center gap-2 mt-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <span>Uploading...</span>
+              </div>
+            )}
           </div>
 
           {/* Pet Name */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              {petData.petType === 'cat' ? 'Cat\'s' : 'Dog\'s'} Name <span className="text-red-500">*</span>
+              Pet's Name <span className="text-red-500">*</span>
             </label>
             <Input
               type="text"

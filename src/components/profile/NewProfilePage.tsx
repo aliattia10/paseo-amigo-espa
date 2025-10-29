@@ -294,7 +294,7 @@ const NewProfilePage: React.FC = () => {
                   className="text-primary font-bold text-sm flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-base">add</span>
-                  Add Dog
+                  Add Pet
                 </button>
               </div>
               <div className="flex flex-col gap-3">
