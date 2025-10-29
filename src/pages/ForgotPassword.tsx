@@ -66,25 +66,25 @@ const ForgotPassword: React.FC = () => {
       setEmailSent(true);
       
       toast({
-        title: t('auth.emailSent'),
-        description: t('auth.checkEmailForReset'),
+        title: '✅ Email sent',
+        description: 'Check your email to reset your password',
       });
     } catch (error: any) {
       console.error('Password reset error:', error);
       
-      let errorMessage = error.message || t('auth.emailSendError');
+      let errorMessage = error.message || 'Error sending email';
       
       // User-friendly error messages
       if (errorMessage.includes('rate limit')) {
-        errorMessage = t('auth.rateLimitError');
+        errorMessage = 'Too many attempts. Please wait 1 hour or use a different email.';
       } else if (errorMessage.includes('timeout')) {
-        errorMessage = t('auth.timeoutError');
+        errorMessage = 'Request timed out. Please check your connection and try again.';
       } else if (errorMessage.includes('Invalid email')) {
-        errorMessage = t('auth.invalidEmail');
+        errorMessage = 'Invalid email address';
       }
       
       toast({
-        title: t('common.error'),
+        title: '❌ Error',
         description: errorMessage,
         variant: "destructive",
         duration: 6000,
@@ -161,7 +161,7 @@ const ForgotPassword: React.FC = () => {
                   <Input
                     id="email"
                     type="email"
-                    placeholder={t('auth.emailPlaceholder')}
+                    placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-11"
@@ -179,10 +179,10 @@ const ForgotPassword: React.FC = () => {
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <span className="animate-spin">⏳</span>
-                      {t('common.loading')}
+                      Sending...
                     </span>
                   ) : (
-                    t('auth.sendResetLink')
+                    'Send Reset Link'
                   )}
                 </Button>
                 
@@ -193,20 +193,20 @@ const ForgotPassword: React.FC = () => {
                     onClick={() => {
                       setLoading(false);
                       toast({
-                        title: t('common.cancelled'),
-                        description: t('common.requestCancelled'),
+                        title: 'Cancelled',
+                        description: 'Request cancelled',
                       });
                     }}
                     className="w-full"
                   >
-                    {t('common.cancel')}
+                    Cancel
                   </Button>
                 )}
                 
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400 px-4">
                   {loading 
-                    ? t('auth.pleaseWaitMoment')
-                    : t('auth.resetPasswordEmailInfo')
+                    ? 'This may take a few seconds...'
+                    : "We'll send you an email with instructions to reset your password"
                   }
                 </p>
               </div>
