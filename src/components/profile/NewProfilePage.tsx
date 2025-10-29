@@ -284,11 +284,11 @@ const NewProfilePage: React.FC = () => {
 
         {/* Information Cards/Sections */}
         <div className="flex flex-col gap-4 px-4">
-          {/* My Dogs Section - Only for owners */}
+          {/* My Pets Section - Only for owners */}
           {activeRole === 'owner' && (
             <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">My Dogs</h3>
+                <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">My Pets</h3>
                 <button 
                   onClick={() => navigate('/dog-profile-setup')}
                   className="text-primary font-bold text-sm flex items-center gap-1"
