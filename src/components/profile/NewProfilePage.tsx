@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import TinderProfileView from './TinderProfileView';
+import TinderPhotoGallery from './TinderPhotoGallery';
 
 const NewProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -187,16 +187,10 @@ const NewProfilePage: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 pb-24">
-        {/* Profile Header - Tinder Style */}
+        {/* Profile Header */}
         <div className="px-4 pt-4">
-          <TinderProfileView
-            photos={userProfile?.profileImage || ''}
-            name={userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
-            onEditClick={() => navigate('/profile/edit')}
-          />
-          
-          {/* Name and Info Below Photos */}
-          <div className="mt-4 flex flex-col items-center justify-center text-center">
+          {/* Name and Info */}
+          <div className="flex flex-col items-center justify-center text-center mb-4">
             <p className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
               {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
             </p>
@@ -211,17 +205,44 @@ const NewProfilePage: React.FC = () => {
               <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
             </div>
 
-            <div className="flex w-full max-w-[480px] gap-3 mt-4">
-              <button 
-                onClick={() => navigate('/profile/edit')}
-                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] flex-1"
-              >
-                <span className="truncate">{t('dashboard.editProfile')}</span>
-              </button>
-              <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] flex-1">
-                <span className="truncate">View Public Profile</span>
-              </button>
-            </div>
+          </div>
+
+          {/* Photo Gallery - Same as Edit Profile */}
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+              Your Photos
+            </h3>
+            <TinderPhotoGallery
+              photos={(() => {
+                try {
+                  if (typeof userProfile?.profileImage === 'string') {
+                    return JSON.parse(userProfile.profileImage);
+                  } else if (Array.isArray(userProfile?.profileImage)) {
+                    return userProfile.profileImage;
+                  }
+                  return [];
+                } catch {
+                  return userProfile?.profileImage ? [userProfile.profileImage] : [];
+                }
+              })()}
+              onPhotosChange={async () => {
+                // Read-only view, navigate to edit
+                navigate('/profile/edit');
+              }}
+              maxPhotos={6}
+            />
+          </div>
+
+          <div className="flex w-full max-w-[480px] gap-3">
+            <button 
+              onClick={() => navigate('/profile/edit')}
+              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] flex-1"
+            >
+              <span className="truncate">{t('dashboard.editProfile')}</span>
+            </button>
+            <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] flex-1">
+              <span className="truncate">View Public Profile</span>
+            </button>
           </div>
         </div>
 
