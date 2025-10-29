@@ -116,20 +116,14 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
         console.log('Location permission status:', permissionStatus.state);
         
-        if (permissionStatus.state === 'denied') {
-          toast({
-            title: '🔒 Location Blocked',
-            description: 'Click the lock icon in your browser address bar, change Location to "Allow", then try again',
-            variant: 'destructive',
-            duration: 8000,
-          });
-          return;
-        }
-        
         // If permission is in prompt state, the browser will show native popup
         if (permissionStatus.state === 'prompt') {
           console.log('Permission is in prompt state - browser will show native popup');
         }
+        
+        // Note: We don't return early on 'denied' state because sometimes
+        // the Permissions API is out of sync with actual browser settings
+        // Let the geolocation API itself handle the permission
       } catch (e) {
         console.log('Permissions API not supported, continuing with geolocation request');
       }
