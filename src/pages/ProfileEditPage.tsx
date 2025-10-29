@@ -146,11 +146,14 @@ const ProfileEditPage: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
       handleImageUpload(file);
     }
+    // Reset input to allow same file selection
+    e.target.value = '';
   };
 
   const handleSave = async () => {
@@ -246,11 +249,11 @@ const ProfileEditPage: React.FC = () => {
         description: 'Your profile has been updated',
       });
 
-      // Navigate back without reload
+      // Navigate back without reload - use replace to avoid adding to history
       setTimeout(() => {
         console.log('Navigating back to profile...');
-        navigate('/profile');
-      }, 500);
+        navigate('/profile', { replace: true });
+      }, 1000);
     } catch (error: any) {
       console.error('Save error:', error);
       toast({
@@ -266,7 +269,10 @@ const ProfileEditPage: React.FC = () => {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     console.log('Form submit prevented');
+    // Call handleSave when form is submitted
+    handleSave();
   };
 
   return (
@@ -274,7 +280,13 @@ const ProfileEditPage: React.FC = () => {
       {/* Top App Bar */}
       <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
         <div className="flex size-12 shrink-0 items-center justify-start">
-          <button type="button" onClick={() => navigate('/profile')}>
+          <button 
+            type="button" 
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/profile');
+            }}
+          >
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
               arrow_back
             </span>
