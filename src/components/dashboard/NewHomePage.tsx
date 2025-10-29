@@ -42,7 +42,12 @@ const NewHomePage: React.FC = () => {
           .select('id, name, age, image_url, owner_id')
           .limit(20);
 
+        console.log('=== LOADING PET PROFILES ===');
+        console.log('Pets data:', pets);
+        console.log('Pets error:', petsError);
+        
         if (!petsError && pets) {
+          console.log(`Found ${pets.length} pets in database`);
           const petProfiles: Profile[] = pets.map(pet => {
             let imageUrls: string[] = [];
             try {
@@ -62,7 +67,10 @@ const NewHomePage: React.FC = () => {
               type: 'dog' as const,
             };
           });
+          console.log('Processed pet profiles:', petProfiles);
           setRealPetProfiles(petProfiles);
+        } else {
+          console.log('No pets found or error occurred');
         }
 
         // Load sitter profiles (for pet owners to browse)
@@ -75,7 +83,12 @@ const NewHomePage: React.FC = () => {
         const sitters: any = sittersQuery.data;
         const sittersError: any = sittersQuery.error;
 
+        console.log('=== LOADING SITTER PROFILES ===');
+        console.log('Sitters data:', sitters);
+        console.log('Sitters error:', sittersError);
+        
         if (!sittersError && sitters) {
+          console.log(`Found ${sitters.length} sitters in database`);
           const sitterProfiles: Profile[] = sitters.map(sitter => ({
             id: sitter.id,
             name: sitter.name || 'Pet Sitter',
@@ -86,12 +99,16 @@ const NewHomePage: React.FC = () => {
             hourlyRate: sitter.hourly_rate || 15,
             type: 'walker' as const,
           }));
+          console.log('Processed sitter profiles:', sitterProfiles);
           setRealSitterProfiles(sitterProfiles);
+        } else {
+          console.log('No sitters found or error occurred');
         }
       } catch (error) {
         console.error('Error loading profiles:', error);
       } finally {
         setLoadingProfiles(false);
+        console.log('=== PROFILE LOADING COMPLETE ===');
       }
     };
 
@@ -565,10 +582,18 @@ const NewHomePage: React.FC = () => {
               </p>
               <button
                 onClick={() => {
-                  // Clear passed profiles to see them again
+                  // Clear all passed and liked profiles to see them again
                   setPassedProfiles(new Set());
+                  setLikedProfiles(new Set());
                   localStorage.removeItem('passedProfiles');
+                  localStorage.removeItem('likedProfiles');
                   setCurrentIndex(0);
+                  setCurrentImageIndex(0);
+                  
+                  toast({
+                    title: 'Reset Complete',
+                    description: 'All profiles are available again',
+                  });
                 }}
                 className="px-6 py-3 bg-home-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
               >
