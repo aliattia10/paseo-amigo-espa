@@ -187,49 +187,70 @@ const NewProfilePage: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 pb-24">
         {/* Profile Header */}
-        <div className="flex p-4">
-          <div className="flex w-full flex-col gap-4 items-center">
-            {/* Profile Picture - Main Image Only */}
-            <div className="relative">
-              <div 
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md"
-                style={{
-                  backgroundImage: (() => {
-                    try {
-                      if (typeof userProfile?.profileImage === 'string') {
-                        const parsed = JSON.parse(userProfile.profileImage);
-                        const mainImage = Array.isArray(parsed) ? parsed[0] : userProfile.profileImage;
-                        return mainImage ? `url("${mainImage}")` : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")';
-                      }
-                      return userProfile?.profileImage 
-                        ? `url("${userProfile.profileImage}")`
-                        : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")';
-                    } catch {
-                      return userProfile?.profileImage 
-                        ? `url("${userProfile.profileImage}")`
-                        : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")';
-                    }
-                  })()
-                }}
-              />
+        <div className="px-4 pt-4">
+          {/* Name and Info */}
+          <div className="flex flex-col items-center justify-center text-center mb-3">
+            <p className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
+              {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
+            </p>
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">
+              {userProfile?.city || 'Location not set'}
+            </p>
+            <div className="mt-1 flex items-center gap-1">
+              <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
+                star
+              </span>
+              <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</p>
+              <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
             </div>
-            
-            {/* Name and Info */}
-            <div className="flex flex-col items-center justify-center text-center">
-              <p className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
-                {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
-              </p>
-              <p className="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">
-                {userProfile?.city || 'Location not set'}
-              </p>
-              <div className="mt-1 flex items-center gap-1">
-                <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
-                  star
-                </span>
-                <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</p>
-                <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
-              </div>
+          </div>
+
+          {/* Photo Gallery - Smaller Size */}
+          <div className="mb-3">
+            <h3 className="text-base font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+              Photos
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {(() => {
+                try {
+                  let photoArray = [];
+                  if (typeof userProfile?.profileImage === 'string') {
+                    photoArray = JSON.parse(userProfile.profileImage);
+                  } else if (Array.isArray(userProfile?.profileImage)) {
+                    photoArray = userProfile.profileImage;
+                  }
+                  photoArray = photoArray.filter(p => p).slice(0, 6);
+                  
+                  return Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="relative aspect-square">
+                      {photoArray[index] ? (
+                        <div className="relative w-full h-full rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800">
+                          <img
+                            src={photoArray[index]}
+                            alt={`Photo ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          {index === 0 && (
+                            <div className="absolute top-1 left-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                              Main
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
+                      )}
+                    </div>
+                  ));
+                } catch {
+                  return Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="relative aspect-square">
+                      <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
+                    </div>
+                  ));
+                }
+              })()}
             </div>
+          </div>
 
           <div className="flex w-full max-w-[480px] gap-3">
             <button 
