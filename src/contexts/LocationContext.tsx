@@ -119,19 +119,16 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (permissionStatus.state === 'denied') {
           toast({
             title: '🔒 Location Blocked',
-            description: 'Click the lock icon (🔒) in your browser address bar (top left), then allow location access and try again',
+            description: 'Click the lock icon in your browser address bar, change Location to "Allow", then try again',
             variant: 'destructive',
-            duration: 10000,
+            duration: 8000,
           });
-          
-          // Show alert for desktop users
-          if (window.confirm('Location access is blocked.\n\nTo enable:\n1. Click the lock icon (🔒) in your browser address bar\n2. Find "Location" and change it to "Allow"\n3. Refresh the page\n\nClick OK to see instructions, or Cancel to browse globally.')) {
-            // User wants instructions - they can follow the toast message
-          } else {
-            // User wants to browse globally instead
-            toggleGlobalMode();
-          }
           return;
+        }
+        
+        // If permission is in prompt state, the browser will show native popup
+        if (permissionStatus.state === 'prompt') {
+          console.log('Permission is in prompt state - browser will show native popup');
         }
       } catch (e) {
         console.log('Permissions API not supported, continuing with geolocation request');
@@ -140,14 +137,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       console.log('Requesting location...');
-      console.log('Browser will now show permission popup (look at top of browser window)');
-      
-      // Show a temporary toast to guide users
-      toast({
-        title: '📍 Permission Request',
-        description: 'Look for the permission popup at the top of your browser window and click "Allow"',
-        duration: 5000,
-      });
+      console.log('Browser should show native permission popup now');
       
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
