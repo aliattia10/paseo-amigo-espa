@@ -31,23 +31,58 @@ const ForgotPassword: React.FC = () => {
     }
 
     setLoading(true);
+    
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      console.log('Sending password reset email to:', email);
+      
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 15000)
+      );
+      
+      const resetPromise = supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
+      
+      const { error } = await Promise.race([resetPromise, timeoutPromise]) as any;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Password reset error:', error);
+        
+        // Handle specific error cases
+        if (error.message?.includes('rate limit')) {
+          throw new Error('Too many attempts. Please wait an hour and try again, or use a different email address.');
+        }
+        
+        throw error;
+      }
 
+      console.log('Password reset email sent successfully');
       setEmailSent(true);
+      
       toast({
-        title: t('auth.resetPasswordSent'),
-        description: t('auth.checkEmailForReset'),
+        title: '✅ Email enviado',
+        description: 'Revisa tu correo para restablecer tu contraseña',
       });
     } catch (error: any) {
+      console.error('Password reset error:', error);
+      
+      let errorMessage = error.message || 'Error al enviar el correo';
+      
+      // User-friendly error messages
+      if (errorMessage.includes('rate limit')) {
+        errorMessage = 'Demasiados intentos. Espera 1 hora o usa otro correo.';
+      } else if (errorMessage.includes('timeout')) {
+        errorMessage = 'La solicitud tardó demasiado. Verifica tu conexión e intenta de nuevo.';
+      } else if (errorMessage.includes('Invalid email')) {
+        errorMessage = 'Correo electrónico inválido';
+      }
+      
       toast({
-        title: t('common.error'),
-        description: error.message || t('auth.resetPasswordError'),
+        title: '❌ Error',
+        description: errorMessage,
         variant: "destructive",
+        duration: 6000,
       });
     } finally {
       setLoading(false);
@@ -133,21 +168,41 @@ const ForgotPassword: React.FC = () => {
               <div className="space-y-3">
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg font-semibold text-base"
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading}
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <span className="animate-spin">⏳</span>
-                      {t('common.loading')}
+                      Enviando...
                     </span>
                   ) : (
-                    t('auth.sendResetLink')
+                    'Enviar Enlace de Restablecimiento'
                   )}
                 </Button>
                 
+                {loading && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setLoading(false);
+                      toast({
+                        title: 'Cancelado',
+                        description: 'Solicitud cancelada',
+                      });
+                    }}
+                    className="w-full"
+                  >
+                    Cancelar
+                  </Button>
+                )}
+                
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400 px-4">
-                  Te enviaremos un correo con instrucciones para restablecer tu contraseña
+                  {loading 
+                    ? 'Esto puede tardar unos segundos...'
+                    : 'Te enviaremos un correo con instrucciones para restablecer tu contraseña'
+                  }
                 </p>
               </div>
             </form>
