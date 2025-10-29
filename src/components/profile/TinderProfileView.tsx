@@ -70,21 +70,25 @@ const TinderProfileView: React.FC<TinderProfileViewProps> = ({
 
   if (photoArray.length === 0) {
     return (
-      <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-900 rounded-3xl overflow-hidden">
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="material-symbols-outlined text-6xl text-gray-400 dark:text-gray-600 mb-4">
-            person
-          </span>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">No photos yet</p>
+      <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl overflow-hidden border-2 border-dashed border-primary/30">
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-4">
+            <span className="material-symbols-outlined text-6xl text-white">
+              person
+            </span>
+          </div>
+          <p className="text-text-primary-light dark:text-text-primary-dark font-bold text-lg mb-2">{name}</p>
+          <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm mb-4">No photos yet</p>
+          {onEditClick && (
+            <button
+              onClick={onEditClick}
+              className="bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined">add_photo_alternate</span>
+              Add Photos
+            </button>
+          )}
         </div>
-        {onEditClick && (
-          <button
-            onClick={onEditClick}
-            className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 text-primary rounded-full p-3 shadow-lg hover:scale-110 transition-transform"
-          >
-            <span className="material-symbols-outlined">edit</span>
-          </button>
-        )}
       </div>
     );
   }
@@ -155,13 +159,13 @@ const TinderProfileView: React.FC<TinderProfileViewProps> = ({
         </>
       )}
 
-      {/* Edit Button */}
+      {/* Edit Button - Moved to top right */}
       {onEditClick && (
         <button
           onClick={onEditClick}
-          className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 text-primary rounded-full p-3 shadow-lg hover:scale-110 transition-transform z-20"
+          className="absolute top-14 right-4 bg-white/90 dark:bg-gray-800/90 text-primary rounded-full p-2 shadow-lg hover:scale-110 transition-transform z-20 backdrop-blur-sm"
         >
-          <span className="material-symbols-outlined">edit</span>
+          <span className="material-symbols-outlined text-lg">edit</span>
         </button>
       )}
 

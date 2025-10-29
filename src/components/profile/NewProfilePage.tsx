@@ -174,7 +174,8 @@ const NewProfilePage: React.FC = () => {
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
               notifications
             </span>
-            <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+            {/* Notification badge - only show if there are unread notifications */}
+            {/* <span className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full"></span> */}
           </button>
           <button onClick={handleLogout}>
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
