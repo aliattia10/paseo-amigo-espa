@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import TinderProfileView from './TinderProfileView';
 
 const NewProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -185,48 +186,24 @@ const NewProfilePage: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 pb-24">
-        {/* Profile Header */}
-        <div className="flex p-4">
-          <div className="flex w-full flex-col gap-4 items-center">
-            <div className="relative">
-              <div 
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md"
-                style={{
-                  backgroundImage: userProfile?.profileImage 
-                    ? `url("${userProfile.profileImage}")`
-                    : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")'
-                }}
-              >
-                {uploadingImage && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                  </div>
-                )}
-              </div>
-              <label htmlFor="profile-picture-upload" className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg cursor-pointer hover:bg-primary/90 transition-colors">
-                <input
-                  id="profile-picture-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  disabled={uploadingImage}
-                />
-                <span className="material-symbols-outlined text-lg">
-                  {uploadingImage ? 'hourglass_empty' : 'edit'}
-                </span>
-              </label>
-            </div>
-            
-            <div className="flex flex-col items-center justify-center text-center">
-              <p className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
-                {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
-              </p>
-              <p className="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">
-                {userProfile?.city || 'Location not set'}
-              </p>
-              <div className="mt-1 flex items-center gap-1">
-                <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
+        {/* Profile Header - Tinder Style */}
+        <div className="px-4 pt-4">
+          <TinderProfileView
+            photos={userProfile?.profileImage || ''}
+            name={userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
+            onEditClick={() => navigate('/profile/edit')}
+          />
+          
+          {/* Name and Info Below Photos */}
+          <div className="mt-4 flex flex-col items-center justify-center text-center">
+            <p className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
+              {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
+            </p>
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">
+              {userProfile?.city || 'Location not set'}
+            </p>
+            <div className="mt-1 flex items-center gap-1">
+              <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
                   star
                 </span>
                 <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</p>
