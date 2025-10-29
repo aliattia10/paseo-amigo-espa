@@ -40,8 +40,13 @@ const ForgotPassword: React.FC = () => {
         setTimeout(() => reject(new Error('Request timed out. Please try again.')), 15000)
       );
       
+      // Use production domain for password reset
+      const redirectUrl = window.location.hostname === 'localhost' 
+        ? `${window.location.origin}/reset-password`
+        : 'https://petflik.com/reset-password';
+      
       const resetPromise = supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectUrl,
       });
       
       const { error } = await Promise.race([resetPromise, timeoutPromise]) as any;
