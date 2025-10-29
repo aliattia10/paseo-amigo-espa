@@ -1,8 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+
+interface Booking {
+  id: string;
+  sitter_name?: string;
+  owner_name?: string;
+  pet_name?: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  service_type: string;
+}
+
+interface Review {
+  id: string;
+  reviewer_name?: string;
+  reviewer_image?: string;
+  rating: number;
+  comment?: string;
+  created_at: string;
+}
 
 const NewProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -13,6 +33,10 @@ const NewProfilePage: React.FC = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [pets, setPets] = useState<Array<{ id: string; name: string; breed: string; age: string; image_url: string; pet_type: 'dog' | 'cat' }>>([]);
   const [loadingPets, setLoadingPets] = useState(true);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
   const handleLogout = async () => {
     const { supabase } = await import('@/integrations/supabase/client');
@@ -154,6 +178,112 @@ const NewProfilePage: React.FC = () => {
     fetchPets();
   }, [currentUser, activeRole]);
 
+  // Load booking history
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!currentUser) {
+        setLoadingBookings(false);
+        return;
+      }
+      
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data, error } = await supabase
+          .from('bookings')
+          .select(`
+            *,
+            sitter:users!bookings_sitter_id_fkey(name),
+            owner:users!bookings_owner_id_fkey(name),
+            pet:pets(name)
+          `)
+          .or(`owner_id.eq.${currentUser.id},sitter_id.eq.${currentUser.id}`)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (error) {
+          // Table doesn't exist or other error - show empty state
+          if (error.message.includes('does not exist') || error.message.includes('not find')) {
+            setBookings([]);
+            setLoadingBookings(false);
+            return;
+          }
+          throw error;
+        }
+        
+        const formattedBookings = data?.map((booking: any) => ({
+          id: booking.id,
+          sitter_name: booking.sitter?.name,
+          owner_name: booking.owner?.name,
+          pet_name: booking.pet?.name,
+          start_time: booking.start_time,
+          end_time: booking.end_time,
+          status: booking.status,
+          service_type: booking.service_type
+        })) || [];
+
+        setBookings(formattedBookings);
+      } catch (error) {
+        console.error('Error fetching bookings:', error);
+        setBookings([]);
+      } finally {
+        setLoadingBookings(false);
+      }
+    };
+
+    fetchBookings();
+  }, [currentUser]);
+
+  // Load reviews
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!currentUser) {
+        setLoadingReviews(false);
+        return;
+      }
+      
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data, error } = await supabase
+          .from('reviews')
+          .select(`
+            *,
+            reviewer:users!reviews_reviewer_id_fkey(name, profile_image)
+          `)
+          .eq('reviewed_id', currentUser.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (error) {
+          // Table doesn't exist or other error - show empty state
+          if (error.message.includes('does not exist') || error.message.includes('not find')) {
+            setReviews([]);
+            setLoadingReviews(false);
+            return;
+          }
+          throw error;
+        }
+        
+        const formattedReviews = data?.map((review: any) => ({
+          id: review.id,
+          reviewer_name: review.reviewer?.name,
+          reviewer_image: review.reviewer?.profile_image,
+          rating: review.rating,
+          comment: review.comment,
+          created_at: review.created_at
+        })) || [];
+
+        setReviews(formattedReviews);
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+        setReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    fetchReviews();
+  }, [currentUser]);
+
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark">
       {/* Top App Bar */}
@@ -196,13 +326,19 @@ const NewProfilePage: React.FC = () => {
             <p className="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">
               {userProfile?.city || 'Location not set'}
             </p>
-            <div className="mt-1 flex items-center gap-1">
-              <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
-                star
-              </span>
-              <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</p>
-              <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
-            </div>
+            {(userProfile?.rating || userProfile?.totalWalks) && (
+              <div className="mt-1 flex items-center gap-1">
+                <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
+                  star
+                </span>
+                <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">
+                  {userProfile?.rating ? userProfile.rating.toFixed(1) : '5.0'}
+                </p>
+                <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">
+                  ({userProfile?.totalWalks || reviews.length || 0} reviews)
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Profile Avatar - Main Picture Only */}
@@ -438,42 +574,118 @@ const NewProfilePage: React.FC = () => {
             Booking History
           </h2>
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 rounded-xl bg-card-light dark:bg-card-dark p-2 shadow-sm">
-              <div className="w-10 h-10 rounded-lg bg-cover bg-center flex-shrink-0" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200')" }} />
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-text-primary-light dark:text-text-primary-dark">Walk with Max</p>
-                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">With Jane Smith</p>
-                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">June 15 - June 16, 2024</p>
+            {loadingBookings ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               </div>
-              <div className="flex flex-col items-end flex-shrink-0">
-                <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full">Completed</span>
+            ) : bookings.length > 0 ? (
+              bookings.map((booking) => (
+                <div key={booking.id} className="flex items-center gap-2 rounded-xl bg-card-light dark:bg-card-dark p-2 shadow-sm">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center flex-shrink-0">
+                    <span className="material-symbols-outlined text-primary">calendar_today</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-text-primary-light dark:text-text-primary-dark capitalize">
+                      {booking.service_type === 'walk' ? '🚶 Walk' : '🏠 Care'} {booking.pet_name ? `with ${booking.pet_name}` : ''}
+                    </p>
+                    <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                      With {booking.sitter_name || booking.owner_name || 'User'}
+                    </p>
+                    <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                      {new Date(booking.start_time).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end flex-shrink-0">
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                      booking.status === 'completed' ? 'text-green-500 bg-green-500/10' :
+                      booking.status === 'accepted' ? 'text-blue-500 bg-blue-500/10' :
+                      booking.status === 'pending' ? 'text-yellow-500 bg-yellow-500/10' :
+                      'text-gray-500 bg-gray-500/10'
+                    }`}>
+                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 bg-card-light dark:bg-card-dark rounded-xl">
+                <span className="material-symbols-outlined text-5xl text-gray-400 mb-2">calendar_month</span>
+                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                  No bookings yet
+                </p>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Reviews */}
           <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5 pb-1 text-text-primary-light dark:text-text-primary-dark">
             Reviews Received
           </h2>
-          <div className="rounded-xl bg-card-light dark:bg-card-dark p-3 shadow-sm">
-            <div className="flex items-start gap-2">
-              <div className="w-10 h-10 rounded-full bg-cover bg-center flex-shrink-0" style={{ backgroundImage: "url('https://api.dicebear.com/7.x/avataaars/svg?seed=Jane')" }} />
-              <div className="flex-1">
-                <div className="flex justify-between items-center">
-                  <p className="font-bold text-text-primary-light dark:text-text-primary-dark">Jane Smith</p>
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span key={star} className="material-symbols-outlined text-secondary text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>
-                        star
-                      </span>
-                    ))}
+          <div className="flex flex-col gap-3">
+            {loadingReviews ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              </div>
+            ) : reviews.length > 0 ? (
+              reviews.map((review) => {
+                // Parse reviewer image if it's a JSON array
+                let reviewerImageUrl = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (review.reviewer_name || 'User');
+                try {
+                  if (review.reviewer_image) {
+                    const parsed = JSON.parse(review.reviewer_image);
+                    reviewerImageUrl = Array.isArray(parsed) ? parsed[0] : review.reviewer_image;
+                  }
+                } catch {
+                  reviewerImageUrl = review.reviewer_image || reviewerImageUrl;
+                }
+
+                return (
+                  <div key={review.id} className="rounded-xl bg-card-light dark:bg-card-dark p-3 shadow-sm">
+                    <div className="flex items-start gap-2">
+                      <div 
+                        className="w-10 h-10 rounded-full bg-cover bg-center flex-shrink-0" 
+                        style={{ backgroundImage: `url('${reviewerImageUrl}')` }} 
+                      />
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <p className="font-bold text-text-primary-light dark:text-text-primary-dark">
+                            {review.reviewer_name || 'Anonymous'}
+                          </p>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span 
+                                key={star} 
+                                className={`material-symbols-outlined text-sm ${
+                                  star <= review.rating ? 'text-secondary' : 'text-gray-300 dark:text-gray-600'
+                                }`} 
+                                style={{ fontVariationSettings: star <= review.rating ? '"FILL" 1' : '"FILL" 0' }}
+                              >
+                                star
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                            "{review.comment}"
+                          </p>
+                        )}
+                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-60">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
-                  "Alex was absolutely amazing with Max! He came back happy and tired. Highly recommend!"
+                );
+              })
+            ) : (
+              <div className="text-center py-8 bg-card-light dark:bg-card-dark rounded-xl">
+                <span className="material-symbols-outlined text-5xl text-gray-400 mb-2">rate_review</span>
+                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                  No reviews yet
                 </p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
