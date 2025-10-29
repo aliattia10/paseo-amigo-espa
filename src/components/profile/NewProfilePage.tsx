@@ -205,12 +205,12 @@ const NewProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Photo Gallery - Smaller Size */}
-          <div className="mb-3">
-            <h3 className="text-base font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+          {/* Photo Gallery - Same size as Edit Profile */}
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
               Photos
             </h3>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {(() => {
                 try {
                   let photoArray = [];
@@ -224,20 +224,20 @@ const NewProfilePage: React.FC = () => {
                   return Array.from({ length: 6 }).map((_, index) => (
                     <div key={index} className="relative aspect-square">
                       {photoArray[index] ? (
-                        <div className="relative w-full h-full rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800">
+                        <div className="relative w-full h-full rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800">
                           <img
                             src={photoArray[index]}
                             alt={`Photo ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
                           {index === 0 && (
-                            <div className="absolute top-1 left-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                            <div className="absolute bottom-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
                               Main
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
+                        <div className="w-full h-full rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"></div>
                       )}
                     </div>
                   ));
@@ -259,7 +259,16 @@ const NewProfilePage: React.FC = () => {
             >
               <span className="truncate">{t('dashboard.editProfile')}</span>
             </button>
-            <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] flex-1">
+            <button 
+              onClick={() => {
+                // TODO: Navigate to public profile view
+                toast({
+                  title: 'Coming Soon',
+                  description: 'Public profile view will be available soon!',
+                });
+              }}
+              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] flex-1"
+            >
               <span className="truncate">View Public Profile</span>
             </button>
           </div>
