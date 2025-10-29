@@ -217,12 +217,21 @@ const ProfileEditPage: React.FC = () => {
         
         // If table doesn't exist, provide helpful message
         if (error.message.includes('does not exist') || error.message.includes('not find')) {
-          throw new Error('Database not set up. Please run: database/fix_profile_storage.sql');
+          throw new Error('Database not set up. Please contact support.');
         }
-        if (error.message.includes('permission') || error.message.includes('denied')) {
-          throw new Error('Permission denied. You may not have access to update this profile.');
+        if (error.message.includes('permission') || error.message.includes('denied') || error.message.includes('policy')) {
+          throw new Error('Permission denied. Please check your database RLS policies or contact support.');
         }
-        throw new Error(error.message);
+        if (error.message.includes('violates')) {
+          throw new Error('Invalid data. Please check all fields and try again.');
+        }
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      // Check if update actually happened
+      if (!data || data.length === 0) {
+        console.warn('No data returned from update - this might indicate RLS policy issues');
+        throw new Error('Profile update may have failed. Please check console for details.');
       }
 
       console.log('Profile updated successfully:', data);
@@ -255,12 +264,17 @@ const ProfileEditPage: React.FC = () => {
     }
   };
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Form submit prevented');
+  };
+
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark max-w-md mx-auto">
       {/* Top App Bar */}
       <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
         <div className="flex size-12 shrink-0 items-center justify-start">
-          <button onClick={() => navigate('/profile')}>
+          <button type="button" onClick={() => navigate('/profile')}>
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
               arrow_back
             </span>
@@ -272,8 +286,9 @@ const ProfileEditPage: React.FC = () => {
         <div className="flex w-12 items-center justify-end"></div>
       </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 space-y-4">
+      {/* Main Content - Wrapped in form to prevent default submission */}
+      <form onSubmit={handleFormSubmit}>
+        <main className="flex-1 p-4 space-y-4">
         {/* Profile Picture */}
         <div className="flex flex-col items-center gap-4 py-4">
           <div className="relative">
@@ -376,6 +391,7 @@ const ProfileEditPage: React.FC = () => {
         {/* Save Button */}
         <div className="pt-4 pb-8">
           <Button
+            type="button"
             onClick={handleSave}
             disabled={loading}
             className="w-full bg-primary hover:bg-primary/90 text-white h-12"
@@ -383,7 +399,8 @@ const ProfileEditPage: React.FC = () => {
             {loading ? t('common.loading') : t('common.save')}
           </Button>
         </div>
-      </main>
+        </main>
+      </form>
     </div>
   );
 };
