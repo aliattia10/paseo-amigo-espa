@@ -15,7 +15,7 @@ interface Profile {
   age?: number;
   distance: number;
   rating: number;
-  imageUrl: string;
+  imageUrls: string[]; // Changed to array for multiple images
   bio?: string;
   hourlyRate?: number;
   type: 'dog' | 'walker';
@@ -36,7 +36,11 @@ const NewHomePage: React.FC = () => {
       age: 4,
       distance: 2,
       rating: 4.9,
-      imageUrl: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800',
+      imageUrls: [
+        'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800',
+        'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800',
+        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800',
+      ],
       type: 'dog',
     },
     {
@@ -45,7 +49,10 @@ const NewHomePage: React.FC = () => {
       age: 3,
       distance: 1.5,
       rating: 4.8,
-      imageUrl: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800',
+      imageUrls: [
+        'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800',
+        'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800',
+      ],
       type: 'dog',
     },
     {
@@ -54,7 +61,9 @@ const NewHomePage: React.FC = () => {
       age: 5,
       distance: 3,
       rating: 4.7,
-      imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800',
+      imageUrls: [
+        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800',
+      ],
       type: 'dog',
     },
   ];
@@ -68,7 +77,10 @@ const NewHomePage: React.FC = () => {
       distance: 1.2,
       rating: 4.9,
       hourlyRate: 15,
-      imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
+      imageUrls: [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800',
+      ],
       bio: 'Experienced dog walker with 5+ years',
       type: 'walker',
     },
@@ -79,7 +91,9 @@ const NewHomePage: React.FC = () => {
       distance: 2.5,
       rating: 4.8,
       hourlyRate: 18,
-      imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+      imageUrls: [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+      ],
       bio: 'Professional pet care specialist',
       type: 'walker',
     },
@@ -90,7 +104,11 @@ const NewHomePage: React.FC = () => {
       distance: 1.8,
       rating: 5.0,
       hourlyRate: 20,
-      imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800',
+      imageUrls: [
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800',
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+      ],
       bio: 'Certified dog trainer and walker',
       type: 'walker',
     },
@@ -105,6 +123,7 @@ const NewHomePage: React.FC = () => {
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     petType: 'all',
@@ -239,8 +258,14 @@ const NewHomePage: React.FC = () => {
   const handleRoleChange = (role: 'owner' | 'sitter') => {
     setUserRole(role);
     setCurrentIndex(0);
+    setCurrentImageIndex(0);
     localStorage.setItem('userRole', role);
   };
+
+  // Reset image index when profile changes
+  React.useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [currentIndex]);
 
   const navigate = useNavigate();
 
@@ -282,7 +307,7 @@ const NewHomePage: React.FC = () => {
         setMatchedUser({
           id: profile.id,
           name: profile.name,
-          imageUrl: profile.imageUrl
+          imageUrl: profile.imageUrls[0]
         });
         setShowMatchModal(true);
       } else {
@@ -483,7 +508,7 @@ const NewHomePage: React.FC = () => {
             <div 
               className="absolute bg-cover bg-center flex flex-col items-stretch justify-end rounded-xl shadow-xl w-full h-full cursor-grab active:cursor-grabbing transition-transform"
               style={{
-                backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 50%), url("${currentProfile.imageUrl}")`,
+                backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 50%), url("${currentProfile.imageUrls[currentImageIndex] || currentProfile.imageUrls[0]}")`,
                 transform: `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.05}deg)`,
                 opacity: swipeDirection ? 0.5 : 1
               }}
@@ -491,14 +516,56 @@ const NewHomePage: React.FC = () => {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
+              {/* Image Progress Bars - Tinder Style */}
+              {currentProfile.imageUrls.length > 1 && (
+                <div className="absolute top-2 left-2 right-2 flex gap-1 z-10">
+                  {currentProfile.imageUrls.map((_, index) => (
+                    <div
+                      key={index}
+                      className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden backdrop-blur-sm"
+                    >
+                      <div
+                        className={`h-full bg-white transition-all duration-300 ${
+                          index === currentImageIndex ? 'w-full' : index < currentImageIndex ? 'w-full' : 'w-0'
+                        }`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tap zones for image navigation */}
+              {currentProfile.imageUrls.length > 1 && (
+                <>
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-1/3 z-10 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (currentImageIndex > 0) {
+                        setCurrentImageIndex(currentImageIndex - 1);
+                      }
+                    }}
+                  />
+                  <div
+                    className="absolute right-0 top-0 bottom-0 w-1/3 z-10 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (currentImageIndex < currentProfile.imageUrls.length - 1) {
+                        setCurrentImageIndex(currentImageIndex + 1);
+                      }
+                    }}
+                  />
+                </>
+              )}
+              
               {/* Swipe indicators */}
               {dragOffset.x > 50 && (
-                <div className="absolute top-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform rotate-12 shadow-lg">
+                <div className="absolute top-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform rotate-12 shadow-lg z-20">
                   LIKE
                 </div>
               )}
               {dragOffset.x < -50 && (
-                <div className="absolute top-8 left-8 bg-red-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform -rotate-12 shadow-lg">
+                <div className="absolute top-8 left-8 bg-red-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform -rotate-12 shadow-lg z-20">
                   NOPE
                 </div>
               )}

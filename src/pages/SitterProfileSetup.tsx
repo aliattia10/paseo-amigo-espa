@@ -146,10 +146,11 @@ const SitterProfileSetup: React.FC = () => {
 
       toast({
         title: t('common.success'),
-        description: 'Sitter profile created successfully!',
+        description: 'Sitter profile created! You can update your details anytime.',
       });
 
-      navigate('/');
+      // Redirect to profile edit page
+      navigate('/profile/edit');
     } catch (error: any) {
       toast({
         title: t('common.error'),

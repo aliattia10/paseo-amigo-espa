@@ -126,36 +126,103 @@ const DogOwnerProfileSetup: React.FC = () => {
     
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('dogs')
+      console.log('=== CREATING PET PROFILE ===');
+      console.log('Pet data:', petData);
+      
+      // Wrap image URL in array for consistency with multi-image support
+      const imageUrlJson = JSON.stringify([petData.imageUrl]);
+      
+      // Try pets table first (new structure)
+      const { error: petsError } = await supabase
+        .from('pets')
         .insert({
           owner_id: currentUser!.id,
           name: petData.name,
+          pet_type: petType,
           age: petData.age,
           breed: petData.breed || null,
           notes: petData.notes,
-          image_url: petData.imageUrl,
+          image_url: imageUrlJson,
           temperament: petData.temperament,
           special_needs: petData.specialNeeds || null,
           energy_level: petData.energyLevel,
-          pet_type: petType,
         });
 
-      if (error) {
-        // If table doesn't exist, provide helpful message
-        if (error.message.includes('does not exist') || error.message.includes('not find')) {
-          throw new Error('Database not set up. Please contact support or run database migrations.');
+      if (petsError) {
+        console.error('Pets table error:', petsError);
+        
+        // Fallback to dogs table if pets doesn't exist
+        if (petsError.message.includes('does not exist') || petsError.message.includes('not find')) {
+          console.log('Trying dogs table as fallback...');
+          const { error: dogsError } = await supabase
+            .from('dogs')
+            .insert({
+              owner_id: currentUser!.id,
+              name: petData.name,
+              age: petData.age,
+              breed: petData.breed || null,
+              notes: petData.notes,
+              image_url: imageUrlJson,
+              temperament: petData.temperament,
+              special_needs: petData.specialNeeds || null,
+              energy_level: petData.energyLevel,
+            });
+          
+          if (dogsError) throw dogsError;
+        } else {
+          throw petsError;
         }
-        throw error;
       }
 
-      toast({
-        title: t('common.success'),
-        description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created successfully!`,
-      });
+      console.log('Pet profile created successfully');
+      
+      // Get the created pet ID to redirect to edit page
+      const { data: createdPet, error: fetchError } = await supabase
+        .from('pets')
+        .select('id')
+        .eq('owner_id', currentUser!.id)
+        .eq('name', petData.name)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
-      navigate('/');
+      if (fetchError) {
+        // Try dogs table as fallback
+        const { data: createdDog } = await supabase
+          .from('dogs')
+          .select('id')
+          .eq('owner_id', currentUser!.id)
+          .eq('name', petData.name)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (createdDog) {
+          toast({
+            title: t('common.success'),
+            description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
+          });
+          navigate(`/pet/${createdDog.id}/edit`);
+          return;
+        }
+      }
+
+      if (createdPet) {
+        toast({
+          title: t('common.success'),
+          description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
+        });
+        navigate(`/pet/${createdPet.id}/edit`);
+      } else {
+        // Fallback to dashboard if we can't get the ID
+        toast({
+          title: t('common.success'),
+          description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created successfully!`,
+        });
+        navigate('/dashboard');
+      }
     } catch (error: any) {
+      console.error('Create pet error:', error);
       toast({
         title: t('common.error'),
         description: error.message,
