@@ -26,27 +26,62 @@ DROP POLICY IF EXISTS "Public can view avatars" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can upload avatars" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can update avatars" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can delete avatars" ON storage.objects;
+DROP POLICY IF EXISTS "Anyone can view avatars" ON storage.objects;
+DROP POLICY IF EXISTS "Public avatars access" ON storage.objects;
+DROP POLICY IF EXISTS "Avatar upload access" ON storage.objects;
 
 -- 3. Create simple, permissive policies for authenticated users
-CREATE POLICY "Authenticated users can upload avatars"
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (bucket_id = 'avatars');
+DO $$ 
+BEGIN
+    -- Only create if doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'storage' 
+        AND tablename = 'objects' 
+        AND policyname = 'Authenticated users can upload avatars'
+    ) THEN
+        CREATE POLICY "Authenticated users can upload avatars"
+        ON storage.objects FOR INSERT
+        TO authenticated
+        WITH CHECK (bucket_id = 'avatars');
+    END IF;
 
-CREATE POLICY "Authenticated users can update avatars"
-ON storage.objects FOR UPDATE
-TO authenticated
-USING (bucket_id = 'avatars');
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'storage' 
+        AND tablename = 'objects' 
+        AND policyname = 'Authenticated users can update avatars'
+    ) THEN
+        CREATE POLICY "Authenticated users can update avatars"
+        ON storage.objects FOR UPDATE
+        TO authenticated
+        USING (bucket_id = 'avatars');
+    END IF;
 
-CREATE POLICY "Authenticated users can delete avatars"
-ON storage.objects FOR DELETE
-TO authenticated
-USING (bucket_id = 'avatars');
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'storage' 
+        AND tablename = 'objects' 
+        AND policyname = 'Authenticated users can delete avatars'
+    ) THEN
+        CREATE POLICY "Authenticated users can delete avatars"
+        ON storage.objects FOR DELETE
+        TO authenticated
+        USING (bucket_id = 'avatars');
+    END IF;
 
-CREATE POLICY "Anyone can view avatars"
-ON storage.objects FOR SELECT
-TO public
-USING (bucket_id = 'avatars');
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'storage' 
+        AND tablename = 'objects' 
+        AND policyname = 'Anyone can view avatars'
+    ) THEN
+        CREATE POLICY "Anyone can view avatars"
+        ON storage.objects FOR SELECT
+        TO public
+        USING (bucket_id = 'avatars');
+    END IF;
+END $$;
 
 -- 4. Verify the setup
 DO $$
