@@ -205,14 +205,13 @@ const NewProfilePage: React.FC = () => {
             </p>
             <div className="mt-1 flex items-center gap-1">
               <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
-                  star
-                </span>
-                <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</p>
-                <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
-              </div>
+                star
+              </span>
+              <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</p>
+              <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
             </div>
 
-            <div className="flex w-full max-w-[480px] gap-3">
+            <div className="flex w-full max-w-[480px] gap-3 mt-4">
               <button 
                 onClick={() => navigate('/profile/edit')}
                 className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] flex-1"
