@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import TinderPhotoGallery from './TinderPhotoGallery';
 
 const NewProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -188,50 +187,49 @@ const NewProfilePage: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 pb-24">
         {/* Profile Header */}
-        <div className="px-4 pt-4">
-          {/* Name and Info */}
-          <div className="flex flex-col items-center justify-center text-center mb-4">
-            <p className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
-              {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
-            </p>
-            <p className="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">
-              {userProfile?.city || 'Location not set'}
-            </p>
-            <div className="mt-1 flex items-center gap-1">
-              <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
-                star
-              </span>
-              <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</p>
-              <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
+        <div className="flex p-4">
+          <div className="flex w-full flex-col gap-4 items-center">
+            {/* Profile Picture - Main Image Only */}
+            <div className="relative">
+              <div 
+                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-card-light dark:border-card-dark shadow-md"
+                style={{
+                  backgroundImage: (() => {
+                    try {
+                      if (typeof userProfile?.profileImage === 'string') {
+                        const parsed = JSON.parse(userProfile.profileImage);
+                        const mainImage = Array.isArray(parsed) ? parsed[0] : userProfile.profileImage;
+                        return mainImage ? `url("${mainImage}")` : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")';
+                      }
+                      return userProfile?.profileImage 
+                        ? `url("${userProfile.profileImage}")`
+                        : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")';
+                    } catch {
+                      return userProfile?.profileImage 
+                        ? `url("${userProfile.profileImage}")`
+                        : 'url("https://api.dicebear.com/7.x/avataaars/svg?seed=' + (currentUser?.email || 'default') + '")';
+                    }
+                  })()
+                }}
+              />
             </div>
-
-          </div>
-
-          {/* Photo Gallery - Same as Edit Profile */}
-          <div className="mb-4">
-            <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
-              Your Photos
-            </h3>
-            <TinderPhotoGallery
-              photos={(() => {
-                try {
-                  if (typeof userProfile?.profileImage === 'string') {
-                    return JSON.parse(userProfile.profileImage);
-                  } else if (Array.isArray(userProfile?.profileImage)) {
-                    return userProfile.profileImage;
-                  }
-                  return [];
-                } catch {
-                  return userProfile?.profileImage ? [userProfile.profileImage] : [];
-                }
-              })()}
-              onPhotosChange={async () => {
-                // Read-only view, navigate to edit
-                navigate('/profile/edit');
-              }}
-              maxPhotos={6}
-            />
-          </div>
+            
+            {/* Name and Info */}
+            <div className="flex flex-col items-center justify-center text-center">
+              <p className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
+                {userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
+              </p>
+              <p className="text-text-secondary-light dark:text-text-secondary-dark text-base font-normal leading-normal">
+                {userProfile?.city || 'Location not set'}
+              </p>
+              <div className="mt-1 flex items-center gap-1">
+                <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
+                  star
+                </span>
+                <p className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">4.8</p>
+                <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">(32 reviews)</p>
+              </div>
+            </div>
 
           <div className="flex w-full max-w-[480px] gap-3">
             <button 
