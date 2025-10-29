@@ -298,9 +298,8 @@ const ProfileEditPage: React.FC = () => {
         <div className="flex w-12 items-center justify-end"></div>
       </div>
 
-      {/* Main Content - Wrapped in form to prevent default submission */}
-      <form onSubmit={handleFormSubmit}>
-        <main className="flex-1 p-4 space-y-4">
+      {/* Main Content */}
+      <main className="flex-1 p-4 space-y-4">
         {/* Profile Picture */}
         <div className="flex flex-col items-center gap-4 py-4">
           <div className="relative">
@@ -318,18 +317,25 @@ const ProfileEditPage: React.FC = () => {
               </div>
             )}
           </div>
-          <label htmlFor="profile-picture" className="cursor-pointer">
-            <input
-              id="profile-picture"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <Button type="button" variant="outline" className="text-primary" disabled={uploadingImage}>
-              <span className="material-symbols-outlined mr-2">photo_camera</span>
-              {uploadingImage ? 'Uploading...' : 'Change Photo'}
-            </Button>
+          <input
+            id="profile-picture"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={uploadingImage}
+          />
+          <label 
+            htmlFor="profile-picture"
+            className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 text-primary ${uploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            onClick={(e) => {
+              if (uploadingImage) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <span className="material-symbols-outlined mr-2">photo_camera</span>
+            {uploadingImage ? 'Uploading...' : 'Change Photo'}
           </label>
         </div>
 
@@ -404,15 +410,18 @@ const ProfileEditPage: React.FC = () => {
         <div className="pt-4 pb-8">
           <Button
             type="button"
-            onClick={handleSave}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSave();
+            }}
             disabled={loading}
             className="w-full bg-primary hover:bg-primary/90 text-white h-12"
           >
             {loading ? t('common.loading') : t('common.save')}
           </Button>
         </div>
-        </main>
-      </form>
+      </main>
     </div>
   );
 };
