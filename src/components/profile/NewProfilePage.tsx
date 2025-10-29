@@ -290,7 +290,7 @@ const NewProfilePage: React.FC = () => {
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">My Pets</h3>
                 <button 
-                  onClick={() => navigate('/dog-profile-setup')}
+                  onClick={() => navigate('/pet-profile-setup')}
                   className="text-primary font-bold text-sm flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-base">add</span>

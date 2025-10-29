@@ -187,7 +187,7 @@ const BookingRequestPage: React.FC = () => {
                 </p>
                 <Button
                   type="button"
-                  onClick={() => navigate('/dog-profile-setup')}
+                  onClick={() => navigate('/pet-profile-setup')}
                   variant="outline"
                 >
                   Add Pet Profile

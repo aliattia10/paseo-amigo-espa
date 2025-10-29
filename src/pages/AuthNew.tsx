@@ -138,7 +138,7 @@ const AuthNew = () => {
         
         // Redirect to appropriate profile setup
         if (selectedRole === 'owner') {
-          navigate('/dog-profile-setup');
+          navigate('/pet-profile-setup');
         } else if (selectedRole === 'walker') {
           navigate('/sitter-profile-setup');
         } else {

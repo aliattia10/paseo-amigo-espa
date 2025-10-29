@@ -712,7 +712,7 @@ const App = () => (
                   } 
                 />
                 <Route 
-                  path="/dog-profile-setup" 
+                  path="/pet-profile-setup" 
                   element={
                     <ProtectedRoute>
                       <DogOwnerProfileSetup />

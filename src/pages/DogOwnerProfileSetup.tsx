@@ -36,8 +36,8 @@ const DogOwnerProfileSetup: React.FC = () => {
     setUploadingImage(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${currentUser.id}-dog-${Date.now()}.${fileExt}`;
-      const filePath = `dogs/${fileName}`;
+      const fileName = `${currentUser.id}-pet-${Date.now()}.${fileExt}`;
+      const filePath = `pets/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
