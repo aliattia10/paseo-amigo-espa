@@ -55,23 +55,34 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-1">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-2xl border-0">
+        <CardHeader className="space-y-4 pb-6">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/auth?mode=login')}
-              className="gap-2"
+              className="gap-2 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <ArrowLeft className="w-4 h-4" />
               {t('common.back')}
             </Button>
             <LanguageSwitcher />
           </div>
-          <CardTitle className="text-2xl text-center">{t('auth.forgotPassword')}</CardTitle>
-          <CardDescription className="text-center">
+          
+          {/* Logo and Branding */}
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <span className="material-symbols-outlined text-white text-4xl">pets</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Petflik</h1>
+          </div>
+          
+          <CardTitle className="text-2xl text-center text-gray-900 dark:text-white">
+            {t('auth.forgotPassword')}
+          </CardTitle>
+          <CardDescription className="text-center text-gray-600 dark:text-gray-400">
             {emailSent 
               ? t('auth.resetPasswordSent')
               : t('auth.sendResetLink')
@@ -94,7 +105,7 @@ const ForgotPassword: React.FC = () => {
               </p>
               <Button 
                 onClick={() => navigate('/auth?mode=login')}
-                className="w-full bg-terracotta hover:bg-terracotta/90"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
               >
                 {t('auth.login')}
               </Button>
@@ -119,11 +130,15 @@ const ForgotPassword: React.FC = () => {
 
               <Button 
                 type="submit" 
-                className="w-full bg-terracotta hover:bg-terracotta/90"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg font-semibold"
                 disabled={loading}
               >
                 {loading ? t('common.loading') : t('auth.sendResetLink')}
               </Button>
+              
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                We'll send you an email with instructions to reset your password
+              </p>
             </form>
           )}
         </CardContent>

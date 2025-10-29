@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Petflik!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px; text-align: center; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); border-radius: 16px 16px 0 0;">
+                            <div style="width: 80px; height: 80px; margin: 0 auto 16px; background-color: rgba(255, 255, 255, 0.2); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 48px;">🐾</span>
+                            </div>
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">Welcome to Petflik!</h1>
+                            <p style="margin: 8px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px;">Your Pet Care Community Awaits</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="margin: 0 0 16px; color: #111827; font-size: 24px; font-weight: 600;">Hi there! 👋</h2>
+                            <p style="margin: 0 0 24px; color: #6b7280; font-size: 16px; line-height: 1.6;">
+                                We're thrilled to have you join Petflik, the community where pet owners and sitters connect. Whether you're looking for a trusted sitter or want to care for adorable pets, you're in the right place!
+                            </p>
+                            
+                            <!-- Confirm Email Button -->
+                            <table role="presentation" style="margin: 32px 0;">
+                                <tr>
+                                    <td style="border-radius: 8px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
+                                        <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 16px 32px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px;">
+                                            Confirm Your Email
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Features Grid -->
+                            <div style="margin: 32px 0;">
+                                <h3 style="margin: 0 0 20px; color: #111827; font-size: 18px; font-weight: 600;">What you can do on Petflik:</h3>
+                                
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 16px; width: 50%; vertical-align: top;">
+                                            <div style="text-align: center;">
+                                                <div style="width: 48px; height: 48px; margin: 0 auto 12px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                                    <span style="font-size: 24px;">🐕</span>
+                                                </div>
+                                                <h4 style="margin: 0 0 8px; color: #111827; font-size: 16px; font-weight: 600;">Find Pet Sitters</h4>
+                                                <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Browse trusted sitters in your area</p>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 16px; width: 50%; vertical-align: top;">
+                                            <div style="text-align: center;">
+                                                <div style="width: 48px; height: 48px; margin: 0 auto 12px; background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                                    <span style="font-size: 24px;">💼</span>
+                                                </div>
+                                                <h4 style="margin: 0 0 8px; color: #111827; font-size: 16px; font-weight: 600;">Become a Sitter</h4>
+                                                <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Earn money caring for pets</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 16px; width: 50%; vertical-align: top;">
+                                            <div style="text-align: center;">
+                                                <div style="width: 48px; height: 48px; margin: 0 auto 12px; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                                    <span style="font-size: 24px;">💬</span>
+                                                </div>
+                                                <h4 style="margin: 0 0 8px; color: #111827; font-size: 16px; font-weight: 600;">Chat & Connect</h4>
+                                                <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Message and meet before booking</p>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 16px; width: 50%; vertical-align: top;">
+                                            <div style="text-align: center;">
+                                                <div style="width: 48px; height: 48px; margin: 0 auto 12px; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                                    <span style="font-size: 24px;">⭐</span>
+                                                </div>
+                                                <h4 style="margin: 0 0 8px; color: #111827; font-size: 16px; font-weight: 600;">Reviews & Ratings</h4>
+                                                <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Build trust with the community</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <!-- Next Steps -->
+                            <div style="margin-top: 32px; padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #f3e8ff 100%); border-radius: 12px;">
+                                <h3 style="margin: 0 0 12px; color: #111827; font-size: 18px; font-weight: 600;">🚀 Get Started:</h3>
+                                <ol style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.8;">
+                                    <li>Confirm your email address (click the button above)</li>
+                                    <li>Complete your profile with a photo and bio</li>
+                                    <li>Add your pet's profile or set up your sitter profile</li>
+                                    <li>Start browsing and connecting!</li>
+                                </ol>
+                            </div>
+                            
+                            <p style="margin: 24px 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                                If you have any questions, our support team is here to help at <a href="mailto:support@petflik.com" style="color: #3b82f6; text-decoration: none;">support@petflik.com</a>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 32px 40px; background-color: #f9fafb; border-radius: 0 0 16px 16px; text-align: center;">
+                            <p style="margin: 0 0 16px; color: #6b7280; font-size: 14px;">
+                                Happy pet sitting! 🐾
+                            </p>
+                            <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">
+                                The Petflik Team
+                            </p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                                © 2024 Petflik. All rights reserved.
+                            </p>
+                            <div style="margin-top: 16px;">
+                                <a href="#" style="display: inline-block; margin: 0 8px; color: #9ca3af; text-decoration: none; font-size: 12px;">Privacy Policy</a>
+                                <span style="color: #d1d5db;">•</span>
+                                <a href="#" style="display: inline-block; margin: 0 8px; color: #9ca3af; text-decoration: none; font-size: 12px;">Terms of Service</a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
