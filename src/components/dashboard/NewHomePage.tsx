@@ -8,6 +8,7 @@ import BottomNavigation from '@/components/ui/BottomNavigation';
 import MatchModal from '@/components/ui/MatchModal';
 import FiltersModal, { FilterOptions } from '@/components/ui/FiltersModal';
 import { playMatchSound, playLikeSound } from '@/lib/sounds';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Profile {
   id: string;
@@ -27,9 +28,78 @@ const NewHomePage: React.FC = () => {
   const { location, locationEnabled, isGlobalMode, requestLocation, toggleGlobalMode } = useLocation();
   const { toast } = useToast();
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+  const [realPetProfiles, setRealPetProfiles] = useState<any[]>([]);
+  const [realSitterProfiles, setRealSitterProfiles] = useState<any[]>([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(true);
+
+  // Load real profiles from Supabase
+  React.useEffect(() => {
+    const loadProfiles = async () => {
+      try {
+        // Load pet profiles (for sitters to browse)
+        const { data: pets, error: petsError } = await supabase
+          .from('pets')
+          .select('id, name, age, image_url, owner_id')
+          .limit(20);
+
+        if (!petsError && pets) {
+          const petProfiles: Profile[] = pets.map(pet => {
+            let imageUrls: string[] = [];
+            try {
+              imageUrls = JSON.parse(pet.image_url || '[]');
+              if (!Array.isArray(imageUrls)) imageUrls = [pet.image_url];
+            } catch {
+              imageUrls = pet.image_url ? [pet.image_url] : [];
+            }
+
+            return {
+              id: pet.id,
+              name: pet.name,
+              age: pet.age ? parseInt(pet.age) : undefined,
+              distance: Math.random() * 10, // TODO: Calculate real distance
+              rating: 4.5 + Math.random() * 0.5,
+              imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
+              type: 'dog' as const,
+            };
+          });
+          setRealPetProfiles(petProfiles);
+        }
+
+        // Load sitter profiles (for pet owners to browse)
+        const sittersQuery: any = await supabase
+          .from('users')
+          .select('id, name, bio, profile_image, hourly_rate')
+          .eq('role', 'sitter')
+          .limit(20);
+        
+        const sitters: any = sittersQuery.data;
+        const sittersError: any = sittersQuery.error;
+
+        if (!sittersError && sitters) {
+          const sitterProfiles: Profile[] = sitters.map(sitter => ({
+            id: sitter.id,
+            name: sitter.name || 'Pet Sitter',
+            distance: Math.random() * 10, // TODO: Calculate real distance
+            rating: 4.5 + Math.random() * 0.5,
+            imageUrls: sitter.profile_image ? [sitter.profile_image] : ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800'],
+            bio: sitter.bio || undefined,
+            hourlyRate: sitter.hourly_rate || 15,
+            type: 'walker' as const,
+          }));
+          setRealSitterProfiles(sitterProfiles);
+        }
+      } catch (error) {
+        console.error('Error loading profiles:', error);
+      } finally {
+        setLoadingProfiles(false);
+      }
+    };
+
+    loadProfiles();
+  }, []);
   
-  // Dog profiles for sitters to browse
-  const dogProfiles: Profile[] = [
+  // Fallback mock data if no real profiles loaded
+  const mockDogProfiles: Profile[] = [
     {
       id: '1',
       name: 'Max',
@@ -68,8 +138,8 @@ const NewHomePage: React.FC = () => {
     },
   ];
 
-  // Walker profiles for dog owners to browse
-  const walkerProfiles: Profile[] = [
+  // Mock walker profiles for dog owners to browse (fallback)
+  const mockWalkerProfiles: Profile[] = [
     {
       id: 'w1',
       name: 'Sarah',
@@ -244,6 +314,10 @@ const NewHomePage: React.FC = () => {
   };
 
   // Get profiles based on user role, filtering out passed/liked ones
+  // Use real profiles if available, otherwise fall back to mock data
+  const dogProfiles = realPetProfiles.length > 0 ? realPetProfiles : mockDogProfiles;
+  const walkerProfiles = realSitterProfiles.length > 0 ? realSitterProfiles : mockWalkerProfiles;
+  
   const allProfiles = userRole === 'owner' ? walkerProfiles : dogProfiles;
   const profiles = applyFilters(allProfiles);
 
@@ -471,7 +545,13 @@ const NewHomePage: React.FC = () => {
       {/* Main Content: Card Stack */}
       <main className="flex-1 flex flex-col items-center px-4 pt-2 pb-2 overflow-hidden max-w-md mx-auto w-full">
         <div className="relative w-full max-w-[400px] flex-1 flex items-center justify-center" style={{ maxHeight: 'calc(100vh - 280px)' }}>
-          {profiles.length === 0 ? (
+          {loadingProfiles ? (
+            /* Loading state */
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-home-primary mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading profiles...</p>
+            </div>
+          ) : profiles.length === 0 ? (
             /* No more profiles message */
             <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 text-center">
               <span className="material-symbols-outlined text-6xl text-gray-400 mb-4">
