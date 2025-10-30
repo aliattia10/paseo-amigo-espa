@@ -509,14 +509,32 @@ const NewProfilePage: React.FC = () => {
                 </button>
               </div>
               <div className="grid grid-cols-7 gap-2 text-center">
-                {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day, index) => (
-                  <div key={day} className={`flex flex-col items-center ${index === 2 ? 'p-2 rounded-full bg-primary/20 dark:bg-primary/30' : ''}`}>
-                    <p className={`text-xs ${index === 2 ? 'text-primary' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}>{day}</p>
-                    <p className={`font-bold text-lg ${index === 2 ? 'text-primary' : 'text-text-primary-light dark:text-text-primary-dark'}`}>
-                      {18 + index}
-                    </p>
-                  </div>
-                ))}
+                {(() => {
+                  const today = new Date();
+                  const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                  const nextSevenDays = Array.from({ length: 7 }, (_, i) => {
+                    const date = new Date(today);
+                    date.setDate(today.getDate() + i);
+                    return date;
+                  });
+                  
+                  return nextSevenDays.map((date, index) => {
+                    const isToday = index === 0;
+                    const dayName = days[date.getDay()];
+                    const dayNumber = date.getDate();
+                    
+                    return (
+                      <div key={index} className={`flex flex-col items-center ${isToday ? 'p-2 rounded-full bg-primary/20 dark:bg-primary/30' : ''}`}>
+                        <p className={`text-xs ${isToday ? 'text-primary font-bold' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}>
+                          {isToday ? 'TODAY' : dayName}
+                        </p>
+                        <p className={`font-bold text-lg ${isToday ? 'text-primary' : 'text-text-primary-light dark:text-text-primary-dark'}`}>
+                          {dayNumber}
+                        </p>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}

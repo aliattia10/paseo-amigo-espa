@@ -319,7 +319,7 @@ const PublicProfilePage: React.FC = () => {
       </main>
 
       {/* Action Buttons at Bottom */}
-      <div className="flex-shrink-0 bg-card-light dark:bg-card-dark p-4 max-w-md mx-auto w-full border-t border-border-light dark:border-border-dark mb-16">
+      <div className="flex-shrink-0 bg-card-light dark:bg-card-dark p-4 w-full border-t border-border-light dark:border-border-dark mb-20">
         <button 
           onClick={() => navigate('/profile/edit')}
           className="w-full bg-gradient-to-r from-[#FD5564] to-[#FF6B7A] hover:from-[#FD4458] hover:to-[#FF5A6E] text-white font-bold py-3 rounded-full transition-colors shadow-lg"
@@ -327,6 +327,51 @@ const PublicProfilePage: React.FC = () => {
           Edit Profile
         </button>
       </div>
+
+      {/* Bottom Navigation - Mobile Style */}
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 z-10 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 w-full max-w-md">
+        <div className="flex justify-around items-center h-16 px-2">
+          <button 
+            onClick={() => navigate('/dashboard')} 
+            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">home</span>
+            <span className="text-xs font-medium mt-0.5">Home</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/messages')} 
+            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">chat_bubble</span>
+            <span className="text-xs font-medium mt-0.5">Messages</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/bookings')} 
+            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">event</span>
+            <span className="text-xs font-medium mt-0.5">Bookings</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/notifications')} 
+            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">notifications</span>
+            <span className="text-xs font-medium mt-0.5">Notifications</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/profile')}
+            className="flex flex-col items-center justify-center flex-1 py-2 text-primary"
+          >
+            <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: '"FILL" 1' }}>person</span>
+            <span className="text-xs font-bold mt-0.5">Profile</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 };
