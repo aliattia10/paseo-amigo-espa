@@ -135,11 +135,19 @@ const DogOwnerProfileSetup: React.FC = () => {
       // Use photos array for multi-image support
       const imageUrlJson = JSON.stringify(photos.filter(p => p));
       
+      // Verify user is logged in
+      if (!currentUser) {
+        throw new Error('You must be logged in to create a pet profile');
+      }
+
+      console.log('Current user ID:', currentUser.id);
+      console.log('Photos to save:', photos.filter(p => p));
+
       // Try pets table first (new structure)
-      const { error: petsError } = await supabase
+      const { data: insertedPet, error: petsError } = await supabase
         .from('pets')
         .insert({
-          owner_id: currentUser!.id,
+          owner_id: currentUser.id,
           name: petData.name,
           pet_type: petType,
           age: petData.age,
@@ -149,10 +157,19 @@ const DogOwnerProfileSetup: React.FC = () => {
           temperament: petData.temperament,
           special_needs: petData.specialNeeds || null,
           energy_level: petData.energyLevel,
-        });
+        })
+        .select()
+        .single();
+
+      console.log('Insert result:', { insertedPet, petsError });
 
       if (petsError) {
-        console.error('Pets table error:', petsError);
+        console.error('Pets table error:', {
+          message: petsError.message,
+          details: petsError.details,
+          hint: petsError.hint,
+          code: petsError.code
+        });
         
         // Fallback to dogs table if pets doesn't exist
         if (petsError.message.includes('does not exist') || petsError.message.includes('not find')) {
@@ -179,50 +196,61 @@ const DogOwnerProfileSetup: React.FC = () => {
 
       console.log('Pet profile created successfully');
       
-      // Get the created pet ID to redirect to edit page
-      const { data: createdPet, error: fetchError } = await supabase
-        .from('pets')
-        .select('id')
-        .eq('owner_id', currentUser!.id)
-        .eq('name', petData.name)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (fetchError) {
-        // Try dogs table as fallback
-        const { data: createdDog } = await supabase
-          .from('dogs')
-          .select('id')
-          .eq('owner_id', currentUser!.id)
-          .eq('name', petData.name)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-        
-        if (createdDog) {
-          toast({
-            title: t('common.success'),
-            description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
-          });
-          navigate(`/pet/${createdDog.id}/edit`);
-          return;
-        }
-      }
-
-      if (createdPet) {
+      // Use the returned pet data if available
+      if (insertedPet) {
+        console.log('Created pet:', insertedPet);
         toast({
           title: t('common.success'),
           description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
         });
-        navigate(`/pet/${createdPet.id}/edit`);
+        navigate(`/pet/${insertedPet.id}/edit`);
       } else {
-        // Fallback to dashboard if we can't get the ID
-        toast({
-          title: t('common.success'),
-          description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created successfully!`,
-        });
-        navigate('/dashboard');
+        // Fallback: try to fetch the created pet
+        const { data: createdPet, error: fetchError } = await supabase
+          .from('pets')
+          .select('id')
+          .eq('owner_id', currentUser.id)
+          .eq('name', petData.name)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (fetchError) {
+          console.error('Fetch error:', fetchError);
+          // Try dogs table as fallback
+          const { data: createdDog } = await supabase
+            .from('dogs')
+            .select('id')
+            .eq('owner_id', currentUser.id)
+            .eq('name', petData.name)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          if (createdDog) {
+            toast({
+              title: t('common.success'),
+              description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
+            });
+            navigate(`/pet/${createdDog.id}/edit`);
+            return;
+          }
+        }
+
+        if (createdPet) {
+          toast({
+            title: t('common.success'),
+            description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
+          });
+          navigate(`/pet/${createdPet.id}/edit`);
+        } else {
+          // Fallback to dashboard if we can't get the ID
+          toast({
+            title: t('common.success'),
+            description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created successfully!`,
+          });
+          navigate('/dashboard');
+        }
       }
     } catch (error: any) {
       console.error('Create pet error:', error);
