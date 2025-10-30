@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +12,7 @@ const ProfileEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser, userProfile, refreshUserProfile } = useAuth();
+  const location = useLocation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -59,6 +61,8 @@ const ProfileEditPage: React.FC = () => {
       }
     }
   }, [userProfile]);
+
+  const showPrompt = React.useMemo(() => new URLSearchParams(location.search).get('prompt') === 'complete', [location.search]);
 
   const handleImageUpload = async (file: File, index: number) => {
     console.log('=== IMAGE UPLOAD START ===');
@@ -371,6 +375,12 @@ const ProfileEditPage: React.FC = () => {
 
       {/* Main Content - Scrollable */}
       <main className="flex-1 overflow-y-auto pb-20">
+        {showPrompt && (
+          <div className="m-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 p-3 text-sm text-yellow-900 dark:text-yellow-200">
+            Please add at least one photo and complete your basic info.
+            If you are a sitter, set your hourly rate and availability to appear in search.
+          </div>
+        )}
         {/* Photos Section */}
         <div className="bg-white dark:bg-[#1a1a1a] p-4 mb-2">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">

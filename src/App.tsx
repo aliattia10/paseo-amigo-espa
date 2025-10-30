@@ -28,6 +28,7 @@ import NewProfilePage from "./components/profile/NewProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
+import UserProfilePage from "./pages/UserProfilePage";
 import PetEditPage from "./pages/PetEditPage";
 import DogOwnerProfileSetup from "./pages/DogOwnerProfileSetup";
 import SitterProfileSetup from "./pages/SitterProfileSetup";
@@ -710,6 +711,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <PublicProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route 
+                  path="/u/:userId" 
+                  element={
+                    <ProtectedRoute>
+                      <UserProfilePage />
                     </ProtectedRoute>
                   }
                 />

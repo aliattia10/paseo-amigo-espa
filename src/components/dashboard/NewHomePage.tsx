@@ -547,10 +547,8 @@ const NewHomePage: React.FC = () => {
   };
 
   const handleInfo = () => {
-    // Navigate to profile details
     const profile = profiles[currentIndex];
-    console.log('Show info for:', profile);
-    // TODO: Navigate to walker profile page
+    navigate(`/u/${profile.id}`);
   };
 
   // Swipe handlers

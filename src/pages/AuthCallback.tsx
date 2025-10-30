@@ -107,10 +107,10 @@ const AuthCallback: React.FC = () => {
                 description: t('auth.welcomeToApp'),
               });
               
-              // Redirect to home page after successful confirmation
+              // After confirmation, nudge user to complete profile (photos, hourly rate)
               setTimeout(() => {
-                navigate('/');
-              }, 2000);
+                navigate('/profile/edit?prompt=complete');
+              }, 1500);
             }
           } else {
             // No tokens in URL, try to get current session
@@ -140,8 +140,8 @@ const AuthCallback: React.FC = () => {
               });
               
               setTimeout(() => {
-                navigate('/');
-              }, 2000);
+                navigate('/profile/edit?prompt=complete');
+              }, 1500);
             } else {
               // No session found
               console.log('AuthCallback: No session found');
