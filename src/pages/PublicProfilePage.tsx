@@ -137,9 +137,10 @@ const PublicProfilePage: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content: Tinder-Style Profile */}
-      <main className="flex-1 flex flex-col items-center px-4 pt-4 pb-2 overflow-hidden max-w-md mx-auto w-full">
-        <div className="w-full max-w-[400px] flex-1 flex items-center justify-center">
+      {/* Main Content: Scrollable Profile */}
+      <main className="flex-1 overflow-y-auto px-4 pt-4 pb-2 max-w-md mx-auto w-full">
+        {/* Tinder-Style Photo Gallery */}
+        <div className="w-full max-w-[400px] mx-auto mb-4" style={{ height: '400px' }}>
           <TinderProfileView 
             photos={photos}
             name={userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
@@ -148,7 +149,7 @@ const PublicProfilePage: React.FC = () => {
         </div>
 
         {/* Profile Info Below Image - Dashboard Style */}
-        <div className="w-full max-w-[400px] bg-card-light dark:bg-card-dark rounded-3xl shadow-xl p-6 mt-4 -mb-2 max-h-[50vh] overflow-y-auto">
+        <div className="w-full max-w-[400px] mx-auto bg-card-light dark:bg-card-dark rounded-3xl shadow-xl p-6 mb-4">
           {/* Name and Basic Info */}
           <div className="mb-4">
             <h2 className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
