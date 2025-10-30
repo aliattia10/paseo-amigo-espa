@@ -111,9 +111,9 @@ const PublicProfilePage: React.FC = () => {
     : (userProfile?.rating || 0);
 
   return (
-    <div className="relative flex h-screen w-full flex-col bg-home-background-light dark:bg-home-background-dark overflow-hidden">
+    <div className="relative flex h-screen w-full flex-col bg-home-background-light dark:bg-home-background-dark overflow-hidden max-w-md mx-auto">
       {/* Top App Bar */}
-      <header className="flex flex-col bg-home-background-light dark:bg-home-background-dark shrink-0 max-w-md mx-auto w-full">
+      <header className="flex flex-col bg-home-background-light dark:bg-home-background-dark shrink-0 w-full">
         <div className="flex items-center p-4 pb-2 justify-between">
           <div className="flex size-12 shrink-0 items-center justify-start">
             <button onClick={() => navigate('/profile')}>

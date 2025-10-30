@@ -285,9 +285,9 @@ const NewProfilePage: React.FC = () => {
   }, [currentUser]);
 
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark">
+    <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark max-w-md mx-auto">
       {/* Top App Bar */}
-      <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
+      <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm max-w-md mx-auto w-full">
         <div className="flex size-12 shrink-0 items-center justify-start">
           <button onClick={() => navigate('/dashboard')}>
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
