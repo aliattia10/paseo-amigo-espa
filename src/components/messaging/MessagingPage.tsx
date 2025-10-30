@@ -25,7 +25,7 @@ const MessagingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stitch-bg-light">
+    <div className="min-h-screen bg-stitch-bg-light pb-20">
       {/* Enhanced Header */}
       <div className="bg-stitch-card-light shadow-md border-b border-stitch-border-light sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -90,6 +90,50 @@ const MessagingPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Bottom Navigation - Same as Home Page */}
+      <nav className="fixed bottom-0 left-0 right-0 z-10 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 max-w-md mx-auto">
+        <div className="flex justify-around items-center h-16 px-2">
+          <button 
+            onClick={() => navigate('/dashboard')} 
+            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">home</span>
+            <span className="text-xs font-medium mt-0.5">Home</span>
+          </button>
+          
+          <button 
+            className="flex flex-col items-center justify-center flex-1 py-2 text-primary"
+          >
+            <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: '"FILL" 1' }}>chat_bubble</span>
+            <span className="text-xs font-bold mt-0.5">Messages</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/bookings')} 
+            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">event</span>
+            <span className="text-xs font-medium mt-0.5">Bookings</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/notifications')} 
+            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">notifications</span>
+            <span className="text-xs font-medium mt-0.5">Notifications</span>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/profile')}
+            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">person</span>
+            <span className="text-xs font-medium mt-0.5">Profile</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 };
