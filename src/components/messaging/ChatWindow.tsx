@@ -259,12 +259,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             <AvatarImage src={otherUser.profileImage} />
             <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div>
+          <div className="flex-1">
             <h3 className="font-semibold">{otherUser.name}</h3>
             <p className="text-sm text-muted-foreground">
-              Paseo para {walkRequest.dogId}
+              {walkRequest ? `Paseo para ${walkRequest.dogId}` : 'Match'}
             </p>
           </div>
+          {matchId && (
+            <Button
+              onClick={() => {
+                // Navigate to booking page with sitter ID
+                window.location.href = `/booking/request?sitter_id=${otherUser.id}`;
+              }}
+              className="bg-primary hover:bg-primary/90"
+            >
+              📅 Book Now
+            </Button>
+          )}
         </div>
       </CardHeader>
 
