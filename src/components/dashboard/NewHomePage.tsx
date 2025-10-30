@@ -325,8 +325,15 @@ const NewHomePage: React.FC = () => {
 
   // Apply filters to profiles
   const applyFilters = (profiles: Profile[]) => {
+    console.log('=== APPLYING FILTERS ===');
+    console.log('Total profiles before filter:', profiles.length);
+    console.log('Liked profile IDs:', Array.from(likedProfileIds));
+    console.log('Passed profile IDs:', Array.from(passedProfileIds));
+    
     // Filter out profiles user has already interacted with (from Supabase)
     let filtered = profiles.filter(p => !passedProfileIds.has(p.id) && !likedProfileIds.has(p.id));
+    
+    console.log('Profiles after interaction filter:', filtered.length);
 
     // Pet type filter (for owners looking at walkers)
     if (userRole === 'owner' && filters.petType !== 'all') {
