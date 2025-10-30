@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import TinderProfileView from '@/components/profile/TinderProfileView';
@@ -6,6 +6,10 @@ import TinderProfileView from '@/components/profile/TinderProfileView';
 const PublicProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser, userProfile } = useAuth();
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [petsCount, setPetsCount] = useState(0);
+  const [completedBookings, setCompletedBookings] = useState(0);
 
   // Parse photos from profile
   let photos: string[] = [];
@@ -21,6 +25,90 @@ const PublicProfilePage: React.FC = () => {
 
   // Filter out empty photos
   photos = photos.filter(p => p);
+
+  // Load reviews
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!currentUser) {
+        setLoadingReviews(false);
+        return;
+      }
+      
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data, error } = await supabase
+          .from('reviews')
+          .select(`
+            *,
+            reviewer:users!reviews_reviewer_id_fkey(name, profile_image)
+          `)
+          .eq('reviewed_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        
+        if (!error && data) {
+          setReviews(data);
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    fetchReviews();
+  }, [currentUser]);
+
+  // Load pets count
+  useEffect(() => {
+    const fetchPetsCount = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { count, error } = await supabase
+          .from('pets')
+          .select('*', { count: 'exact', head: true })
+          .eq('owner_id', currentUser.id);
+        
+        if (!error && count !== null) {
+          setPetsCount(count);
+        }
+      } catch (error) {
+        console.error('Error fetching pets count:', error);
+      }
+    };
+
+    fetchPetsCount();
+  }, [currentUser]);
+
+  // Load completed bookings count
+  useEffect(() => {
+    const fetchCompletedBookings = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { count, error } = await supabase
+          .from('bookings')
+          .select('*', { count: 'exact', head: true })
+          .eq('sitter_id', currentUser.id)
+          .eq('status', 'completed');
+        
+        if (!error && count !== null) {
+          setCompletedBookings(count);
+        }
+      } catch (error) {
+        console.error('Error fetching bookings:', error);
+      }
+    };
+
+    fetchCompletedBookings();
+  }, [currentUser]);
+
+  // Calculate average rating
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
+    : (userProfile?.rating || 0);
 
   return (
     <div className="relative flex h-screen w-full flex-col bg-home-background-light dark:bg-home-background-dark overflow-hidden">
@@ -60,7 +148,7 @@ const PublicProfilePage: React.FC = () => {
         </div>
 
         {/* Profile Info Below Image - Dashboard Style */}
-        <div className="w-full max-w-[400px] bg-card-light dark:bg-card-dark rounded-3xl shadow-xl p-6 mt-4 -mb-2">
+        <div className="w-full max-w-[400px] bg-card-light dark:bg-card-dark rounded-3xl shadow-xl p-6 mt-4 -mb-2 max-h-[50vh] overflow-y-auto">
           {/* Name and Basic Info */}
           <div className="mb-4">
             <h2 className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
@@ -75,38 +163,61 @@ const PublicProfilePage: React.FC = () => {
               </span>
             </div>
 
-            {/* Rating, Experience & Price */}
-            <div className="flex items-center gap-3 flex-wrap mb-3">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
               {/* Rating */}
-              <div className="flex items-center gap-1 bg-secondary/20 dark:bg-secondary/30 px-3 py-1.5 rounded-full">
-                <span className="material-symbols-outlined text-secondary text-base" style={{ fontVariationSettings: '"FILL" 1' }}>
-                  star
-                </span>
-                <span className="font-bold text-base text-text-primary-light dark:text-text-primary-dark">
-                  {userProfile?.rating ? userProfile.rating.toFixed(1) : '5.0'}
-                </span>
-                <span className="text-text-secondary-light dark:text-text-secondary-dark text-xs">
-                  ({userProfile?.totalWalks || '0'} reviews)
-                </span>
+              <div className="bg-background-light dark:bg-background-dark rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <span className="material-symbols-outlined text-secondary text-lg" style={{ fontVariationSettings: '"FILL" 1' }}>
+                    star
+                  </span>
+                  <span className="font-bold text-lg text-text-primary-light dark:text-text-primary-dark">
+                    {averageRating > 0 ? averageRating.toFixed(1) : '5.0'}
+                  </span>
+                </div>
+                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                  {reviews.length} reviews
+                </p>
               </div>
 
-              {/* Hourly Rate - for sitters */}
-              {userProfile?.hourlyRate && (userProfile?.userType === 'walker' || userProfile?.userType === 'sitter' || userProfile?.userType === 'both') && (
-                <div className="bg-primary text-white px-3 py-1.5 rounded-full shadow-lg">
-                  <p className="text-base font-bold">
-                    ${userProfile.hourlyRate}/hr
-                  </p>
+              {/* Pets Settered / Owned */}
+              <div className="bg-background-light dark:bg-background-dark rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <span className="text-2xl">🐾</span>
+                  <span className="font-bold text-lg text-text-primary-light dark:text-text-primary-dark">
+                    {completedBookings || petsCount || 0}
+                  </span>
                 </div>
-              )}
+                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                  {userProfile?.userType === 'owner' ? 'pets' : 'pets settered'}
+                </p>
+              </div>
+
+              {/* Experience / Member Since */}
+              <div className="bg-background-light dark:bg-background-dark rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <span className="material-symbols-outlined text-primary text-lg">
+                    schedule
+                  </span>
+                  <span className="font-bold text-lg text-text-primary-light dark:text-text-primary-dark">
+                    {userProfile?.experience || '1'}
+                  </span>
+                </div>
+                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                  {userProfile?.experience ? 'years exp' : 'year'}
+                </p>
+              </div>
             </div>
 
-            {/* Experience - for sitters */}
-            {userProfile?.experience && (userProfile?.userType === 'walker' || userProfile?.userType === 'sitter' || userProfile?.userType === 'both') && (
-              <div className="flex items-center gap-2 mb-3">
-                <span className="material-symbols-outlined text-primary">work</span>
-                <span className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">
-                  {userProfile.experience} {userProfile.experience === 1 ? 'year' : 'years'} of experience
-                </span>
+            {/* Hourly Rate - for sitters */}
+            {userProfile?.hourlyRate && (userProfile?.userType === 'walker' || (userProfile?.userType as any) === 'sitter' || (userProfile?.userType as any) === 'both') && (
+              <div className="bg-primary/10 dark:bg-primary/20 border-2 border-primary/30 rounded-xl p-3 mb-3 text-center">
+                <p className="text-2xl font-bold text-primary mb-1">
+                  ${userProfile.hourlyRate}/hr
+                </p>
+                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                  Base hourly rate
+                </p>
               </div>
             )}
           </div>
@@ -114,7 +225,10 @@ const PublicProfilePage: React.FC = () => {
           {/* Bio */}
           {userProfile?.bio && (
             <div className="mb-4 p-4 bg-background-light dark:bg-background-dark rounded-xl">
-              <h3 className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark mb-2">About</h3>
+              <h3 className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark mb-2 flex items-center gap-2">
+                <span className="material-symbols-outlined text-base">info</span>
+                About Me
+              </h3>
               <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">
                 {userProfile.bio}
               </p>
@@ -122,7 +236,7 @@ const PublicProfilePage: React.FC = () => {
           )}
 
           {/* User Type Badges */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap mb-4">
             <div className="bg-primary/20 dark:bg-primary/30 text-primary px-3 py-1.5 rounded-full text-xs font-bold">
               {userProfile?.userType === 'owner' ? '🐾 Pet Owner' : 
                userProfile?.userType === 'walker' ? '🚶 Pet Sitter' : 
@@ -137,6 +251,69 @@ const PublicProfilePage: React.FC = () => {
               Verified
             </div>
           </div>
+
+          {/* Recent Reviews */}
+          {reviews.length > 0 && (
+            <div className="border-t border-border-light dark:border-border-dark pt-4">
+              <h3 className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-base">rate_review</span>
+                Recent Reviews
+              </h3>
+              <div className="space-y-3">
+                {reviews.slice(0, 3).map((review) => {
+                  // Parse reviewer image
+                  let reviewerImageUrl = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (review.reviewer?.name || 'User');
+                  try {
+                    if (review.reviewer?.profile_image) {
+                      const parsed = JSON.parse(review.reviewer.profile_image);
+                      reviewerImageUrl = Array.isArray(parsed) ? parsed[0] : review.reviewer.profile_image;
+                    }
+                  } catch {
+                    reviewerImageUrl = review.reviewer?.profile_image || reviewerImageUrl;
+                  }
+
+                  return (
+                    <div key={review.id} className="bg-background-light dark:bg-background-dark rounded-lg p-3">
+                      <div className="flex items-start gap-2 mb-2">
+                        <div 
+                          className="w-8 h-8 rounded-full bg-cover bg-center flex-shrink-0" 
+                          style={{ backgroundImage: `url('${reviewerImageUrl}')` }} 
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-text-primary-light dark:text-text-primary-dark">
+                            {review.reviewer?.name || 'Anonymous'}
+                          </p>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span 
+                                key={star} 
+                                className={`material-symbols-outlined text-xs ${
+                                  star <= review.rating ? 'text-secondary' : 'text-gray-300 dark:text-gray-600'
+                                }`}
+                                style={{ fontVariationSettings: '"FILL" 1' }}
+                              >
+                                star
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">
+                          {review.comment}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {reviews.length > 3 && (
+                <p className="text-xs text-center text-text-secondary-light dark:text-text-secondary-dark mt-3">
+                  + {reviews.length - 3} more reviews
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </main>
 
