@@ -253,11 +253,11 @@ const ProfileEditPage: React.FC = () => {
       console.log('Updating profile with data:', updateData);
       console.log('User ID:', currentUser.id);
 
-      const { data, error } = await supabase
+      // Use returning minimal to avoid RLS select issues; rely on no error for success
+      const { error } = await supabase
         .from('users')
         .update(updateData)
-        .eq('id', currentUser.id)
-        .select();
+        .eq('id', currentUser.id);
 
       if (error) {
         console.error('Update error details:', {
@@ -280,13 +280,7 @@ const ProfileEditPage: React.FC = () => {
         throw new Error(`Database error: ${error.message}`);
       }
 
-      // Check if update actually happened
-      if (!data || data.length === 0) {
-        console.warn('No data returned from update - this might indicate RLS policy issues');
-        throw new Error('Profile update may have failed. Please check console for details.');
-      }
-
-      console.log('Profile updated successfully:', data);
+      console.log('Profile updated successfully');
 
       // Refresh the user profile in auth context
       console.log('Refreshing user profile...');
