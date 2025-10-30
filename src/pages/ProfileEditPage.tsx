@@ -253,11 +253,30 @@ const ProfileEditPage: React.FC = () => {
       console.log('Updating profile with data:', updateData);
       console.log('User ID:', currentUser.id);
 
-      // Use returning minimal to avoid RLS select issues; rely on no error for success
-      const { error } = await supabase
+      // First verify we can read the current user
+      const { data: currentData, error: readError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (readError) {
+        console.error('Cannot read current user:', readError);
+        throw new Error('Cannot access your profile. Please log in again.');
+      }
+
+      console.log('Current user data before update:', currentData);
+
+      // Now try the update with .select() to verify it worked
+      const { data, error, count } = await supabase
         .from('users')
         .update(updateData)
-        .eq('id', currentUser.id);
+        .eq('id', currentUser.id)
+        .select();
+
+      console.log('Update result - data:', data);
+      console.log('Update result - error:', error);
+      console.log('Update result - count:', count);
 
       if (error) {
         console.error('Update error details:', {
@@ -280,7 +299,15 @@ const ProfileEditPage: React.FC = () => {
         throw new Error(`Database error: ${error.message}`);
       }
 
-      console.log('Profile updated successfully');
+      // Verify the update actually happened
+      if (!data || data.length === 0) {
+        console.error('❌ UPDATE FAILED: No rows returned');
+        console.error('This usually means RLS policy blocked the update');
+        console.error('Run database/DIAGNOSE_PROFILE_UPDATE.sql in Supabase to diagnose');
+        throw new Error('Update was blocked by database security policy. Check console for details.');
+      }
+
+      console.log('✅ Profile updated successfully:', data[0]);
 
       // Refresh the user profile in auth context
       console.log('Refreshing user profile...');
