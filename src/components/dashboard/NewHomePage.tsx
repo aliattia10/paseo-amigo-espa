@@ -76,7 +76,7 @@ const NewHomePage: React.FC = () => {
         // Load sitter profiles (for pet owners to browse)
         const { data: sitters, error: sittersError } = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, latitude as location_lat, longitude as location_lng, user_type')
+          .select('id, name, bio, profile_image, hourly_rate, user_type')
           .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
           .order('created_at', { ascending: false });
 
