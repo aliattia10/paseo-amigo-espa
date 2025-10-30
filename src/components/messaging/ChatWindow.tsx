@@ -51,11 +51,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
       try {
         if (matchId) {
           // Load messages for match
-          const { data, error } = await supabase
+          const { data, error } = await (supabase as any)
             .from('messages')
             .select('*')
             .eq('match_id', matchId)
             .order('created_at', { ascending: true });
+          
+          console.log('=== LOADED MESSAGES ===');
+          console.log('Match ID:', matchId);
+          console.log('Messages data:', data);
+          console.log('Error:', error);
           
           if (error) throw error;
           setMessages(data || []);
@@ -294,6 +299,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
                 const isOwnMessage = message.sender_id === currentUser?.id;
                 const messageContent = message.content || message.message;
                 const messageTime = message.created_at ? new Date(message.created_at) : new Date();
+                
+                console.log('Rendering message:', {
+                  id: message.id,
+                  sender_id: message.sender_id,
+                  content: message.content,
+                  messageContent,
+                  isOwnMessage
+                });
                 
                 return (
                   <div
