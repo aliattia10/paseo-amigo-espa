@@ -290,71 +290,57 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             </div>
           ) : (
             <div className="space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex items-start gap-3 ${
-                    message.senderId === currentUser?.id ? 'flex-row-reverse' : ''
-                  }`}
-                >
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <AvatarImage 
-                      src={message.senderId === currentUser?.id ? currentUser.user_metadata?.avatar_url : otherUser.profileImage} 
-                    />
-                    <AvatarFallback>
-                      {message.senderId === currentUser?.id 
-                        ? currentUser.email?.charAt(0).toUpperCase()
-                        : otherUser.name.charAt(0)
-                      }
-                    </AvatarFallback>
-                  </Avatar>
+              {messages.map((message: any) => {
+                const isOwnMessage = message.sender_id === currentUser?.id;
+                const messageContent = message.content || message.message;
+                const messageTime = message.created_at ? new Date(message.created_at) : new Date();
+                
+                return (
                   <div
-                    className={`max-w-xs rounded-lg overflow-hidden ${
-                      message.senderId === currentUser?.id
-                        ? 'bg-terracotta text-white'
-                        : 'bg-muted'
+                    key={message.id}
+                    className={`flex items-start gap-3 ${
+                      isOwnMessage ? 'flex-row-reverse' : ''
                     }`}
                   >
-                    {/* Media content */}
-                    {(message as any).media_url && (
-                      <div className="mb-2">
-                        {(message as any).media_type === 'image' ? (
-                          <img 
-                            src={(message as any).media_url} 
-                            alt="Shared media" 
-                            className="w-full h-auto rounded cursor-pointer hover:opacity-90"
-                            onClick={() => window.open((message as any).media_url, '_blank')}
-                          />
-                        ) : (message as any).media_type === 'video' ? (
-                          <video 
-                            src={(message as any).media_url} 
-                            controls 
-                            className="w-full h-auto rounded"
-                          />
-                        ) : null}
-                      </div>
-                    )}
-                    
-                    {/* Text message */}
-                    {message.message && (
-                      <div className="px-3 py-2">
-                        <p className="text-sm">{message.message}</p>
-                      </div>
-                    )}
-                    
-                    {/* Timestamp */}
-                    <p
-                      className={`text-xs px-3 pb-2 ${
-                        message.senderId === currentUser?.id
-                          ? 'text-white/70'
-                          : 'text-muted-foreground'
+                    <Avatar className="w-8 h-8 flex-shrink-0">
+                      <AvatarImage 
+                        src={isOwnMessage ? currentUser.user_metadata?.avatar_url : otherUser.profileImage} 
+                      />
+                      <AvatarFallback>
+                        {isOwnMessage 
+                          ? currentUser.email?.charAt(0).toUpperCase()
+                          : otherUser.name.charAt(0)
+                        }
+                      </AvatarFallback>
+                    </Avatar>
+                    <div
+                      className={`max-w-xs rounded-lg overflow-hidden ${
+                        isOwnMessage
+                          ? 'bg-primary text-white'
+                          : 'bg-muted'
                       }`}
                     >
-                      {formatTime(message.timestamp)}
-                    </p>
+                      {/* Text message */}
+                      {messageContent && (
+                        <div className="px-3 py-2">
+                          <p className="text-sm">{messageContent}</p>
+                        </div>
+                      )}
+                      
+                      {/* Timestamp */}
+                      <p
+                        className={`text-xs px-3 pb-2 ${
+                          isOwnMessage
+                            ? 'text-white/70'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        {formatTime(messageTime)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
           )}
