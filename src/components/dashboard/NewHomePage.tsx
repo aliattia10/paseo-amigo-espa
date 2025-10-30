@@ -31,6 +31,41 @@ const NewHomePage: React.FC = () => {
   const [realPetProfiles, setRealPetProfiles] = useState<any[]>([]);
   const [realSitterProfiles, setRealSitterProfiles] = useState<any[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
+  const [likedProfileIds, setLikedProfileIds] = useState<Set<string>>(new Set());
+  const [passedProfileIds, setPassedProfileIds] = useState<Set<string>>(new Set());
+
+  // Load user's likes and passes from Supabase
+  React.useEffect(() => {
+    const loadUserInteractions = async () => {
+      if (!currentUser?.id) return;
+      
+      try {
+        // Load likes
+        const { data: likes } = await supabase
+          .from('likes')
+          .select('liked_id')
+          .eq('liker_id', currentUser.id);
+        
+        if (likes) {
+          setLikedProfileIds(new Set(likes.map((l: any) => l.liked_id)));
+        }
+        
+        // Load passes (using type assertion since table is new)
+        const { data: passes } = await (supabase as any)
+          .from('passes')
+          .select('passed_id')
+          .eq('passer_id', currentUser.id);
+        
+        if (passes) {
+          setPassedProfileIds(new Set(passes.map((p: any) => p.passed_id)));
+        }
+      } catch (error) {
+        console.error('Error loading user interactions:', error);
+      }
+    };
+    
+    loadUserInteractions();
+  }, [currentUser?.id]);
 
   // Load real profiles from Supabase
   React.useEffect(() => {
@@ -190,18 +225,18 @@ const NewHomePage: React.FC = () => {
   });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
-  // Load saved state from localStorage on mount
+  // Load saved preferences from localStorage on mount (only UI preferences, not swipe data)
   React.useEffect(() => {
-    const savedRole = localStorage.getItem('userRole') as 'owner' | 'sitter' | null;
-    const savedPassed = localStorage.getItem('passedProfiles');
-    const savedLiked = localStorage.getItem('likedProfiles');
+    if (!currentUser?.id) return;
+    
+    // Use user-specific keys for UI preferences only
+    const userKey = `user_${currentUser.id}`;
+    const savedRole = localStorage.getItem(`${userKey}_userRole`) as 'owner' | 'sitter' | null;
     
     if (savedRole) setUserRole(savedRole);
-    if (savedPassed) setPassedProfiles(new Set(JSON.parse(savedPassed)));
-    if (savedLiked) setLikedProfiles(new Set(JSON.parse(savedLiked)));
     
     // Load saved filters
-    const savedFilters = localStorage.getItem('userFilters');
+    const savedFilters = localStorage.getItem(`${userKey}_userFilters`);
     if (savedFilters) {
       try {
         setFilters(JSON.parse(savedFilters));
@@ -214,7 +249,7 @@ const NewHomePage: React.FC = () => {
     if (!locationEnabled && !isGlobalMode) {
       setShowLocationPrompt(true);
     }
-  }, []);
+  }, [currentUser?.id]);
   
   // Show location prompt after a delay if not enabled
   React.useEffect(() => {
@@ -255,7 +290,8 @@ const NewHomePage: React.FC = () => {
 
   // Apply filters to profiles
   const applyFilters = (profiles: Profile[]) => {
-    let filtered = profiles.filter(p => !passedProfiles.has(p.id) && !likedProfiles.has(p.id));
+    // Filter out profiles user has already interacted with (from Supabase)
+    let filtered = profiles.filter(p => !passedProfileIds.has(p.id) && !likedProfileIds.has(p.id));
 
     // Pet type filter (for owners looking at walkers)
     if (userRole === 'owner' && filters.petType !== 'all') {
@@ -318,7 +354,9 @@ const NewHomePage: React.FC = () => {
     setUserRole(role);
     setCurrentIndex(0);
     setCurrentImageIndex(0);
-    localStorage.setItem('userRole', role);
+    if (currentUser?.id) {
+      localStorage.setItem(`user_${currentUser.id}_userRole`, role);
+    }
   };
 
   // Reset image index when profile changes
@@ -340,24 +378,22 @@ const NewHomePage: React.FC = () => {
       return;
     }
     
-    // Add to liked profiles
-    const newLiked = new Set(likedProfiles);
+    // Add to liked profiles locally (optimistic update)
+    const newLiked = new Set(likedProfileIds);
     newLiked.add(profile.id);
-    setLikedProfiles(newLiked);
-    localStorage.setItem('likedProfiles', JSON.stringify(Array.from(newLiked)));
+    setLikedProfileIds(newLiked);
     
-    // Check for match in database
+    // Save to Supabase and check for match
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      // Call the match function
-      const { data: isMatch, error } = await (supabase.rpc as any)('check_and_create_match', {
+      // Call the match function (it will save the like AND check for match)
+      const { data: isMatch, error } = await supabase.rpc('check_and_create_match', {
         liker_user_id: currentUser.id,
         liked_user_id: profile.id
       });
       
-      if (error && !error.message.includes('does not exist')) {
+      if (error) {
         console.error('Match check error:', error);
+        throw error;
       }
       
       // If it's a match, show the modal
@@ -378,12 +414,18 @@ const NewHomePage: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Error checking match:', error);
-      // Still show success even if match check fails
+      console.error('Error saving like:', error);
+      // Revert optimistic update on error
+      const revertedLiked = new Set(likedProfileIds);
+      revertedLiked.delete(profile.id);
+      setLikedProfileIds(revertedLiked);
+      
       toast({
-        title: '❤️ Liked!',
-        description: `You liked ${profile.name}`,
+        title: 'Error',
+        description: 'Failed to save like. Please try again.',
+        variant: 'destructive',
       });
+      return;
     }
     
     // Move to next profile
@@ -392,14 +434,33 @@ const NewHomePage: React.FC = () => {
     }
   };
 
-  const handlePass = () => {
+  const handlePass = async () => {
     const profile = profiles[currentIndex];
     
-    // Add to passed profiles
-    const newPassed = new Set(passedProfiles);
+    if (!currentUser) return;
+    
+    // Add to passed profiles locally (optimistic update)
+    const newPassed = new Set(passedProfileIds);
     newPassed.add(profile.id);
-    setPassedProfiles(newPassed);
-    localStorage.setItem('passedProfiles', JSON.stringify(Array.from(newPassed)));
+    setPassedProfileIds(newPassed);
+    
+    // Save to Supabase (using type assertion since function is new)
+    try {
+      const { error } = await (supabase as any).rpc('record_pass', {
+        passer_user_id: currentUser.id,
+        passed_user_id: profile.id
+      });
+      
+      if (error) {
+        console.error('Error saving pass:', error);
+        // Revert optimistic update on error
+        const revertedPassed = new Set(passedProfileIds);
+        revertedPassed.delete(profile.id);
+        setPassedProfileIds(revertedPassed);
+      }
+    } catch (error) {
+      console.error('Error recording pass:', error);
+    }
     
     // Move to next profile
     if (currentIndex < profiles.length - 1) {
@@ -549,23 +610,37 @@ const NewHomePage: React.FC = () => {
                 You've seen all available {userRole === 'owner' ? 'sitters' : 'pets'} in your area.
               </p>
               <button
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   
-                  // Clear all passed and liked profiles to see them again
-                  const emptySet = new Set<string>();
-                  setPassedProfiles(emptySet);
-                  setLikedProfiles(emptySet);
-                  localStorage.removeItem('passedProfiles');
-                  localStorage.removeItem('likedProfiles');
-                  setCurrentIndex(0);
-                  setCurrentImageIndex(0);
+                  if (!currentUser?.id) return;
                   
-                  toast({
-                    title: 'Reset Complete',
-                    description: 'All profiles are available again',
-                  });
+                  try {
+                    // Delete all passes from Supabase (using type assertion since table is new)
+                    await (supabase as any)
+                      .from('passes')
+                      .delete()
+                      .eq('passer_id', currentUser.id);
+                    
+                    // Clear local state
+                    setPassedProfileIds(new Set());
+                    setLikedProfileIds(new Set());
+                    setCurrentIndex(0);
+                    setCurrentImageIndex(0);
+                    
+                    toast({
+                      title: 'Reset Complete',
+                      description: 'All profiles are available again',
+                    });
+                  } catch (error) {
+                    console.error('Error resetting profiles:', error);
+                    toast({
+                      title: 'Error',
+                      description: 'Failed to reset profiles',
+                      variant: 'destructive',
+                    });
+                  }
                 }}
                 className="px-6 py-3 bg-home-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
               >
