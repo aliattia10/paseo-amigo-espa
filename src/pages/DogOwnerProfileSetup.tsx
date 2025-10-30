@@ -436,8 +436,8 @@ const DogOwnerProfileSetup: React.FC = () => {
           <div className="pt-4 pb-8">
             <Button
               type="submit"
-              disabled={loading || uploadingImage || !petData.imageUrl}
-              className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-base font-bold"
+              disabled={loading || uploadingImage || photos.filter(p => p).length === 0}
+              className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? t('common.loading') : 'Create Pet Profile'}
             </Button>
