@@ -189,7 +189,7 @@ const ProfileEditPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      await handleImageUpload(file);
+      await handleImageUpload(file, 0); // Upload to first slot
     }
     // Reset input to allow same file selection
     e.target.value = '';
@@ -318,43 +318,41 @@ const ProfileEditPage: React.FC = () => {
   };
 
   return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark max-w-md mx-auto">
-      {/* Top App Bar */}
-      <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
-        <div className="flex size-12 shrink-0 items-center justify-start">
-          <button 
-            type="button" 
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/profile');
-            }}
-          >
-            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
-              arrow_back
-            </span>
-          </button>
-        </div>
-        <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-text-primary-light dark:text-text-primary-dark">
-          {t('dashboard.editProfile')}
+    <div className="relative flex h-screen w-full flex-col bg-[#f8f8f8] dark:bg-[#1a1a1a] max-w-md mx-auto overflow-hidden">
+      {/* Top App Bar - Tinder Style */}
+      <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-800">
+        <button 
+          type="button" 
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('/profile');
+          }}
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+        >
+          <span className="material-symbols-outlined text-gray-700 dark:text-gray-300 text-2xl">
+            arrow_back
+          </span>
+        </button>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          Edit Profile
         </h2>
-        <div className="flex w-12 items-center justify-end"></div>
+        <div className="w-10"></div>
       </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 space-y-4">
-        {/* Tinder-Style Photo Gallery */}
-        <div className="mb-4">
-          <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark px-4 mb-2">
-            Your Photos
+      {/* Main Content - Scrollable */}
+      <main className="flex-1 overflow-y-auto pb-20">
+        {/* Photos Section */}
+        <div className="bg-white dark:bg-[#1a1a1a] p-4 mb-2">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+            Photos
           </h3>
-          <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4 mb-3">
-            Add up to 6 photos. Your first photo will be your main profile picture.
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Add up to 6 photos
           </p>
           <TinderPhotoGallery
             photos={photos}
             onPhotosChange={async (newPhotos) => {
               setPhotos(newPhotos);
-              // Update database
               try {
                 const { supabase } = await import('@/integrations/supabase/client');
                 const photosJson = JSON.stringify(newPhotos.filter(p => p));
@@ -363,97 +361,121 @@ const ProfileEditPage: React.FC = () => {
                   .update({ profile_image: photosJson })
                   .eq('id', currentUser!.id);
                 await refreshUserProfile();
+                toast({
+                  title: 'Photos updated',
+                  description: 'Your photos have been saved',
+                });
               } catch (error) {
                 console.error('Failed to update photos:', error);
+                toast({
+                  title: 'Error',
+                  description: 'Failed to update photos',
+                  variant: 'destructive',
+                });
               }
             }}
             maxPhotos={MAX_PHOTOS}
           />
         </div>
 
-        {/* Form Fields */}
-        <div className="space-y-4">
-          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
-            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              {t('auth.name')}
-            </label>
-            <Input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full"
-              placeholder="Your name"
-            />
-          </div>
-
-          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
-            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              {t('auth.phone')}
-            </label>
-            <Input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full"
-              placeholder="Your phone number"
-            />
-          </div>
-
-          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
-            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              {t('auth.city')}
-            </label>
-            <Input
-              type="text"
-              value={formData.city}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              className="w-full"
-              placeholder="Your city"
-            />
-          </div>
-
-          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
-            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              {t('auth.postalCode')}
-            </label>
-            <Input
-              type="text"
-              value={formData.postalCode}
-              onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-              className="w-full"
-              placeholder="Your postal code"
-            />
-          </div>
-
-          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
-            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Bio
-            </label>
-            <textarea
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              className="w-full min-h-[100px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
-              placeholder="Tell us about yourself..."
-            />
-          </div>
+        {/* About Me Section */}
+        <div className="bg-white dark:bg-[#1a1a1a] p-4 mb-2">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+            About Me
+          </h3>
+          <textarea
+            value={formData.bio}
+            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+            className="w-full min-h-[120px] p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Share a little about yourself..."
+            maxLength={500}
+          />
+          <p className="text-xs text-gray-400 mt-1 text-right">
+            {formData.bio.length}/500
+          </p>
         </div>
 
-        {/* Save Button */}
-        <div className="pt-4 pb-8">
-          <Button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleSave();
-            }}
-            disabled={loading}
-            className="w-full bg-primary hover:bg-primary/90 text-white h-12"
-          >
-            {loading ? t('common.loading') : t('common.save')}
-          </Button>
+        {/* Essentials Section */}
+        <div className="bg-white dark:bg-[#1a1a1a] p-4 mb-2">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+            Essentials
+          </h3>
+          
+          <div className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Name
+              </label>
+              <Input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                placeholder="Your name"
+              />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Phone
+              </label>
+              <Input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                placeholder="Your phone number"
+              />
+            </div>
+
+            {/* City */}
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                City
+              </label>
+              <Input
+                type="text"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                placeholder="Your city"
+              />
+            </div>
+
+            {/* Postal Code */}
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Postal Code
+              </label>
+              <Input
+                type="text"
+                value={formData.postalCode}
+                onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                placeholder="Your postal code"
+              />
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Fixed Save Button at Bottom */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-[#1a1a1a] border-t border-gray-200 dark:border-gray-800">
+        <Button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSave();
+          }}
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-[#FD5564] to-[#FF6B7A] hover:from-[#FD4458] hover:to-[#FF5A6E] text-white h-12 rounded-full font-semibold text-base shadow-lg disabled:opacity-50"
+        >
+          {loading ? 'Saving...' : 'Save'}
+        </Button>
+      </div>
     </div>
   );
 };
