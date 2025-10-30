@@ -32,20 +32,11 @@ END $$;
 -- Step 4: Grant UPDATE permission
 GRANT UPDATE ON users TO authenticated;
 
--- Step 5: Test query (optional - uncomment to test)
--- SELECT 
---     schemaname,
---     tablename,
---     policyname,
---     permissive,
---     roles,
---     cmd,
---     qual,
---     with_check
--- FROM pg_policies
--- WHERE tablename = 'users';
-
-RAISE NOTICE '========================================';
-RAISE NOTICE 'Profile update fix applied successfully!';
-RAISE NOTICE 'You can now update your profile.';
-RAISE NOTICE '========================================';
+-- Step 5: Success message
+DO $$
+BEGIN
+    RAISE NOTICE '========================================';
+    RAISE NOTICE 'Profile update fix applied successfully!';
+    RAISE NOTICE 'You can now update your profile.';
+    RAISE NOTICE '========================================';
+END $$;
