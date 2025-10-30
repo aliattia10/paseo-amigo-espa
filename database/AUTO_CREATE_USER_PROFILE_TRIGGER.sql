@@ -11,17 +11,31 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Insert a new row into public.users
-  INSERT INTO public.users (id, email, name, phone, created_at, updated_at)
+  -- Insert a new row into public.users with minimal required data
+  INSERT INTO public.users (
+    id, 
+    email, 
+    name, 
+    phone, 
+    city, 
+    postal_code,
+    user_type,
+    created_at, 
+    updated_at
+  )
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(
       NEW.raw_user_meta_data->>'name',
       NEW.raw_user_meta_data->>'full_name',
-      SPLIT_PART(NEW.email, '@', 1)
+      SPLIT_PART(NEW.email, '@', 1),
+      'User'
     ),
-    NEW.raw_user_meta_data->>'phone',  -- Can be NULL
+    NEW.raw_user_meta_data->>'phone',        -- Can be NULL
+    NEW.raw_user_meta_data->>'city',         -- Can be NULL
+    NEW.raw_user_meta_data->>'postal_code',  -- Can be NULL
+    COALESCE(NEW.raw_user_meta_data->>'user_type', 'owner'),  -- Default to owner
     NEW.created_at,
     NEW.created_at
   )
