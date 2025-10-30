@@ -34,16 +34,14 @@ const NewHomePage: React.FC = () => {
   const [likedProfileIds, setLikedProfileIds] = useState<Set<string>>(new Set());
   const [passedProfileIds, setPassedProfileIds] = useState<Set<string>>(new Set());
 
-  // Load user's likes and passes from Supabase (only for user-to-user interactions)
+  // Load user's likes and passes from Supabase
   React.useEffect(() => {
     const loadUserInteractions = async () => {
       if (!currentUser?.id) return;
       
       try {
-        // Only load likes/passes for owners (who interact with sitters)
-        // Sitters' interactions with pets are kept local only
         if (userRole === 'owner') {
-          // Load likes
+          // Load owner's likes/passes for sitters
           const { data: likes } = await supabase
             .from('likes')
             .select('liked_id')
@@ -53,7 +51,6 @@ const NewHomePage: React.FC = () => {
             setLikedProfileIds(new Set(likes.map((l: any) => l.liked_id)));
           }
           
-          // Load passes (using type assertion since table is new)
           const { data: passes } = await (supabase as any)
             .from('passes')
             .select('passed_id')
@@ -63,9 +60,24 @@ const NewHomePage: React.FC = () => {
             setPassedProfileIds(new Set(passes.map((p: any) => p.passed_id)));
           }
         } else {
-          // For sitters, start with empty sets (pet interactions are session-only)
-          setLikedProfileIds(new Set());
-          setPassedProfileIds(new Set());
+          // Load sitter's likes/passes for pets
+          const { data: petLikes } = await (supabase as any)
+            .from('pet_likes')
+            .select('pet_id')
+            .eq('sitter_id', currentUser.id);
+          
+          if (petLikes) {
+            setLikedProfileIds(new Set(petLikes.map((l: any) => l.pet_id)));
+          }
+          
+          const { data: petPasses } = await (supabase as any)
+            .from('pet_passes')
+            .select('pet_id')
+            .eq('sitter_id', currentUser.id);
+          
+          if (petPasses) {
+            setPassedProfileIds(new Set(petPasses.map((p: any) => p.pet_id)));
+          }
         }
       } catch (error) {
         console.error('Error loading user interactions:', error);
@@ -393,8 +405,6 @@ const NewHomePage: React.FC = () => {
     
     // Save to Supabase and check for match
     try {
-      // Only use matching system for user-to-user (owner liking sitter)
-      // For sitters liking pets, just save the like without matching
       if (userRole === 'owner' && profile.type === 'walker') {
         // Owner liking a sitter - use match system
         const { data: isMatch, error } = await supabase.rpc('check_and_create_match', {
@@ -425,7 +435,17 @@ const NewHomePage: React.FC = () => {
           });
         }
       } else {
-        // Sitter liking a pet - just save locally (no matching needed for pets)
+        // Sitter liking a pet - save to pet_likes table
+        const { error } = await (supabase as any).rpc('record_pet_like', {
+          p_sitter_id: currentUser.id,
+          p_pet_id: profile.id
+        });
+        
+        if (error) {
+          console.error('Error saving pet like:', error);
+          throw error;
+        }
+        
         playLikeSound();
         toast({
           title: '❤️ Liked!',
@@ -463,11 +483,10 @@ const NewHomePage: React.FC = () => {
     newPassed.add(profile.id);
     setPassedProfileIds(newPassed);
     
-    // Save to Supabase only for user-to-user (owner passing on sitter)
-    // For sitters passing on pets, just keep it local
+    // Save to Supabase
     try {
       if (userRole === 'owner' && profile.type === 'walker') {
-        // Owner passing on a sitter - save to database
+        // Owner passing on a sitter - save to passes table
         const { error } = await (supabase as any).rpc('record_pass', {
           passer_user_id: currentUser.id,
           passed_user_id: profile.id
@@ -480,8 +499,21 @@ const NewHomePage: React.FC = () => {
           revertedPassed.delete(profile.id);
           setPassedProfileIds(revertedPassed);
         }
+      } else {
+        // Sitter passing on a pet - save to pet_passes table
+        const { error } = await (supabase as any).rpc('record_pet_pass', {
+          p_sitter_id: currentUser.id,
+          p_pet_id: profile.id
+        });
+        
+        if (error) {
+          console.error('Error saving pet pass:', error);
+          // Revert optimistic update on error
+          const revertedPassed = new Set(passedProfileIds);
+          revertedPassed.delete(profile.id);
+          setPassedProfileIds(revertedPassed);
+        }
       }
-      // For pets, we just keep the pass in local state (no database save needed)
     } catch (error) {
       console.error('Error recording pass:', error);
     }
@@ -641,11 +673,19 @@ const NewHomePage: React.FC = () => {
                   if (!currentUser?.id) return;
                   
                   try {
-                    // Delete all passes from Supabase (using type assertion since table is new)
-                    await (supabase as any)
-                      .from('passes')
-                      .delete()
-                      .eq('passer_id', currentUser.id);
+                    if (userRole === 'owner') {
+                      // Delete owner's passes for sitters
+                      await (supabase as any)
+                        .from('passes')
+                        .delete()
+                        .eq('passer_id', currentUser.id);
+                    } else {
+                      // Delete sitter's passes for pets
+                      await (supabase as any)
+                        .from('pet_passes')
+                        .delete()
+                        .eq('sitter_id', currentUser.id);
+                    }
                     
                     // Clear local state
                     setPassedProfileIds(new Set());

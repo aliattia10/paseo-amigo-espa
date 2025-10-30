@@ -30,6 +30,32 @@ CREATE TABLE IF NOT EXISTS passes (
 CREATE INDEX IF NOT EXISTS idx_passes_passer_id ON passes(passer_id);
 CREATE INDEX IF NOT EXISTS idx_passes_passed_id ON passes(passed_id);
 
+-- 2B. PET_LIKES TABLE (sitters liking pets)
+CREATE TABLE IF NOT EXISTS pet_likes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sitter_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  pet_id UUID NOT NULL REFERENCES pets(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(sitter_id, pet_id)
+);
+
+-- Add indexes
+CREATE INDEX IF NOT EXISTS idx_pet_likes_sitter_id ON pet_likes(sitter_id);
+CREATE INDEX IF NOT EXISTS idx_pet_likes_pet_id ON pet_likes(pet_id);
+
+-- 2C. PET_PASSES TABLE (sitters passing on pets)
+CREATE TABLE IF NOT EXISTS pet_passes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sitter_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  pet_id UUID NOT NULL REFERENCES pets(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(sitter_id, pet_id)
+);
+
+-- Add indexes
+CREATE INDEX IF NOT EXISTS idx_pet_passes_sitter_id ON pet_passes(sitter_id);
+CREATE INDEX IF NOT EXISTS idx_pet_passes_pet_id ON pet_passes(pet_id);
+
 -- 3. MATCHES TABLE (ensure it exists with correct structure)
 -- First check if table exists and add missing columns
 DO $$ 
@@ -133,6 +159,44 @@ CREATE POLICY "Users can create their own passes"
 CREATE POLICY "Users can delete their own passes"
   ON passes FOR DELETE
   USING (auth.uid() = passer_id);
+
+-- PET_LIKES TABLE RLS
+ALTER TABLE pet_likes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Sitters can view their own pet likes" ON pet_likes;
+DROP POLICY IF EXISTS "Sitters can create their own pet likes" ON pet_likes;
+DROP POLICY IF EXISTS "Sitters can delete their own pet likes" ON pet_likes;
+
+CREATE POLICY "Sitters can view their own pet likes"
+  ON pet_likes FOR SELECT
+  USING (auth.uid() = sitter_id);
+
+CREATE POLICY "Sitters can create their own pet likes"
+  ON pet_likes FOR INSERT
+  WITH CHECK (auth.uid() = sitter_id);
+
+CREATE POLICY "Sitters can delete their own pet likes"
+  ON pet_likes FOR DELETE
+  USING (auth.uid() = sitter_id);
+
+-- PET_PASSES TABLE RLS
+ALTER TABLE pet_passes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Sitters can view their own pet passes" ON pet_passes;
+DROP POLICY IF EXISTS "Sitters can create their own pet passes" ON pet_passes;
+DROP POLICY IF EXISTS "Sitters can delete their own pet passes" ON pet_passes;
+
+CREATE POLICY "Sitters can view their own pet passes"
+  ON pet_passes FOR SELECT
+  USING (auth.uid() = sitter_id);
+
+CREATE POLICY "Sitters can create their own pet passes"
+  ON pet_passes FOR INSERT
+  WITH CHECK (auth.uid() = sitter_id);
+
+CREATE POLICY "Sitters can delete their own pet passes"
+  ON pet_passes FOR DELETE
+  USING (auth.uid() = sitter_id);
 
 -- MATCHES TABLE RLS
 ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
@@ -246,7 +310,7 @@ BEGIN
 END;
 $func$;
 
--- Function to record a pass
+-- Function to record a pass (user-to-user)
 DROP FUNCTION IF EXISTS record_pass(UUID, UUID);
 
 CREATE OR REPLACE FUNCTION record_pass(
@@ -262,6 +326,44 @@ BEGIN
   INSERT INTO passes (passer_id, passed_id, created_at)
   VALUES (passer_user_id, passed_user_id, NOW())
   ON CONFLICT (passer_id, passed_id) DO NOTHING;
+END;
+$func$;
+
+-- Function to record a pet like (sitter-to-pet)
+DROP FUNCTION IF EXISTS record_pet_like(UUID, UUID);
+
+CREATE OR REPLACE FUNCTION record_pet_like(
+  p_sitter_id UUID,
+  p_pet_id UUID
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $func$
+BEGIN
+  -- Insert the pet like into the pet_likes table (if not already exists)
+  INSERT INTO pet_likes (sitter_id, pet_id, created_at)
+  VALUES (p_sitter_id, p_pet_id, NOW())
+  ON CONFLICT (sitter_id, pet_id) DO NOTHING;
+END;
+$func$;
+
+-- Function to record a pet pass (sitter-to-pet)
+DROP FUNCTION IF EXISTS record_pet_pass(UUID, UUID);
+
+CREATE OR REPLACE FUNCTION record_pet_pass(
+  p_sitter_id UUID,
+  p_pet_id UUID
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $func$
+BEGIN
+  -- Insert the pet pass into the pet_passes table (if not already exists)
+  INSERT INTO pet_passes (sitter_id, pet_id, created_at)
+  VALUES (p_sitter_id, p_pet_id, NOW())
+  ON CONFLICT (sitter_id, pet_id) DO NOTHING;
 END;
 $func$;
 
@@ -398,6 +500,8 @@ $func$;
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION check_and_create_match(UUID, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION record_pass(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION record_pet_like(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION record_pet_pass(UUID, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_available_profiles(UUID, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION send_message(UUID, UUID, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION mark_messages_read(UUID, UUID) TO authenticated;
@@ -409,8 +513,8 @@ GRANT EXECUTE ON FUNCTION mark_messages_read(UUID, UUID) TO authenticated;
 DO $$ 
 BEGIN
   RAISE NOTICE '✅ Swipe & Interaction System Created Successfully!';
-  RAISE NOTICE '📊 Tables: likes, passes, matches, messages';
+  RAISE NOTICE '📊 Tables: likes, passes, pet_likes, pet_passes, matches, messages';
   RAISE NOTICE '🔒 RLS policies enabled on all tables';
-  RAISE NOTICE '⚡ Functions: check_and_create_match, record_pass, get_available_profiles, send_message, mark_messages_read';
+  RAISE NOTICE '⚡ Functions: check_and_create_match, record_pass, record_pet_like, record_pet_pass, get_available_profiles, send_message, mark_messages_read';
   RAISE NOTICE '🎯 Ready for: Swiping, Matching, Messaging, and Booking flow';
 END $$;
