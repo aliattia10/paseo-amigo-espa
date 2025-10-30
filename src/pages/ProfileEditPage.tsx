@@ -253,30 +253,25 @@ const ProfileEditPage: React.FC = () => {
       console.log('Updating profile with data:', updateData);
       console.log('User ID:', currentUser.id);
 
-      // First verify we can read the current user
-      const { data: currentData, error: readError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
+      // Get current session to ensure we're authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session user ID:', session?.user?.id);
+      console.log('Current user ID:', currentUser.id);
 
-      if (readError) {
-        console.error('Cannot read current user:', readError);
-        throw new Error('Cannot access your profile. Please log in again.');
+      if (!session?.user) {
+        throw new Error('No active session. Please log in again.');
       }
 
-      console.log('Current user data before update:', currentData);
-
-      // Now try the update with .select() to verify it worked
-      const { data, error, count } = await supabase
+      // Try the update - use session user ID to be safe
+      const userId = session.user.id;
+      const { data, error } = await supabase
         .from('users')
         .update(updateData)
-        .eq('id', currentUser.id)
+        .eq('id', userId)
         .select();
 
       console.log('Update result - data:', data);
       console.log('Update result - error:', error);
-      console.log('Update result - count:', count);
 
       if (error) {
         console.error('Update error details:', {
@@ -303,8 +298,17 @@ const ProfileEditPage: React.FC = () => {
       if (!data || data.length === 0) {
         console.error('❌ UPDATE FAILED: No rows returned');
         console.error('This usually means RLS policy blocked the update');
-        console.error('Run database/DIAGNOSE_PROFILE_UPDATE.sql in Supabase to diagnose');
-        throw new Error('Update was blocked by database security policy. Check console for details.');
+        console.error('User ID used:', userId);
+        
+        // Try to read the user to see if they exist
+        const { data: checkData, error: checkError } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .eq('id', userId)
+          .single();
+        
+        console.error('User exists check:', checkData, checkError);
+        throw new Error('Update was blocked. Your user ID might not match the database record.');
       }
 
       console.log('✅ Profile updated successfully:', data[0]);
