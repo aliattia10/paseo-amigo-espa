@@ -138,9 +138,9 @@ const PublicProfilePage: React.FC = () => {
       </header>
 
       {/* Main Content: Scrollable Profile */}
-      <main className="flex-1 overflow-y-auto px-4 pt-4 pb-2 max-w-md mx-auto w-full">
-        {/* Tinder-Style Photo Gallery */}
-        <div className="w-full max-w-[400px] mx-auto mb-4" style={{ height: '400px' }}>
+      <main className="flex-1 overflow-y-auto px-4 pt-4 pb-24 max-w-md mx-auto w-full">
+        {/* Tinder-Style Photo Gallery - Smaller */}
+        <div className="w-full max-w-[350px] mx-auto mb-4" style={{ height: '350px' }}>
           <TinderProfileView 
             photos={photos}
             name={userProfile?.name || currentUser?.email?.split('@')[0] || 'User'}
@@ -319,21 +319,13 @@ const PublicProfilePage: React.FC = () => {
       </main>
 
       {/* Action Buttons at Bottom */}
-      <div className="flex-shrink-0 bg-card-light dark:bg-card-dark p-4 max-w-md mx-auto w-full border-t border-border-light dark:border-border-dark">
-        <div className="flex gap-3">
-          <button 
-            onClick={() => navigate('/profile')}
-            className="flex-1 bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark font-bold py-3 rounded-xl border-2 border-border-light dark:border-border-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            Back to Profile
-          </button>
-          <button 
-            onClick={() => navigate('/profile/edit')}
-            className="flex-1 bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors"
-          >
-            Edit Profile
-          </button>
-        </div>
+      <div className="flex-shrink-0 bg-card-light dark:bg-card-dark p-4 max-w-md mx-auto w-full border-t border-border-light dark:border-border-dark mb-16">
+        <button 
+          onClick={() => navigate('/profile/edit')}
+          className="w-full bg-gradient-to-r from-[#FD5564] to-[#FF6B7A] hover:from-[#FD4458] hover:to-[#FF5A6E] text-white font-bold py-3 rounded-full transition-colors shadow-lg"
+        >
+          Edit Profile
+        </button>
       </div>
     </div>
   );
