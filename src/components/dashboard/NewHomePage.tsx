@@ -37,9 +37,11 @@ const NewHomePage: React.FC = () => {
     const loadProfiles = async () => {
       try {
         // Load pet profiles (for sitters to browse)
+        // Exclude pets owned by the current user
         const { data: pets, error: petsError } = await supabase
           .from('pets')
           .select('id, name, age, image_url, owner_id')
+          .neq('owner_id', currentUser?.id || '')
           .order('created_at', { ascending: false });
 
         console.log('=== LOADING PET PROFILES ===');
@@ -47,7 +49,7 @@ const NewHomePage: React.FC = () => {
         console.log('Pets error:', petsError);
         
         if (!petsError && pets) {
-          console.log(`Found ${pets.length} pets in database`);
+          console.log(`Found ${pets.length} pets in database (excluding current user's pets)`);
           const petProfiles: Profile[] = pets.map(pet => {
             let imageUrls: string[] = [];
             try {
@@ -74,10 +76,12 @@ const NewHomePage: React.FC = () => {
         }
 
         // Load sitter profiles (for pet owners to browse)
+        // Exclude current user and filter out test/bot profiles
         const { data: sitters, error: sittersError } = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, user_type')
+          .select('id, name, bio, profile_image, hourly_rate, user_type, email')
           .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
+          .neq('id', currentUser?.id || '')
           .order('created_at', { ascending: false });
 
         console.log('=== LOADING SITTER PROFILES ===');
@@ -85,8 +89,15 @@ const NewHomePage: React.FC = () => {
         console.log('Sitters error:', sittersError);
         
         if (!sittersError && sitters && sitters.length > 0) {
-          console.log(`Found ${sitters.length} sitters in database`);
-          const sitterProfiles: Profile[] = sitters.map(sitter => {
+          // Filter out test/bot profiles (those with @example.com emails or default names)
+          const realSitters = sitters.filter(sitter => {
+            const isTestEmail = sitter.email?.includes('@example.com');
+            const isDefaultName = ['María García', 'Carlos López', 'Ana Rodríguez', 'David Martín'].includes(sitter.name);
+            return !isTestEmail && !isDefaultName;
+          });
+          
+          console.log(`Found ${realSitters.length} real sitters in database (excluding current user and test profiles)`);
+          const sitterProfiles: Profile[] = realSitters.map(sitter => {
             // Parse profile_image - it might be a JSON array or a single URL
             let imageUrls: string[] = [];
             try {
