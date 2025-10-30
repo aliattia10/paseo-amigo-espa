@@ -638,15 +638,24 @@ const NewHomePage: React.FC = () => {
               
               <div className="flex w-full items-end justify-between gap-4 p-4 pb-6">
                 <div className="flex max-w-[440px] flex-1 flex-col gap-2">
-                  <p className="text-white text-base font-medium leading-normal bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full self-start">
-                    📍 {currentProfile.distance} miles away
-                  </p>
+                  {/* Name and Age */}
                   <p className="text-white tracking-tight text-3xl font-bold leading-tight max-w-[440px] drop-shadow-lg">
                     {currentProfile.name}{currentProfile.age ? `, ${currentProfile.age}` : ''}
                   </p>
+                  
+                  {/* Location/Distance - Prominent */}
+                  <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg self-start">
+                    <span className="material-symbols-outlined text-white text-lg">location_on</span>
+                    <p className="text-white text-base font-medium">
+                      {isGlobalMode ? 'Global' : `${currentProfile.distance.toFixed(1)} km away`}
+                    </p>
+                  </div>
+                  
+                  {/* Stats Row */}
                   <div className="flex items-center gap-3 flex-wrap">
+                    {/* Rating */}
                     {currentProfile.rating > 0 && (
-                      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
+                      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full">
                         <span 
                           className="material-symbols-outlined text-yellow-400 text-lg" 
                           style={{ fontVariationSettings: '"FILL" 1' }}
@@ -658,21 +667,27 @@ const NewHomePage: React.FC = () => {
                         </p>
                       </div>
                     )}
+                    
+                    {/* New Profile Badge */}
                     {!currentProfile.rating && (
                       <div className="bg-blue-500/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full shadow-lg">
                         <p className="text-sm font-medium">
-                          ✨ New Profile
+                          ✨ New
                         </p>
                       </div>
                     )}
+                    
+                    {/* Hourly Rate */}
                     {currentProfile.hourlyRate && (
-                      <div className="bg-home-primary text-white px-3 py-1.5 rounded-full shadow-lg">
+                      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-1.5 rounded-full shadow-lg">
                         <p className="text-base font-bold">
                           ${currentProfile.hourlyRate}/hr
                         </p>
                       </div>
                     )}
                   </div>
+                  
+                  {/* Bio */}
                   {currentProfile.bio && (
                     <p className="text-white text-sm leading-relaxed bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg mt-1 line-clamp-2">
                       {currentProfile.bio}
