@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,7 +16,10 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+const SUPABASE_URL = 'https://zxbfygofxxmfivddwdqt.supabase.co';
+
 export const PayoutSetupPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -31,20 +35,20 @@ export const PayoutSetupPage: React.FC = () => {
     // Handle return from Stripe onboarding
     if (searchParams.get('success') === 'true') {
       toast({
-        title: '¡Configuración completada!',
-        description: 'Tu cuenta de pagos está lista para recibir fondos',
+        title: t('payout.setup_complete'),
+        description: t('payout.ready_to_receive'),
       });
       loadConnectAccount();
     }
     
     if (searchParams.get('refresh') === 'true') {
       toast({
-        title: 'Sesión expirada',
-        description: 'Por favor, completa la configuración nuevamente',
+        title: t('payout.session_expired'),
+        description: t('payout.complete_again'),
         variant: 'destructive',
       });
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const loadConnectAccount = async () => {
     if (!currentUser) return;
@@ -57,12 +61,12 @@ export const PayoutSetupPage: React.FC = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        throw error;
+        console.error('Error loading account:', error);
       }
 
       setConnectAccount(data);
     } catch (error) {
-      console.error('Error loading Connect account:', error);
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
@@ -73,31 +77,40 @@ export const PayoutSetupPage: React.FC = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      if (!session) {
+        throw new Error('No session found');
+      }
+
+      console.log('Creating Connect account...');
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-connect-account`,
+        `${SUPABASE_URL}/functions/v1/create-connect-account`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${session?.access_token}`,
+            'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
         }
       );
 
+      const responseText = await response.text();
+      console.log('Response:', response.status, responseText);
+
       if (!response.ok) {
-        throw new Error('Failed to create Connect account');
+        throw new Error(`Failed to create account: ${responseText}`);
       }
 
-      const { accountId } = await response.json();
+      const result = JSON.parse(responseText);
+      console.log('Account created:', result);
       
       // Now create onboarding link
       await handleStartOnboarding();
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating Connect account:', error);
       toast({
-        title: 'Error',
-        description: 'No se pudo crear la cuenta de pagos',
+        title: t('common.error'),
+        description: error.message || t('payout.create_failed'),
         variant: 'destructive',
       });
     } finally {
@@ -110,32 +123,43 @@ export const PayoutSetupPage: React.FC = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      if (!session) {
+        throw new Error('No session found');
+      }
+
+      console.log('Creating onboarding link...');
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-onboarding-link`,
+        `${SUPABASE_URL}/functions/v1/create-onboarding-link`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${session?.access_token}`,
+            'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
-            'Origin': window.location.origin,
           },
+          body: JSON.stringify({
+            returnUrl: `${window.location.origin}/payout-setup?success=true`,
+            refreshUrl: `${window.location.origin}/payout-setup?refresh=true`,
+          }),
         }
       );
 
+      const responseText = await response.text();
+      console.log('Onboarding response:', response.status, responseText);
+
       if (!response.ok) {
-        throw new Error('Failed to create onboarding link');
+        throw new Error(`Failed to create onboarding link: ${responseText}`);
       }
 
-      const { url } = await response.json();
+      const { url } = JSON.parse(responseText);
       
       // Redirect to Stripe onboarding
       window.location.href = url;
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error starting onboarding:', error);
       toast({
-        title: 'Error',
-        description: 'No se pudo iniciar la configuración',
+        title: t('common.error'),
+        description: error.message || t('payout.onboarding_failed'),
         variant: 'destructive',
       });
     } finally {
@@ -157,62 +181,33 @@ export const PayoutSetupPage: React.FC = () => {
       <div className="max-w-2xl mx-auto p-6">
         <Card className="p-8 text-center">
           <CheckCircle2 className="w-16 h-16 mx-auto mb-4 text-green-500" />
-          <h1 className="text-2xl font-bold mb-2">¡Cuenta configurada!</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('payout.account_ready')}</h1>
           <p className="text-gray-600 mb-6">
-            Tu cuenta está lista para recibir pagos de forma segura
+            {t('payout.ready_description')}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-green-50 p-4 rounded-lg">
               <Shield className="w-8 h-8 mx-auto mb-2 text-green-600" />
-              <p className="text-sm font-semibold">Verificado</p>
-              <p className="text-xs text-gray-600">Identidad confirmada</p>
+              <p className="text-sm font-semibold">{t('payout.verified')}</p>
+              <p className="text-xs text-gray-600">{t('payout.identity_confirmed')}</p>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <CreditCard className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-              <p className="text-sm font-semibold">Pagos activos</p>
-              <p className="text-xs text-gray-600">Puedes recibir fondos</p>
+              <p className="text-sm font-semibold">{t('payout.payments_active')}</p>
+              <p className="text-xs text-gray-600">{t('payout.can_receive')}</p>
             </div>
             <div className="bg-purple-50 p-4 rounded-lg">
               <TrendingUp className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-              <p className="text-sm font-semibold">Transferencias</p>
-              <p className="text-xs text-gray-600">Automáticas a tu banco</p>
-            </div>
-          </div>
-
-          <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left">
-            <h3 className="font-semibold mb-2">Detalles de la cuenta</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">País:</span>
-                <span className="font-medium">{connectAccount.country}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Moneda:</span>
-                <span className="font-medium">{connectAccount.currency}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Tipo de cuenta:</span>
-                <span className="font-medium capitalize">{connectAccount.account_type}</span>
-              </div>
+              <p className="text-sm font-semibold">{t('payout.transfers')}</p>
+              <p className="text-xs text-gray-600">{t('payout.automatic_bank')}</p>
             </div>
           </div>
 
           <Button onClick={() => navigate('/profile')} className="w-full">
-            Volver al perfil
+            {t('payout.back_to_profile')}
           </Button>
         </Card>
-
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h3 className="font-semibold mb-2">💡 ¿Cómo funcionan los pagos?</h3>
-          <ul className="text-sm text-gray-700 space-y-1">
-            <li>✅ Los clientes pagan a través de la plataforma</li>
-            <li>✅ Retenemos el pago hasta que completes el servicio</li>
-            <li>✅ Después del servicio, transferimos el dinero a tu cuenta</li>
-            <li>✅ Comisión de plataforma: 20% (estándar del sector)</li>
-            <li>✅ Transferencias automáticas cada 2-7 días</li>
-          </ul>
-        </div>
       </div>
     );
   }
@@ -224,23 +219,11 @@ export const PayoutSetupPage: React.FC = () => {
         <Card className="p-8">
           <AlertCircle className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
           <h1 className="text-2xl font-bold mb-2 text-center">
-            Completa tu configuración
+            {t('payout.complete_setup')}
           </h1>
           <p className="text-gray-600 mb-6 text-center">
-            Necesitas completar algunos pasos para recibir pagos
+            {t('payout.complete_description')}
           </p>
-
-          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
-            <p className="text-sm text-yellow-800">
-              <strong>Información requerida:</strong>
-            </p>
-            <ul className="text-sm text-yellow-700 mt-2 space-y-1">
-              <li>• Documento de identidad (DNI/NIE)</li>
-              <li>• Datos bancarios (IBAN)</li>
-              <li>• Dirección de residencia</li>
-              <li>• Información fiscal</li>
-            </ul>
-          </div>
 
           <Button
             onClick={handleStartOnboarding}
@@ -250,19 +233,15 @@ export const PayoutSetupPage: React.FC = () => {
             {creating ? (
               <>
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Cargando...
+                {t('common.loading')}
               </>
             ) : (
               <>
-                Continuar configuración
+                {t('payout.continue_setup')}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </>
             )}
           </Button>
-
-          <p className="text-xs text-gray-500 text-center mt-4">
-            Serás redirigido a Stripe para completar la verificación de forma segura
-          </p>
         </Card>
       </div>
     );
@@ -274,19 +253,19 @@ export const PayoutSetupPage: React.FC = () => {
       <Card className="p-8">
         <CreditCard className="w-16 h-16 mx-auto mb-4 text-primary" />
         <h1 className="text-2xl font-bold mb-2 text-center">
-          Configura tus pagos
+          {t('payout.setup_payouts')}
         </h1>
         <p className="text-gray-600 mb-6 text-center">
-          Conecta tu cuenta bancaria para recibir pagos de forma segura
+          {t('payout.connect_bank')}
         </p>
 
         <div className="space-y-4 mb-6">
           <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
             <Shield className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-green-900">100% Seguro</h3>
+              <h3 className="font-semibold text-green-900">{t('payout.secure')}</h3>
               <p className="text-sm text-green-700">
-                Procesado por Stripe, líder mundial en pagos online. Tus datos bancarios nunca se almacenan en nuestra plataforma.
+                {t('payout.secure_description')}
               </p>
             </div>
           </div>
@@ -294,9 +273,9 @@ export const PayoutSetupPage: React.FC = () => {
           <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
             <TrendingUp className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-blue-900">Transferencias automáticas</h3>
+              <h3 className="font-semibold text-blue-900">{t('payout.automatic_transfers')}</h3>
               <p className="text-sm text-blue-700">
-                Recibe tus ganancias directamente en tu cuenta bancaria cada 2-7 días.
+                {t('payout.automatic_description')}
               </p>
             </div>
           </div>
@@ -304,9 +283,9 @@ export const PayoutSetupPage: React.FC = () => {
           <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
             <CheckCircle2 className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-purple-900">Verificación rápida</h3>
+              <h3 className="font-semibold text-purple-900">{t('payout.quick_verification')}</h3>
               <p className="text-sm text-purple-700">
-                Solo toma 5 minutos. Necesitarás tu DNI/NIE y datos bancarios.
+                {t('payout.quick_description')}
               </p>
             </div>
           </div>
@@ -320,38 +299,20 @@ export const PayoutSetupPage: React.FC = () => {
           {creating ? (
             <>
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Creando cuenta...
+              {t('payout.creating_account')}
             </>
           ) : (
             <>
-              Comenzar configuración
+              {t('payout.start_setup')}
               <ArrowRight className="w-5 h-5 ml-2" />
             </>
           )}
         </Button>
 
         <p className="text-xs text-gray-500 text-center mt-4">
-          Al continuar, aceptas los términos de servicio de Stripe
+          {t('payout.stripe_terms')}
         </p>
       </Card>
-
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <h3 className="font-semibold mb-2">❓ Preguntas frecuentes</h3>
-        <div className="space-y-3 text-sm">
-          <div>
-            <p className="font-medium text-gray-900">¿Cuánto cobra la plataforma?</p>
-            <p className="text-gray-600">20% de comisión por cada servicio completado.</p>
-          </div>
-          <div>
-            <p className="font-medium text-gray-900">¿Cuándo recibo mi dinero?</p>
-            <p className="text-gray-600">Automáticamente 2-7 días después de completar el servicio.</p>
-          </div>
-          <div>
-            <p className="font-medium text-gray-900">¿Es seguro?</p>
-            <p className="text-gray-600">Sí, Stripe es usado por millones de empresas en todo el mundo.</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

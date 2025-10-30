@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { CreditCard, ArrowRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const PayoutSetupBanner: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
   const navigate = useNavigate();
   const [connectAccount, setConnectAccount] = useState<any>(null);
@@ -69,12 +71,12 @@ export const PayoutSetupBanner: React.FC = () => {
         
         <div className="flex-1">
           <h3 className="font-bold text-lg mb-1">
-            {connectAccount ? '¡Completa tu configuración!' : '¡Configura tus pagos!'}
+            {connectAccount ? t('payout.complete_setup') : t('payout.setup_payouts')}
           </h3>
           <p className="text-sm text-white/90 mb-3">
             {connectAccount
-              ? 'Termina de verificar tu cuenta para recibir pagos'
-              : 'Conecta tu cuenta bancaria para empezar a ganar dinero'}
+              ? t('payout.complete_description')
+              : t('payout.connect_bank')}
           </p>
           
           <Button
@@ -82,7 +84,7 @@ export const PayoutSetupBanner: React.FC = () => {
             className="bg-white text-green-600 hover:bg-white/90 font-semibold"
             size="sm"
           >
-            {connectAccount ? 'Continuar' : 'Configurar ahora'}
+            {connectAccount ? t('payout.continue_setup') : t('payout.start_setup')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
