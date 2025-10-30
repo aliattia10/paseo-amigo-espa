@@ -87,6 +87,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   // Subscribe to real-time messages
   useEffect(() => {
     if (matchId) {
+      console.log('Setting up real-time subscription for match:', matchId);
+      
       // Subscribe to match messages
       const channel = supabase
         .channel(`match-${matchId}`)
@@ -96,11 +98,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           table: 'messages',
           filter: `match_id=eq.${matchId}`
         }, (payload) => {
-          setMessages(prev => [...prev, payload.new]);
+          console.log('Real-time message received:', payload.new);
+          setMessages(prev => {
+            // Avoid duplicates
+            if (prev.some(m => m.id === payload.new.id)) {
+              return prev;
+            }
+            return [...prev, payload.new];
+          });
         })
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Subscription status:', status);
+        });
 
       return () => {
+        console.log('Unsubscribing from match:', matchId);
         channel.unsubscribe();
       };
     } else if (walkRequest) {
@@ -194,13 +206,32 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
 
       if (matchId) {
         // Send message for match using the send_message function
-        const { error } = await (supabase as any).rpc('send_message', {
+        const messageText = newMessage.trim() || (mediaType === 'image' ? '📷 Image' : '🎥 Video');
+        
+        const { data: messageId, error } = await (supabase as any).rpc('send_message', {
           p_match_id: matchId,
           p_sender_id: currentUser.id,
-          p_content: newMessage.trim() || (mediaType === 'image' ? '📷 Image' : '🎥 Video')
+          p_content: messageText
         });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Send message error:', error);
+          throw error;
+        }
+        
+        console.log('Message sent successfully, ID:', messageId);
+        
+        // Optimistically add message to UI immediately
+        const newMsg = {
+          id: messageId || Date.now().toString(),
+          match_id: matchId,
+          sender_id: currentUser.id,
+          content: messageText,
+          created_at: new Date().toISOString(),
+          read: false
+        };
+        
+        setMessages(prev => [...prev, newMsg]);
       } else if (walkRequest) {
         // Send message for walk request (old system)
         await sendMessage(
