@@ -34,30 +34,38 @@ const NewHomePage: React.FC = () => {
   const [likedProfileIds, setLikedProfileIds] = useState<Set<string>>(new Set());
   const [passedProfileIds, setPassedProfileIds] = useState<Set<string>>(new Set());
 
-  // Load user's likes and passes from Supabase
+  // Load user's likes and passes from Supabase (only for user-to-user interactions)
   React.useEffect(() => {
     const loadUserInteractions = async () => {
       if (!currentUser?.id) return;
       
       try {
-        // Load likes
-        const { data: likes } = await supabase
-          .from('likes')
-          .select('liked_id')
-          .eq('liker_id', currentUser.id);
-        
-        if (likes) {
-          setLikedProfileIds(new Set(likes.map((l: any) => l.liked_id)));
-        }
-        
-        // Load passes (using type assertion since table is new)
-        const { data: passes } = await (supabase as any)
-          .from('passes')
-          .select('passed_id')
-          .eq('passer_id', currentUser.id);
-        
-        if (passes) {
-          setPassedProfileIds(new Set(passes.map((p: any) => p.passed_id)));
+        // Only load likes/passes for owners (who interact with sitters)
+        // Sitters' interactions with pets are kept local only
+        if (userRole === 'owner') {
+          // Load likes
+          const { data: likes } = await supabase
+            .from('likes')
+            .select('liked_id')
+            .eq('liker_id', currentUser.id);
+          
+          if (likes) {
+            setLikedProfileIds(new Set(likes.map((l: any) => l.liked_id)));
+          }
+          
+          // Load passes (using type assertion since table is new)
+          const { data: passes } = await (supabase as any)
+            .from('passes')
+            .select('passed_id')
+            .eq('passer_id', currentUser.id);
+          
+          if (passes) {
+            setPassedProfileIds(new Set(passes.map((p: any) => p.passed_id)));
+          }
+        } else {
+          // For sitters, start with empty sets (pet interactions are session-only)
+          setLikedProfileIds(new Set());
+          setPassedProfileIds(new Set());
         }
       } catch (error) {
         console.error('Error loading user interactions:', error);
@@ -65,7 +73,7 @@ const NewHomePage: React.FC = () => {
     };
     
     loadUserInteractions();
-  }, [currentUser?.id]);
+  }, [currentUser?.id, userRole]);
 
   // Load real profiles from Supabase
   React.useEffect(() => {
@@ -385,29 +393,40 @@ const NewHomePage: React.FC = () => {
     
     // Save to Supabase and check for match
     try {
-      // Call the match function (it will save the like AND check for match)
-      const { data: isMatch, error } = await supabase.rpc('check_and_create_match', {
-        liker_user_id: currentUser.id,
-        liked_user_id: profile.id
-      });
-      
-      if (error) {
-        console.error('Match check error:', error);
-        throw error;
-      }
-      
-      // If it's a match, show the modal
-      if (isMatch) {
-        playMatchSound(); // Play celebration sound
-        setMatchedUser({
-          id: profile.id,
-          name: profile.name,
-          imageUrl: profile.imageUrls[0]
+      // Only use matching system for user-to-user (owner liking sitter)
+      // For sitters liking pets, just save the like without matching
+      if (userRole === 'owner' && profile.type === 'walker') {
+        // Owner liking a sitter - use match system
+        const { data: isMatch, error } = await supabase.rpc('check_and_create_match', {
+          liker_user_id: currentUser.id,
+          liked_user_id: profile.id
         });
-        setShowMatchModal(true);
+        
+        if (error) {
+          console.error('Match check error:', error);
+          throw error;
+        }
+        
+        // If it's a match, show the modal
+        if (isMatch) {
+          playMatchSound(); // Play celebration sound
+          setMatchedUser({
+            id: profile.id,
+            name: profile.name,
+            imageUrl: profile.imageUrls[0]
+          });
+          setShowMatchModal(true);
+        } else {
+          // No match yet, just show success toast
+          playLikeSound(); // Play like sound
+          toast({
+            title: '❤️ Liked!',
+            description: `You liked ${profile.name}`,
+          });
+        }
       } else {
-        // No match yet, just show success toast
-        playLikeSound(); // Play like sound
+        // Sitter liking a pet - just save locally (no matching needed for pets)
+        playLikeSound();
         toast({
           title: '❤️ Liked!',
           description: `You liked ${profile.name}`,
@@ -444,20 +463,25 @@ const NewHomePage: React.FC = () => {
     newPassed.add(profile.id);
     setPassedProfileIds(newPassed);
     
-    // Save to Supabase (using type assertion since function is new)
+    // Save to Supabase only for user-to-user (owner passing on sitter)
+    // For sitters passing on pets, just keep it local
     try {
-      const { error } = await (supabase as any).rpc('record_pass', {
-        passer_user_id: currentUser.id,
-        passed_user_id: profile.id
-      });
-      
-      if (error) {
-        console.error('Error saving pass:', error);
-        // Revert optimistic update on error
-        const revertedPassed = new Set(passedProfileIds);
-        revertedPassed.delete(profile.id);
-        setPassedProfileIds(revertedPassed);
+      if (userRole === 'owner' && profile.type === 'walker') {
+        // Owner passing on a sitter - save to database
+        const { error } = await (supabase as any).rpc('record_pass', {
+          passer_user_id: currentUser.id,
+          passed_user_id: profile.id
+        });
+        
+        if (error) {
+          console.error('Error saving pass:', error);
+          // Revert optimistic update on error
+          const revertedPassed = new Set(passedProfileIds);
+          revertedPassed.delete(profile.id);
+          setPassedProfileIds(revertedPassed);
+        }
       }
+      // For pets, we just keep the pass in local state (no database save needed)
     } catch (error) {
       console.error('Error recording pass:', error);
     }
