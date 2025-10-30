@@ -58,46 +58,62 @@ const NewHomePage: React.FC = () => {
     const loadUserInteractions = async () => {
       if (!currentUser?.id) return;
       
+      console.log('=== LOADING USER INTERACTIONS ===');
+      console.log('User ID:', currentUser.id);
+      console.log('User Role:', userRole);
+      console.log('User Email:', currentUser.email);
+      
       try {
         if (userRole === 'owner') {
           // Load owner's likes/passes for sitters
-          const { data: likes } = await supabase
+          const { data: likes, error: likesError } = await supabase
             .from('likes')
             .select('liked_id')
             .eq('liker_id', currentUser.id);
+          
+          console.log('Owner likes:', likes, 'Error:', likesError);
           
           if (likes) {
             setLikedProfileIds(new Set(likes.map((l: any) => l.liked_id)));
           }
           
-          const { data: passes } = await (supabase as any)
+          const { data: passes, error: passesError } = await (supabase as any)
             .from('passes')
             .select('passed_id')
             .eq('passer_id', currentUser.id);
+          
+          console.log('Owner passes:', passes, 'Error:', passesError);
           
           if (passes) {
             setPassedProfileIds(new Set(passes.map((p: any) => p.passed_id)));
           }
         } else {
           // Load sitter's likes/passes for pets
-          const { data: petLikes } = await (supabase as any)
+          const { data: petLikes, error: petLikesError } = await (supabase as any)
             .from('pet_likes')
             .select('pet_id')
             .eq('sitter_id', currentUser.id);
+          
+          console.log('Sitter pet likes:', petLikes, 'Error:', petLikesError);
           
           if (petLikes) {
             setLikedProfileIds(new Set(petLikes.map((l: any) => l.pet_id)));
           }
           
-          const { data: petPasses } = await (supabase as any)
+          const { data: petPasses, error: petPassesError } = await (supabase as any)
             .from('pet_passes')
             .select('pet_id')
             .eq('sitter_id', currentUser.id);
+          
+          console.log('Sitter pet passes:', petPasses, 'Error:', petPassesError);
           
           if (petPasses) {
             setPassedProfileIds(new Set(petPasses.map((p: any) => p.pet_id)));
           }
         }
+        
+        console.log('Final liked IDs:', Array.from(likedProfileIds));
+        console.log('Final passed IDs:', Array.from(passedProfileIds));
       } catch (error) {
         console.error('Error loading user interactions:', error);
       }
