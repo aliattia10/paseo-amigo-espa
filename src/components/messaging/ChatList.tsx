@@ -57,7 +57,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               
               const { data: userData, error: userError } = await supabase
                 .from('users')
-                .select('id, name, profile_image, role')
+                .select('id, name, profile_image, user_type')
                 .eq('id', otherUserId)
                 .single();
 
@@ -68,7 +68,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                     id: userData.id,
                     name: userData.name || 'User',
                     profile_image: userData.profile_image,
-                    role: userData.role,
+                    role: userData.user_type,
                   },
                 };
               }
