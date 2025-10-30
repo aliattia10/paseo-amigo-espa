@@ -12,19 +12,20 @@ import { supabase } from '@/integrations/supabase/client';
 import type { ChatMessage, WalkRequest } from '@/types';
 
 interface ChatWindowProps {
-  walkRequest: WalkRequest;
+  walkRequest: WalkRequest | null;
   onClose: () => void;
   otherUser: {
     id: string;
     name: string;
     profileImage?: string;
   };
+  matchId?: string;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser, matchId }) => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -48,13 +49,26 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   useEffect(() => {
     const loadMessages = async () => {
       try {
-        const initialMessages = await getChatMessages(walkRequest.id);
-        setMessages(initialMessages);
+        if (matchId) {
+          // Load messages for match
+          const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('match_id', matchId)
+            .order('created_at', { ascending: true });
+          
+          if (error) throw error;
+          setMessages(data || []);
+        } else if (walkRequest) {
+          // Load messages for walk request (old system)
+          const initialMessages = await getChatMessages(walkRequest.id);
+          setMessages(initialMessages);
+        }
       } catch (error) {
         console.error('Error loading messages:', error);
         toast({
           title: "Error",
-          description: "No se pudieron cargar los mensajes.",
+          description: "Could not load messages.",
           variant: "destructive",
         });
       } finally {
@@ -63,18 +77,38 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     };
 
     loadMessages();
-  }, [walkRequest.id, toast]);
+  }, [matchId, walkRequest, toast]);
 
   // Subscribe to real-time messages
   useEffect(() => {
-    const subscription = subscribeToChatMessages(walkRequest.id, (newMessages) => {
-      setMessages(newMessages);
-    });
+    if (matchId) {
+      // Subscribe to match messages
+      const channel = supabase
+        .channel(`match-${matchId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `match_id=eq.${matchId}`
+        }, (payload) => {
+          setMessages(prev => [...prev, payload.new]);
+        })
+        .subscribe();
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [walkRequest.id]);
+      return () => {
+        channel.unsubscribe();
+      };
+    } else if (walkRequest) {
+      // Subscribe to walk request messages (old system)
+      const subscription = subscribeToChatMessages(walkRequest.id, (newMessages) => {
+        setMessages(newMessages);
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [matchId, walkRequest]);
 
   const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -153,16 +187,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         mediaType = type;
       }
 
-      // Send message with or without media using the existing sendMessage function
-      // For now, we'll use chat_messages table which is linked to walk_requests
-      // In production, you'd want to update the schema to support direct messages
-      await sendMessage(
-        walkRequest.id,
-        currentUser.id,
-        newMessage.trim() || (mediaType === 'image' ? '📷 Image' : '🎥 Video')
-      );
-      
-      // TODO: Update to support media_url and media_type once schema is updated
+      if (matchId) {
+        // Send message for match using the send_message function
+        const { error } = await (supabase as any).rpc('send_message', {
+          p_match_id: matchId,
+          p_sender_id: currentUser.id,
+          p_content: newMessage.trim() || (mediaType === 'image' ? '📷 Image' : '🎥 Video')
+        });
+        
+        if (error) throw error;
+      } else if (walkRequest) {
+        // Send message for walk request (old system)
+        await sendMessage(
+          walkRequest.id,
+          currentUser.id,
+          newMessage.trim() || (mediaType === 'image' ? '📷 Image' : '🎥 Video')
+        );
+      }
 
       setNewMessage('');
       clearMedia();
@@ -175,7 +216,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "No se pudo enviar el mensaje.",
+        description: "Could not send message.",
         variant: "destructive",
       });
     } finally {

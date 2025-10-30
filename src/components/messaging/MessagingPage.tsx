@@ -67,6 +67,7 @@ const MessagingPage: React.FC = () => {
           <ChatWindow
             walkRequest={selectedChat.walkRequest}
             otherUser={selectedChat.otherUser}
+            matchId={selectedChat.matchId}
             onClose={handleCloseChat}
           />
         ) : (
