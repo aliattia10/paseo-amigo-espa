@@ -538,10 +538,14 @@ const NewHomePage: React.FC = () => {
                 You've seen all available {userRole === 'owner' ? 'sitters' : 'pets'} in your area.
               </p>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
                   // Clear all passed and liked profiles to see them again
-                  setPassedProfiles(new Set());
-                  setLikedProfiles(new Set());
+                  const emptySet = new Set<string>();
+                  setPassedProfiles(emptySet);
+                  setLikedProfiles(emptySet);
                   localStorage.removeItem('passedProfiles');
                   localStorage.removeItem('likedProfiles');
                   setCurrentIndex(0);

@@ -26,6 +26,8 @@ const ProfileEditPage: React.FC = () => {
   // Tinder-style multiple photos (max 6)
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const MAX_PHOTOS = 6;
 
   // Update form data when userProfile changes
@@ -234,7 +236,10 @@ const ProfileEditPage: React.FC = () => {
         updateData.bio = formData.bio.trim();
       }
 
-      if (formData.profilePictureUrl) {
+      // Save photos array as JSON
+      if (photos.filter(p => p).length > 0) {
+        updateData.profile_image = JSON.stringify(photos.filter(p => p));
+      } else if (formData.profilePictureUrl) {
         updateData.profile_image = formData.profilePictureUrl;
       }
 
