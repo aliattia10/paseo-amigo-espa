@@ -362,11 +362,6 @@ const NewProfilePage: React.FC = () => {
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute bottom-1 right-1 bg-primary text-white rounded-full p-1.5 shadow-lg">
-                      <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>
-                        favorite
-                      </span>
-                    </div>
                   </div>
                 );
               } catch {
