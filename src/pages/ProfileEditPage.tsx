@@ -21,6 +21,7 @@ const ProfileEditPage: React.FC = () => {
     postalCode: userProfile?.postalCode || '',
     bio: userProfile?.bio || '',
     profilePictureUrl: userProfile?.profileImage || '',
+    hourlyRate: (userProfile as any)?.hourly_rate || 15,
   });
   
   // Tinder-style multiple photos (max 6)
@@ -40,6 +41,7 @@ const ProfileEditPage: React.FC = () => {
         postalCode: userProfile.postalCode || '',
         bio: userProfile.bio || '',
         profilePictureUrl: userProfile.profileImage || '',
+        hourlyRate: (userProfile as any)?.hourly_rate || 15,
       });
       
       // Load existing photos from profile_image (stored as JSON array)
@@ -234,6 +236,11 @@ const ProfileEditPage: React.FC = () => {
       // Add bio if it exists
       if (formData.bio) {
         updateData.bio = formData.bio.trim();
+      }
+
+      // Add hourly rate for sitters
+      if (formData.hourlyRate) {
+        updateData.hourly_rate = formData.hourlyRate;
       }
 
       // Save photos array as JSON
@@ -457,6 +464,27 @@ const ProfileEditPage: React.FC = () => {
                 placeholder="Your postal code"
               />
             </div>
+
+            {/* Hourly Rate - For Sitters */}
+            {userProfile?.userType !== 'owner' && (
+              <div>
+                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Hourly Rate ($/hr)
+                </label>
+                <Input
+                  type="number"
+                  value={formData.hourlyRate}
+                  onChange={(e) => setFormData({ ...formData, hourlyRate: parseInt(e.target.value) || 15 })}
+                  className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                  placeholder="15"
+                  min="5"
+                  max="100"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Set your base hourly rate ($5-$100)
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </main>
