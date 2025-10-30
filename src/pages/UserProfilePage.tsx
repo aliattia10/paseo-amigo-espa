@@ -18,7 +18,7 @@ const UserProfilePage: React.FC = () => {
         const { supabase } = await import('@/integrations/supabase/client');
         const { data, error } = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, availability, rating, reviews_count, pets_count, city')
+          .select('id, name, bio, profile_image, hourly_rate, rating, reviews_count, pets_count, city')
           .eq('id', userId)
           .single();
         if (error) throw error;
@@ -91,12 +91,6 @@ const UserProfilePage: React.FC = () => {
                   <span className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-semibold px-3 py-1 rounded-full">
                     <span className="material-symbols-outlined text-sm">reviews</span>
                     {user.reviews_count} reviews
-                  </span>
-                )}
-                {Array.isArray(user.availability) && user.availability.length > 0 && (
-                  <span className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-semibold px-3 py-1 rounded-full">
-                    <span className="material-symbols-outlined text-sm">event_available</span>
-                    {user.availability.slice(0, 3).join(', ')}
                   </span>
                 )}
               </div>
