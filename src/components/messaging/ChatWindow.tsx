@@ -304,8 +304,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           {matchId && (
             <Button
               onClick={() => {
-                // Navigate to booking page with sitter ID
-                window.location.href = `/booking/request?sitter_id=${otherUser.id}`;
+                // Navigate to booking page with walker ID
+                window.location.href = `/booking/request?walkerId=${otherUser.id}&walkerName=${encodeURIComponent(otherUser.name)}`;
               }}
               className="bg-primary hover:bg-primary/90"
             >
