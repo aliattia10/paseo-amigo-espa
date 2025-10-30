@@ -292,11 +292,9 @@ const ProfileEditPage: React.FC = () => {
         description: 'Your profile has been updated',
       });
 
-      // Navigate back without reload - use replace to avoid adding to history
-      setTimeout(() => {
-        console.log('Navigating back to profile...');
-        navigate('/profile', { replace: true });
-      }, 1000);
+      // Navigate back immediately after refresh completes
+      console.log('Navigating back to profile...');
+      navigate('/profile', { replace: true });
     } catch (error: any) {
       console.error('Save error:', error);
       toast({

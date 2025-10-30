@@ -26,7 +26,7 @@ interface Review {
 
 const NewProfilePage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, userProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeRole, setActiveRole] = useState<'sitter' | 'owner'>('sitter');
@@ -37,6 +37,13 @@ const NewProfilePage: React.FC = () => {
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
+
+  // Refresh profile data when component mounts or when returning from edit
+  useEffect(() => {
+    if (currentUser) {
+      refreshUserProfile();
+    }
+  }, [currentUser]);
 
   const handleLogout = async () => {
     const { supabase } = await import('@/integrations/supabase/client');
