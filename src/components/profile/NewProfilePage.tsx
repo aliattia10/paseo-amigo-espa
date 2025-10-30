@@ -569,7 +569,10 @@ const NewProfilePage: React.FC = () => {
                 </div>
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
-              <li className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark">
+              <li 
+                onClick={() => navigate('/payout-setup')}
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark"
+              >
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">payment</span>
                   <span className="font-medium text-text-primary-light dark:text-text-primary-dark">Payment Methods</span>
