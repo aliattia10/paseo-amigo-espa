@@ -477,11 +477,12 @@ const ProfileEditPage: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, hourlyRate: parseInt(e.target.value) || 15 })}
                   className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                   placeholder="15"
-                  min="5"
+                  min="10"
                   max="100"
+                  step="1"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Set your base hourly rate ($5-$100)
+                  Set your base hourly rate ($10-$100)
                 </p>
               </div>
             )}
