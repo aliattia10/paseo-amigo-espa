@@ -33,6 +33,25 @@ const NewHomePage: React.FC = () => {
   const [loadingProfiles, setLoadingProfiles] = useState(true);
   const [likedProfileIds, setLikedProfileIds] = useState<Set<string>>(new Set());
   const [passedProfileIds, setPassedProfileIds] = useState<Set<string>>(new Set());
+  const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [passedProfiles, setPassedProfiles] = useState<Set<string>>(new Set());
+  const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
+  const [showMatchModal, setShowMatchModal] = useState(false);
+  const [matchedUser, setMatchedUser] = useState<{ id: string; name: string; imageUrl: string } | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({
+    petType: 'all',
+    maxDistance: 50,
+    minRating: 0,
+    maxPrice: null,
+    sortBy: 'distance',
+  });
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   // Load user's likes and passes from Supabase
   React.useEffect(() => {
@@ -224,26 +243,6 @@ const NewHomePage: React.FC = () => {
   }, []);
   
   // No mock data - only show real profiles from database
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
-  const [passedProfiles, setPassedProfiles] = useState<Set<string>>(new Set());
-  const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
-  const [showMatchModal, setShowMatchModal] = useState(false);
-  const [matchedUser, setMatchedUser] = useState<{ id: string; name: string; imageUrl: string } | null>(null);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({
-    petType: 'all',
-    maxDistance: 50,
-    minRating: 0,
-    maxPrice: null,
-    sortBy: 'distance',
-  });
-  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   // Load saved preferences from localStorage on mount (only UI preferences, not swipe data)
   React.useEffect(() => {
