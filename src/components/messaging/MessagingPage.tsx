@@ -25,10 +25,10 @@ const MessagingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stitch-bg-light pb-20">
+    <div className="min-h-screen bg-stitch-bg-light pb-20 max-w-md mx-auto">
       {/* Enhanced Header */}
       <div className="bg-stitch-card-light shadow-md border-b border-stitch-border-light sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
@@ -61,38 +61,21 @@ const MessagingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Chat List */}
-          <div className={`${selectedChat ? 'hidden lg:block' : ''}`}>
-            <ChatList onSelectChat={handleSelectChat} />
-          </div>
-
-          {/* Chat Window */}
-          <div className={`${selectedChat ? 'block' : 'hidden lg:block'}`}>
-            {selectedChat ? (
-              <ChatWindow
-                walkRequest={selectedChat.walkRequest}
-                otherUser={selectedChat.otherUser}
-                onClose={handleCloseChat}
-              />
-            ) : (
-              <Card className="h-[600px] flex items-center justify-center rounded-3xl shadow-lg border-0">
-                <CardContent className="text-center">
-                  <span className="material-symbols-outlined text-7xl text-stitch-text-secondary-light mx-auto mb-6 block">chat_bubble_outline</span>
-                  <h3 className="text-lg font-bold mb-2 font-display text-stitch-text-primary-light">Selecciona una conversación</h3>
-                  <p className="text-stitch-text-secondary-light">
-                    Elige una conversación de la lista para comenzar a chatear
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
+      <div className="px-4 py-6">
+        {/* Chat List or Chat Window - Mobile Style */}
+        {selectedChat ? (
+          <ChatWindow
+            walkRequest={selectedChat.walkRequest}
+            otherUser={selectedChat.otherUser}
+            onClose={handleCloseChat}
+          />
+        ) : (
+          <ChatList onSelectChat={handleSelectChat} />
+        )}
       </div>
 
-      {/* Bottom Navigation - Same as Home Page */}
-      <nav className="fixed bottom-0 left-0 right-0 z-10 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 max-w-md mx-auto">
+      {/* Bottom Navigation - Mobile Style */}
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 z-10 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 w-full max-w-md">
         <div className="flex justify-around items-center h-16 px-2">
           <button 
             onClick={() => navigate('/dashboard')} 
