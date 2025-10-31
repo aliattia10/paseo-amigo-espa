@@ -1,0 +1,138 @@
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║           🔧 FIX BOOKINGS PAGE - DO THIS NOW (2 MIN)         ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+ERROR: "Edge Function returned a non-2xx status code"
+CAUSE: Database migrations not run yet
+SOLUTION: Run the SQL below in Supabase
+
+═══════════════════════════════════════════════════════════════
+
+⚡ STEP 1: Open Supabase SQL Editor
+
+   Click this link:
+   https://supabase.com/dashboard/project/zxbfygofxxmfivddwdqt/sql/new
+
+═══════════════════════════════════════════════════════════════
+
+⚡ STEP 2: Copy the SQL Script
+
+   Open the file: QUICK_FIX_RUN_NOW.sql
+   
+   OR copy this:
+
+   ┌─────────────────────────────────────────────────────────┐
+   │                                                         │
+   │  -- Add related_id column                              │
+   │  ALTER TABLE notifications                             │
+   │  ADD COLUMN IF NOT EXISTS related_id UUID;             │
+   │                                                         │
+   │  -- Create update_booking_status function              │
+   │  CREATE OR REPLACE FUNCTION update_booking_status(     │
+   │    p_booking_id UUID,                                  │
+   │    p_new_status TEXT,                                  │
+   │    p_cancellation_reason TEXT DEFAULT NULL             │
+   │  )                                                      │
+   │  RETURNS BOOLEAN                                        │
+   │  LANGUAGE plpgsql                                       │
+   │  SECURITY DEFINER                                       │
+   │  AS $$                                                  │
+   │  DECLARE                                                │
+   │    v_booking RECORD;                                    │
+   │  BEGIN                                                  │
+   │    SELECT * INTO v_booking                             │
+   │    FROM bookings WHERE id = p_booking_id;              │
+   │                                                         │
+   │    IF NOT FOUND THEN                                    │
+   │      RAISE EXCEPTION 'Booking not found';              │
+   │    END IF;                                              │
+   │                                                         │
+   │    UPDATE bookings SET                                  │
+   │      status = p_new_status,                            │
+   │      cancellation_reason = p_cancellation_reason,      │
+   │      updated_at = NOW()                                │
+   │    WHERE id = p_booking_id;                            │
+   │                                                         │
+   │    IF p_new_status = 'confirmed' THEN                  │
+   │      INSERT INTO notifications (                        │
+   │        user_id, type, title, message, related_id       │
+   │      ) VALUES (                                         │
+   │        v_booking.owner_id,                             │
+   │        'booking_confirmed',                            │
+   │        'Booking Confirmed!',                           │
+   │        'Your booking has been confirmed',              │
+   │        p_booking_id                                     │
+   │      );                                                 │
+   │    END IF;                                              │
+   │                                                         │
+   │    RETURN TRUE;                                         │
+   │  END;                                                   │
+   │  $$;                                                    │
+   │                                                         │
+   └─────────────────────────────────────────────────────────┘
+
+   ** TIP: It's easier to copy from QUICK_FIX_RUN_NOW.sql **
+
+═══════════════════════════════════════════════════════════════
+
+⚡ STEP 3: Paste and Run
+
+   1. Paste the SQL in the editor
+   2. Click "RUN" button (or press Ctrl+Enter)
+   3. Wait for "Success" message
+   4. Should see: "Database fixed! Refresh your bookings page now."
+
+═══════════════════════════════════════════════════════════════
+
+⚡ STEP 4: Test
+
+   1. Go back to: https://petflik.com/bookings
+   2. Hard refresh: Ctrl + Shift + R
+   3. ✅ Page should load!
+   4. ✅ Bookings should appear!
+   5. ✅ Pay Now button should work!
+
+═══════════════════════════════════════════════════════════════
+
+🎯 WHAT THIS FIXES:
+
+   ✅ Adds related_id column to notifications
+   ✅ Creates update_booking_status function
+   ✅ Fixes "Edge Function" error
+   ✅ Bookings page will load
+   ✅ Accept/Decline buttons will work
+   ✅ Pay Now button will work
+
+═══════════════════════════════════════════════════════════════
+
+🆘 IF YOU GET AN ERROR:
+
+   Error: "column related_id already exists"
+   → Good! It means it's already there, continue anyway
+
+   Error: "table bookings does not exist"
+   → You need to run the complete schema first
+   → See: database/clean_migration.sql
+
+   Error: "permission denied"
+   → Make sure you're logged into the correct Supabase account
+
+═══════════════════════════════════════════════════════════════
+
+              ⏱️ THIS WILL TAKE 2 MINUTES TOTAL
+
+         STEP 1: Open Supabase SQL Editor (30 seconds)
+         STEP 2: Copy SQL script (30 seconds)
+         STEP 3: Paste and Run (30 seconds)
+         STEP 4: Refresh bookings page (30 seconds)
+
+═══════════════════════════════════════════════════════════════
+
+             🚀 START NOW! Open Supabase SQL Editor:
+
+    https://supabase.com/dashboard/project/zxbfygofxxmfivddwdqt/sql/new
+
+╚══════════════════════════════════════════════════════════════╝
+

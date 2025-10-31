@@ -1,0 +1,75 @@
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║              🔧 FIX BOOKING ERROR - START HERE               ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+ERROR: "operator does not exist: time without time zone <= 
+        timestamp with time zone"
+
+═══════════════════════════════════════════════════════════════
+
+QUICK FIX (Choose ONE method):
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+METHOD 1: Windows PowerShell (1 minute)
+────────────────────────────────────────
+   1. Open PowerShell in this folder
+   2. Run: .\fix-bookings.ps1
+   3. Follow on-screen instructions
+   4. Done! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+METHOD 2: Manual via Supabase (5 minutes) ⭐ RECOMMENDED
+────────────────────────────────────────────────────────
+   1. Open: APPLY_FIX_NOW.md
+   2. Follow the step-by-step guide
+   3. Or go directly to:
+      https://supabase.com/dashboard/project/zxbfygofxxmfivddwdqt/sql
+   4. Copy script from:
+      supabase/migrations/20251101000000_fix_availability_time_type.sql
+   5. Paste and click Run
+   6. Done! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+METHOD 3: Supabase CLI (2 minutes)
+────────────────────────────────────
+   1. Install CLI: npm install -g supabase
+   2. Run: supabase link --project-ref zxbfygofxxmfivddwdqt
+   3. Run: supabase db push
+   4. Done! ✅
+
+═══════════════════════════════════════════════════════════════
+
+AFTER APPLYING FIX:
+
+   1. Go to: https://petflik.com/bookings
+   2. Refresh page (Ctrl+Shift+R)
+   3. Error should be gone! 🎉
+   4. Test booking features
+
+═══════════════════════════════════════════════════════════════
+
+MORE INFORMATION:
+
+   📖 Quick Guide:      APPLY_FIX_NOW.md
+   📚 Full Details:     BOOKING_FIX_SUMMARY.md
+   🔧 Technical Guide:  FIX_BOOKING_ERROR_GUIDE.md
+
+═══════════════════════════════════════════════════════════════
+
+STILL HAVING ISSUES?
+
+   ❓ See troubleshooting in BOOKING_FIX_SUMMARY.md
+   💡 Check browser console (F12) for errors
+   🔍 Verify migration ran successfully in Supabase
+
+═══════════════════════════════════════════════════════════════
+
+             Choose a method above and let's fix this! 🚀
+
+╚══════════════════════════════════════════════════════════════╝
+
