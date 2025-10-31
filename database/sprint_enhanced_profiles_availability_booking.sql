@@ -200,6 +200,8 @@ END;
 $$;
 
 -- Function to update booking status
+DROP FUNCTION IF EXISTS update_booking_status(UUID, TEXT);
+DROP FUNCTION IF EXISTS update_booking_status(UUID, TEXT, TEXT);
 CREATE OR REPLACE FUNCTION update_booking_status(
   p_booking_id UUID,
   p_new_status TEXT,
@@ -405,11 +407,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_availability_updated_at ON availability;
 CREATE TRIGGER update_availability_updated_at
   BEFORE UPDATE ON availability
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_bookings_updated_at ON bookings;
 CREATE TRIGGER update_bookings_updated_at
   BEFORE UPDATE ON bookings
   FOR EACH ROW
