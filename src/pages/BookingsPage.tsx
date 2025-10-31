@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
+import ReviewModal from '@/components/bookings/ReviewModal';
 
 interface Booking {
   id: string;
@@ -17,6 +18,13 @@ interface Booking {
   total_amount: number;
   status: 'pending' | 'accepted' | 'completed' | 'cancelled';
   notes?: string;
+  payment_status?: string;
+  owner_id?: string;
+  sitter_id?: string;
+  completed_at?: string;
+  completion_confirmed_at?: string;
+  eligible_for_release_at?: string;
+  payment_released_at?: string;
 }
 
 const BookingsPage: React.FC = () => {
@@ -27,6 +35,8 @@ const BookingsPage: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'completed'>('all');
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -72,7 +82,14 @@ const BookingsPage: React.FC = () => {
         duration_hours: Math.round((new Date(booking.end_time).getTime() - new Date(booking.start_time).getTime()) / (1000 * 60 * 60)),
         total_amount: booking.total_price || 0,
         status: booking.status,
-        notes: booking.notes
+        notes: booking.notes,
+        payment_status: booking.payment_status,
+        owner_id: booking.owner_id,
+        sitter_id: booking.sitter_id,
+        completed_at: booking.completed_at,
+        completion_confirmed_at: booking.completion_confirmed_at,
+        eligible_for_release_at: booking.eligible_for_release_at,
+        payment_released_at: booking.payment_released_at
       })) || [];
       
       setBookings(formattedBookings);
@@ -86,14 +103,23 @@ const BookingsPage: React.FC = () => {
   const handleAcceptBooking = async (bookingId: string) => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Sitter accepts booking - this will notify owner to pay
       const { error } = await supabase.rpc('update_booking_status', {
         p_booking_id: bookingId,
         p_new_status: 'confirmed'
       });
+      
       if (error) throw error;
-      toast({ title: 'Booking Accepted', description: 'The booking has been confirmed.' });
+      
+      toast({ 
+        title: 'Booking Accepted!', 
+        description: 'The owner has been notified to complete payment.' 
+      });
+      
       fetchBookings();
     } catch (error: any) {
+      console.error('Error accepting booking:', error);
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
     }
   };
@@ -132,16 +158,136 @@ const BookingsPage: React.FC = () => {
   const handleCancelBooking = async (bookingId: string) => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
-      const { error } = await supabase.rpc('update_booking_status', {
+      
+      // Get booking details
+      const { data: bookingData } = await supabase
+        .from('bookings')
+        .select('*, owner_id, sitter_id')
+        .eq('id', bookingId)
+        .single();
+      
+      if (!bookingData) {
+        throw new Error('Booking not found');
+      }
+      
+      const reason = prompt('Please provide a reason for cancellation:');
+      if (!reason) return;
+      
+      const { error } = await (supabase as any).rpc('update_booking_status', {
         p_booking_id: bookingId,
-        p_new_status: 'cancelled'
+        p_new_status: 'cancelled',
+        p_cancellation_reason: reason
       });
+      
       if (error) throw error;
-      toast({ title: 'Booking Cancelled', description: 'The booking has been cancelled.' });
+      
+      toast({ 
+        title: 'Booking Cancelled', 
+        description: 'The booking has been cancelled successfully.' 
+      });
+      
       fetchBookings();
     } catch (error: any) {
+      console.error('Error cancelling booking:', error);
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
     }
+  };
+
+  const handleMarkComplete = async (bookingId: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await (supabase as any).rpc('mark_service_completed', {
+        p_booking_id: bookingId
+      });
+      
+      if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to mark service as completed');
+      }
+      
+      toast({ 
+        title: '✅ Service Marked Complete', 
+        description: 'Waiting for owner confirmation to release payment.' 
+      });
+      
+      fetchBookings();
+    } catch (error: any) {
+      console.error('Error marking complete:', error);
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleConfirmCompletion = async (bookingId: string, booking: Booking) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await (supabase as any).rpc('confirm_service_completion', {
+        p_booking_id: bookingId
+      });
+      
+      if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to confirm completion');
+      }
+      
+      toast({ 
+        title: '✅ Completion Confirmed!', 
+        description: 'Payment will be released in 3 days. Please leave a review!' 
+      });
+      
+      // Open review modal
+      setSelectedBooking(booking);
+      setReviewModalOpen(true);
+      
+      fetchBookings();
+    } catch (error: any) {
+      console.error('Error confirming completion:', error);
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleForceReleasePayment = async (bookingId: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await (supabase as any).rpc('release_payment_to_sitter', {
+        p_booking_id: bookingId,
+        p_force_release: true
+      });
+      
+      if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to release payment');
+      }
+      
+      toast({ 
+        title: '💰 Payment Released!', 
+        description: 'Payment has been transferred to the sitter.' 
+      });
+      
+      fetchBookings();
+    } catch (error: any) {
+      console.error('Error releasing payment:', error);
+      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const getReleaseCountdown = (eligibleDate: string) => {
+    const now = new Date();
+    const release = new Date(eligibleDate);
+    const diffMs = release.getTime() - now.getTime();
+    
+    if (diffMs <= 0) return 'Ready to release';
+    
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `${days}d ${hours}h remaining`;
+    return `${hours}h remaining`;
   };
 
   const filteredBookings = bookings.filter(booking => {
@@ -185,21 +331,134 @@ const BookingsPage: React.FC = () => {
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">calendar_today</span><span>{new Date(booking.booking_date).toLocaleDateString()}</span></div>
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">schedule</span><span>{booking.start_time} • {booking.duration_hours}h</span></div>
             </div>
-            {(booking.status as string) === 'completed' && (booking as any).payment_status === 'held' && (
+            
+            {/* Show Accept/Decline buttons when booking is requested (for SITTER) */}
+            {(booking.status as string) === 'requested' && currentUser?.id === booking.sitter_id && (
               <div className="flex gap-2 pt-2">
-                <Button onClick={() => handleReleasePayment(booking.id)} className="flex-1 bg-primary text-white">Release Payment</Button>
+                <Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">Accept</Button>
+                <Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">Decline</Button>
               </div>
             )}
-            {(booking.status as string) === 'requested' && (booking as any).payment_status === 'held' && (
+            
+            {/* Show Pay Now button when booking confirmed but not paid (OWNER) */}
+            {(booking.status as string) === 'confirmed' && (!booking.payment_status || booking.payment_status === 'pending') && currentUser?.id === booking.owner_id && (
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  onClick={() => navigate(`/payment?bookingId=${booking.id}&amount=${booking.total_amount}`)} 
+                  className="flex-1 bg-primary text-white"
+                >
+                  💳 Pay Now - €{booking.total_amount.toFixed(2)}
+                </Button>
+              </div>
+            )}
+            
+            {/* Show waiting message when confirmed and paid */}
+            {(booking.status as string) === 'confirmed' && booking.payment_status === 'held' && (
+              <div className="pt-2">
+                <div className="text-sm text-center text-green-600 dark:text-green-400 mb-2">
+                  ✓ Payment secured - Waiting for service
+                </div>
+                {/* SITTER: Show "Mark as Complete" button */}
+                {currentUser?.id === booking.sitter_id && (
+                  <Button 
+                    onClick={() => handleMarkComplete(booking.id)} 
+                    className="w-full bg-green-600 text-white hover:bg-green-700"
+                  >
+                    ✅ Mark Service Complete
+                  </Button>
+                )}
+              </div>
+            )}
+            
+            {/* Service completed by sitter, waiting for owner confirmation */}
+            {(booking.status as string) === 'completed' && booking.completed_at && !booking.completion_confirmed_at && (
+              <div className="pt-2">
+                {currentUser?.id === booking.owner_id ? (
+                  <>
+                    <div className="text-sm text-center text-blue-600 dark:text-blue-400 mb-2">
+                      🎉 Service completed! Please confirm and review
+                    </div>
+                    <Button 
+                      onClick={() => handleConfirmCompletion(booking.id, booking)} 
+                      className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      ✓ Confirm & Review
+                    </Button>
+                  </>
+                ) : (
+                  <div className="text-sm text-center text-blue-600 dark:text-blue-400">
+                    ⏳ Waiting for owner confirmation
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Completion confirmed, payment in 3-day hold */}
+            {(booking.status as string) === 'completed' && booking.completion_confirmed_at && booking.payment_status === 'held' && !booking.payment_released_at && (
+              <div className="pt-2">
+                <div className="text-sm text-center mb-2">
+                  <div className="text-green-600 dark:text-green-400 font-medium">
+                    ✅ Service Confirmed
+                  </div>
+                  {booking.eligible_for_release_at && (
+                    <div className="text-gray-600 dark:text-gray-400 text-xs mt-1">
+                      Payment release: {getReleaseCountdown(booking.eligible_for_release_at)}
+                    </div>
+                  )}
+                </div>
+                {/* OWNER: Can force early release */}
+                {currentUser?.id === booking.owner_id && booking.eligible_for_release_at && (
+                  <Button 
+                    onClick={() => handleForceReleasePayment(booking.id)} 
+                    variant="outline"
+                    className="w-full"
+                  >
+                    💰 Release Payment Now
+                  </Button>
+                )}
+                {/* SITTER: Just shows waiting */}
+                {currentUser?.id === booking.sitter_id && (
+                  <div className="text-xs text-center text-gray-500">
+                    Payment will be automatically released after 3 days
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Payment released */}
+            {booking.payment_status === 'released' && booking.payment_released_at && (
+              <div className="pt-2 text-sm text-center text-green-600 dark:text-green-400 font-medium">
+                💵 Payment Released - Transferred to sitter
+              </div>
+            )}
+            
+            {/* Show Cancel & Refund button when requested and payment held */}
+            {(booking.status as string) === 'requested' && booking.payment_status === 'held' && (
               <div className="flex gap-2 pt-2">
                 <Button onClick={() => handleRefund(booking.id)} variant="destructive" className="flex-1">Cancel & Refund</Button>
               </div>
             )}
-            {(booking.status as string) === 'requested' && <div className="flex gap-2 pt-2"><Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">Accept</Button><Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">Decline</Button></div>}
           </div>
         ))}
       </main>
       <BottomNavigation />
+      
+      {/* Review Modal */}
+      {selectedBooking && (
+        <ReviewModal
+          isOpen={reviewModalOpen}
+          onClose={() => {
+            setReviewModalOpen(false);
+            setSelectedBooking(null);
+          }}
+          bookingId={selectedBooking.id}
+          revieweeId={selectedBooking.sitter_id || ''}
+          revieweeName={selectedBooking.walker_name}
+          onReviewSubmitted={() => {
+            fetchBookings();
+          }}
+        />
+      )}
     </div>
   );
 };

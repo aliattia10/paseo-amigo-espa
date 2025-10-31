@@ -771,7 +771,7 @@ const App = () => (
                   } 
                 />
                 <Route 
-                  path="/payment/:bookingId" 
+                  path="/payment" 
                   element={
                     <ProtectedRoute>
                       <PaymentPage />
