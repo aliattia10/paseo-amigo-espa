@@ -130,6 +130,7 @@ const BookingRequestPage: React.FC = () => {
             total_price: total,
             commission_fee: platformFee,
             status: 'requested',
+            payment_status: 'pending',
           });
         bookingError = insertError;
       } else {

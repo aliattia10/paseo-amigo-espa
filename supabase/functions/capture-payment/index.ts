@@ -34,12 +34,22 @@ serve(async (req) => {
     // Get booking details
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
-      .select('stripe_payment_intent_id, total_price, commission_fee, sitter_id')
+      .select('stripe_payment_intent_id, total_price, commission_fee, sitter_id, payment_status')
       .eq('id', bookingId)
       .single();
 
     if (bookingError || !booking) {
       throw new Error('Booking not found');
+    }
+
+    // Check if payment intent exists
+    if (!booking.stripe_payment_intent_id) {
+      throw new Error('No payment has been made for this booking yet. Payment is required before releasing funds.');
+    }
+
+    // Check if already released
+    if (booking.payment_status === 'released') {
+      throw new Error('Payment has already been released for this booking');
     }
 
     // Capture the payment

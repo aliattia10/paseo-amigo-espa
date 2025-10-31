@@ -46,6 +46,46 @@ serve(async (req) => {
       throw new Error('Payment already refunded');
     }
 
+    // If no payment was made, just cancel the booking
+    if (!booking.stripe_payment_intent_id || booking.payment_status === 'pending') {
+      await supabase
+        .from('bookings')
+        .update({
+          status: 'cancelled',
+          cancellation_reason: reason,
+        })
+        .eq('id', bookingId);
+
+      // Notify both parties
+      await supabase.from('notifications').insert([
+        {
+          user_id: booking.owner_id,
+          type: 'booking_cancelled',
+          title: 'Booking Cancelled',
+          message: 'Your booking has been cancelled',
+          related_id: bookingId,
+        },
+        {
+          user_id: booking.sitter_id,
+          type: 'booking_cancelled',
+          title: 'Booking Cancelled',
+          message: 'A booking has been cancelled',
+          related_id: bookingId,
+        },
+      ]);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Booking cancelled (no payment to refund)',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+
     // Cancel the payment intent if it's still held
     let refund;
     if (booking.payment_status === 'held') {

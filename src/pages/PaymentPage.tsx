@@ -37,13 +37,16 @@ function PaymentForm({ bookingId, amount, onSuccess }: { bookingId: string; amou
       if (error) {
         toast.error(error.message);
       } else {
-        // Update booking status
+        // Update booking status to confirmed (payment successful)
         await supabase
           .from('bookings')
-          .update({ payment_status: 'held' })
+          .update({ 
+            status: 'confirmed',
+            updated_at: new Date().toISOString()
+          })
           .eq('id', bookingId);
 
-        toast.success('Payment authorized! Your booking is confirmed.');
+        toast.success('Payment successful! Your booking is confirmed.');
         onSuccess();
       }
     } catch (error: any) {
@@ -98,23 +101,25 @@ export default function PaymentPage() {
         if (bookingError) throw bookingError;
         setBooking(bookingData);
 
-        // Create payment intent
-        const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+        // Create payment with Stripe Connect (includes automatic transfer to sitter)
+        const { data, error } = await supabase.functions.invoke('create-payment-with-connect', {
           body: {
-            amount: bookingData.payment_amount,
             bookingId: bookingData.id,
-            ownerEmail: currentUser.email,
-            description: `Booking for ${bookingData.service_type}`,
+            amount: bookingData.total_price,
+            currency: 'eur',
+            sitterId: bookingData.sitter_id,
+            ownerId: bookingData.owner_id,
           },
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Payment creation error:', error);
+          throw new Error(error.message || 'Failed to create payment');
+        }
 
-        // Update booking with payment intent ID
-        await supabase
-          .from('bookings')
-          .update({ stripe_payment_intent_id: data.paymentIntentId })
-          .eq('id', bookingId);
+        if (!data || !data.clientSecret) {
+          throw new Error('No client secret returned from payment creation');
+        }
 
         setClientSecret(data.clientSecret);
       } catch (error: any) {
@@ -154,11 +159,15 @@ export default function PaymentPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-sm">Total Amount:</span>
-              <span className="text-sm font-medium">€{booking.payment_amount?.toFixed(2)}</span>
+              <span className="text-sm font-medium">€{booking.total_price?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span className="text-xs">Platform Fee (20%):</span>
               <span className="text-xs">€{booking.commission_fee?.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span className="text-xs">Sitter receives:</span>
+              <span className="text-xs">€{(booking.total_price - booking.commission_fee)?.toFixed(2)}</span>
             </div>
           </div>
 
@@ -176,7 +185,7 @@ export default function PaymentPage() {
           >
             <PaymentForm
               bookingId={bookingId!}
-              amount={booking.payment_amount}
+              amount={booking.total_price}
               onSuccess={() => navigate('/bookings')}
             />
           </Elements>
