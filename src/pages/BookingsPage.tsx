@@ -72,7 +72,10 @@ const BookingsPage: React.FC = () => {
         duration_hours: Math.round((new Date(booking.end_time).getTime() - new Date(booking.start_time).getTime()) / (1000 * 60 * 60)),
         total_amount: booking.total_price || 0,
         status: booking.status,
-        notes: booking.notes
+        notes: booking.notes,
+        payment_status: booking.payment_status,
+        owner_id: booking.owner_id,
+        sitter_id: booking.sitter_id
       })) || [];
       
       setBookings(formattedBookings);
@@ -86,14 +89,23 @@ const BookingsPage: React.FC = () => {
   const handleAcceptBooking = async (bookingId: string) => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Sitter accepts booking - this will notify owner to pay
       const { error } = await supabase.rpc('update_booking_status', {
         p_booking_id: bookingId,
         p_new_status: 'confirmed'
       });
+      
       if (error) throw error;
-      toast({ title: 'Booking Accepted', description: 'The booking has been confirmed.' });
+      
+      toast({ 
+        title: 'Booking Accepted!', 
+        description: 'The owner has been notified to complete payment.' 
+      });
+      
       fetchBookings();
     } catch (error: any) {
+      console.error('Error accepting booking:', error);
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
     }
   };
@@ -132,14 +144,37 @@ const BookingsPage: React.FC = () => {
   const handleCancelBooking = async (bookingId: string) => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Get booking details
+      const { data: bookingData } = await supabase
+        .from('bookings')
+        .select('*, owner_id, sitter_id')
+        .eq('id', bookingId)
+        .single();
+      
+      if (!bookingData) {
+        throw new Error('Booking not found');
+      }
+      
+      const reason = prompt('Please provide a reason for cancellation:');
+      if (!reason) return;
+      
       const { error } = await supabase.rpc('update_booking_status', {
         p_booking_id: bookingId,
-        p_new_status: 'cancelled'
+        p_new_status: 'cancelled',
+        p_cancellation_reason: reason
       });
+      
       if (error) throw error;
-      toast({ title: 'Booking Cancelled', description: 'The booking has been cancelled.' });
+      
+      toast({ 
+        title: 'Booking Cancelled', 
+        description: 'The booking has been cancelled successfully.' 
+      });
+      
       fetchBookings();
     } catch (error: any) {
+      console.error('Error cancelling booking:', error);
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
     }
   };
@@ -185,17 +220,46 @@ const BookingsPage: React.FC = () => {
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">calendar_today</span><span>{new Date(booking.booking_date).toLocaleDateString()}</span></div>
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">schedule</span><span>{booking.start_time} • {booking.duration_hours}h</span></div>
             </div>
-            {(booking.status as string) === 'completed' && (booking as any).payment_status === 'held' && (
+            {/* Show Release Payment button when service completed and payment held */}
+            {(booking.status as string) === 'completed' && (booking as any).payment_status === 'held' && currentUser?.id === (booking as any).owner_id && (
               <div className="flex gap-2 pt-2">
                 <Button onClick={() => handleReleasePayment(booking.id)} className="flex-1 bg-primary text-white">Release Payment</Button>
               </div>
             )}
+            
+            {/* Show Pay Now button when booking confirmed but not paid (OWNER) */}
+            {(booking.status as string) === 'confirmed' && (!(booking as any).payment_status || (booking as any).payment_status === 'pending') && currentUser?.id === (booking as any).owner_id && (
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  onClick={() => navigate(`/payment?bookingId=${booking.id}&amount=${booking.total_amount}`)} 
+                  className="flex-1 bg-primary text-white"
+                >
+                  💳 Pay Now - €{booking.total_amount.toFixed(2)}
+                </Button>
+              </div>
+            )}
+            
+            {/* Show Cancel & Refund button when requested and payment held */}
             {(booking.status as string) === 'requested' && (booking as any).payment_status === 'held' && (
               <div className="flex gap-2 pt-2">
                 <Button onClick={() => handleRefund(booking.id)} variant="destructive" className="flex-1">Cancel & Refund</Button>
               </div>
             )}
-            {(booking.status as string) === 'requested' && <div className="flex gap-2 pt-2"><Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">Accept</Button><Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">Decline</Button></div>}
+            
+            {/* Show Accept/Decline buttons when booking is requested (for SITTER) */}
+            {(booking.status as string) === 'requested' && currentUser?.id === (booking as any).sitter_id && (
+              <div className="flex gap-2 pt-2">
+                <Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">Accept</Button>
+                <Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">Decline</Button>
+              </div>
+            )}
+            
+            {/* Show waiting message when confirmed but already paid */}
+            {(booking.status as string) === 'confirmed' && (booking as any).payment_status === 'held' && (
+              <div className="pt-2 text-sm text-center text-green-600 dark:text-green-400">
+                ✓ Payment secured - Waiting for service
+              </div>
+            )}
           </div>
         ))}
       </main>

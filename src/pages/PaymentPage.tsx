@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -75,22 +75,30 @@ function PaymentForm({ bookingId, amount, onSuccess }: { bookingId: string; amou
 }
 
 export default function PaymentPage() {
-  const { bookingId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [booking, setBooking] = useState<any>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [platformFee, setPlatformFee] = useState<number>(0);
+  const [sitterAmount, setSitterAmount] = useState<number>(0);
+
+  // Get bookingId from query params
+  const bookingId = searchParams.get('bookingId');
 
   useEffect(() => {
-    if (!bookingId || !currentUser) return;
+    if (!bookingId || !currentUser) {
+      navigate('/bookings');
+      return;
+    }
 
     const fetchBookingAndPayment = async () => {
       try {
         // Get booking details
         const { data: bookingData, error: bookingError } = await supabase
           .from('bookings')
-          .select('*')
+          .select('*, sitter:users!bookings_sitter_id_fkey(name, email)')
           .eq('id', bookingId)
           .eq('owner_id', currentUser.id)
           .single();
@@ -98,29 +106,37 @@ export default function PaymentPage() {
         if (bookingError) throw bookingError;
         setBooking(bookingData);
 
-        // Create payment intent
-        const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+        // Use total_price instead of payment_amount
+        const amount = bookingData.total_price || bookingData.payment_amount || 0;
+
+        // Create payment intent with Stripe Connect (20% platform fee)
+        const { data, error } = await supabase.functions.invoke('create-payment-with-connect', {
           body: {
-            amount: bookingData.payment_amount,
             bookingId: bookingData.id,
-            ownerEmail: currentUser.email,
-            description: `Booking for ${bookingData.service_type}`,
+            amount: amount,
           },
         });
 
         if (error) throw error;
 
+        // Store platform fee and sitter amount for display
+        setPlatformFee(data.platformFee || amount * 0.20);
+        setSitterAmount(data.sitterAmount || amount * 0.80);
+
         // Update booking with payment intent ID
         await supabase
           .from('bookings')
-          .update({ stripe_payment_intent_id: data.paymentIntentId })
+          .update({ 
+            stripe_payment_intent_id: data.paymentIntentId,
+            payment_amount: amount
+          })
           .eq('id', bookingId);
 
         setClientSecret(data.clientSecret);
       } catch (error: any) {
         console.error('Error:', error);
-        toast.error('Failed to initialize payment');
-        navigate('/bookings');
+        toast.error(error.message || 'Failed to initialize payment');
+        setTimeout(() => navigate('/bookings'), 2000);
       } finally {
         setLoading(false);
       }
@@ -147,18 +163,24 @@ export default function PaymentPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-6 p-4 bg-muted rounded-lg space-y-2">
+          <div className="mb-6 p-4 bg-muted rounded-lg space-y-3">
             <div className="flex justify-between">
               <span className="text-sm">Service:</span>
-              <span className="text-sm font-medium">{booking.service_type}</span>
+              <span className="text-sm font-medium capitalize">{booking.service_type || 'Walk'}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm">Total Amount:</span>
-              <span className="text-sm font-medium">€{booking.payment_amount?.toFixed(2)}</span>
+            <div className="flex justify-between border-t pt-2">
+              <span className="text-base font-semibold">Total Amount:</span>
+              <span className="text-base font-bold">€{(booking.total_price || booking.payment_amount)?.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span className="text-xs">Platform Fee (20%):</span>
-              <span className="text-xs">€{booking.commission_fee?.toFixed(2)}</span>
+            <div className="text-xs text-muted-foreground space-y-1 border-t pt-2">
+              <div className="flex justify-between">
+                <span>Goes to Sitter (80%):</span>
+                <span className="font-medium">€{sitterAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Platform Fee (20%):</span>
+                <span className="font-medium">€{platformFee.toFixed(2)}</span>
+              </div>
             </div>
           </div>
 
@@ -176,7 +198,7 @@ export default function PaymentPage() {
           >
             <PaymentForm
               bookingId={bookingId!}
-              amount={booking.payment_amount}
+              amount={booking.total_price || booking.payment_amount}
               onSuccess={() => navigate('/bookings')}
             />
           </Elements>
