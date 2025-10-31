@@ -302,10 +302,6 @@ const BookingRequestPage: React.FC = () => {
                 <span>Duration</span>
                 <span>{formData.duration} hour{formData.duration > 1 ? 's' : ''}</span>
               </div>
-              <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
-                <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
               <div className="flex justify-between text-text-secondary-light dark:text-text-secondary-dark text-sm">
                 <span>Platform Fee (20%)</span>
                 <span>${platformFee.toFixed(2)}</span>
