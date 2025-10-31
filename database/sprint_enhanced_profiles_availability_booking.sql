@@ -356,32 +356,39 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Availability policies
+DROP POLICY IF EXISTS "Users can view all availability" ON availability;
 CREATE POLICY "Users can view all availability"
   ON availability FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Sitters can manage their own availability" ON availability;
 CREATE POLICY "Sitters can manage their own availability"
   ON availability FOR ALL
   USING (auth.uid() = sitter_id);
 
 -- Bookings policies
+DROP POLICY IF EXISTS "Users can view their own bookings" ON bookings;
 CREATE POLICY "Users can view their own bookings"
   ON bookings FOR SELECT
   USING (auth.uid() = owner_id OR auth.uid() = sitter_id);
 
+DROP POLICY IF EXISTS "Owners can create bookings" ON bookings;
 CREATE POLICY "Owners can create bookings"
   ON bookings FOR INSERT
   WITH CHECK (auth.uid() = owner_id);
 
+DROP POLICY IF EXISTS "Owners and sitters can update their bookings" ON bookings;
 CREATE POLICY "Owners and sitters can update their bookings"
   ON bookings FOR UPDATE
   USING (auth.uid() = owner_id OR auth.uid() = sitter_id);
 
 -- Notifications policies
+DROP POLICY IF EXISTS "Users can view their own notifications" ON notifications;
 CREATE POLICY "Users can view their own notifications"
   ON notifications FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
 CREATE POLICY "Users can update their own notifications"
   ON notifications FOR UPDATE
   USING (auth.uid() = user_id);

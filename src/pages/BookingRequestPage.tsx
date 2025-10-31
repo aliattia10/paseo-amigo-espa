@@ -73,9 +73,9 @@ const BookingRequestPage: React.FC = () => {
   }, [currentUser]);
 
   // Calculate pricing
-  const subtotal = hourlyRate * formData.duration;
-  const platformFee = subtotal * 0.20; // 20% platform fee
-  const total = subtotal + platformFee;
+  const total = hourlyRate * formData.duration; // Total price (what owner pays)
+  const platformFee = total * 0.20; // 20% platform fee
+  const sitterPayout = total - platformFee; // What sitter receives
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
