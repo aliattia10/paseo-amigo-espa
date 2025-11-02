@@ -122,11 +122,13 @@ export default function PaymentPage() {
 
         if (error) {
           console.error('Payment creation error:', error);
+          console.error('Error details:', JSON.stringify(error, null, 2));
           throw new Error(error.message || 'Failed to create payment');
         }
 
         if (!data || !data.clientSecret) {
-          throw new Error('No client secret returned from payment creation');
+          console.error('Response data:', data);
+          throw new Error(data?.error || 'No client secret returned from payment creation');
         }
 
         // Store platform fee and sitter amount for display
