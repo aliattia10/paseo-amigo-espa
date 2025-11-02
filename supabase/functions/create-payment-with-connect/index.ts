@@ -38,15 +38,16 @@ serve(async (req) => {
     const { bookingId, amount } = await req.json()
 
     // Get booking details
-    const { data: booking, error: bookingError } = await supabase
+    const { data: booking, error: bookingError} = await supabase
       .from('bookings')
-      .select('*, sitter:walker_id(id)')
+      .select('*')
       .eq('id', bookingId)
       .single()
 
     if (bookingError || !booking) {
+      console.error('Booking error:', bookingError)
       return new Response(
-        JSON.stringify({ error: 'Booking not found' }), 
+        JSON.stringify({ error: 'Booking not found', details: bookingError?.message }), 
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -55,7 +56,7 @@ serve(async (req) => {
     const { data: connectAccount, error: accountError } = await supabase
       .from('stripe_connect_accounts')
       .select('stripe_account_id, payouts_enabled')
-      .eq('user_id', booking.walker_id)
+      .eq('user_id', booking.sitter_id)
       .single()
 
     if (accountError || !connectAccount || !connectAccount.payouts_enabled) {
@@ -84,7 +85,7 @@ serve(async (req) => {
       metadata: {
         booking_id: bookingId,
         payer_id: user.id,
-        receiver_id: booking.walker_id,
+        receiver_id: booking.sitter_id,
         platform_fee: (platformFee / 100).toString(),
       },
     })
@@ -93,7 +94,7 @@ serve(async (req) => {
     await supabase.from('payments').insert({
       booking_id: bookingId,
       payer_id: user.id,
-      receiver_id: booking.walker_id,
+      receiver_id: booking.sitter_id,
       amount: amount,
       currency: 'EUR',
       platform_fee: platformFee / 100,
