@@ -386,10 +386,31 @@ const NewProfilePage: React.FC = () => {
           {/* Action Buttons - Centered */}
           <div className="flex w-full gap-3 justify-center mt-3">
             <button 
-              onClick={() => navigate('/profile/edit')}
+              onClick={() => {
+                // For owners, check if they have pets first
+                if (activeRole === 'owner') {
+                  if (pets.length === 0) {
+                    toast({
+                      title: 'No Pets Yet',
+                      description: 'Please add a pet profile first before editing.',
+                      variant: 'default',
+                    });
+                    // Redirect to add pet page
+                    setTimeout(() => navigate('/pet-profile-setup'), 1500);
+                  } else {
+                    // Navigate to edit first pet's profile
+                    navigate(`/pet/edit/${pets[0].id}`);
+                  }
+                } else {
+                  // For sitters, edit their own profile
+                  navigate('/profile/edit');
+                }
+              }}
               className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em]"
             >
-              <span className="truncate">{t('dashboard.editProfile')}</span>
+              <span className="truncate">
+                {activeRole === 'owner' ? 'Edit Pet Profile' : t('dashboard.editProfile')}
+              </span>
             </button>
             <button 
               onClick={() => {
