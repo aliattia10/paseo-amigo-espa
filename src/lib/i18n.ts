@@ -15,8 +15,6 @@ const resources = {
       'nav.discover': 'Discover',
       'nav.nearby': 'Nearby',
       'nav.feed': 'Feed',
-      'nav.bookings': 'Bookings',
-      'nav.notifications': 'Notifications',
       
       // Auth
       'auth.login': 'Login',
@@ -101,15 +99,6 @@ const resources = {
       'dashboard.messages': 'Messages',
       'dashboard.connectCommunity': 'Connect with your community',
       'dashboard.myCompanions': 'My Companions',
-      
-      // Messages
-      'messages.conversations': 'Conversations',
-      'messages.noConversations': 'No conversations',
-      'messages.matchToChat': 'When you match with someone, you can chat here and coordinate services.',
-      'messages.loadError': 'Could not load conversations',
-      'messages.match': 'Match',
-      'messages.sitter': 'Sitter',
-      'messages.owner': 'Owner',
       'dashboard.addFirstCompanion': 'Add your first companion!',
       'dashboard.registerDogToFind': 'Register your dog to start finding trusted walkers in your area.',
       'dashboard.addFirstDog': 'Add my first dog',
@@ -248,7 +237,6 @@ const resources = {
       'profile.title': 'Profile',
       'profile.aboutMe': 'About me',
       'profile.notFound': 'Profile not found',
-      'profile.reviews': 'reviews',
       
       // Bookings & Notifications
       'nav.bookings': 'Bookings',
@@ -508,8 +496,6 @@ const resources = {
       'nav.discover': 'Découvrir',
       'nav.nearby': 'À Proximité',
       'nav.feed': 'Fil',
-      'nav.bookings': 'Réservations',
-      'nav.notifications': 'Notifications',
       
       // Auth
       'auth.login': 'Connexion',
@@ -554,16 +540,6 @@ const resources = {
       'dashboard.messages': 'Messages',
       'dashboard.connectCommunity': 'Connectez-vous avec votre communauté',
       'dashboard.myCompanions': 'Mes Compagnons',
-      
-      // Messages
-      'messages.conversations': 'Conversations',
-      'messages.noConversations': 'Aucune conversation',
-      'messages.matchToChat': 'Lorsque vous faites un match avec quelqu\'un, vous pouvez discuter ici et coordonner les services.',
-      'messages.loadError': 'Impossible de charger les conversations',
-      'messages.match': 'Match',
-      'messages.sitter': 'Gardien',
-      'messages.owner': 'Propriétaire',
-      
       'dashboard.myDogs': 'Mes Chiens',
       'dashboard.addDog': 'Ajouter un Chien',
       'dashboard.upcomingWalks': 'Promenades à Venir',
@@ -663,7 +639,6 @@ const resources = {
       'profile.title': 'Profil',
       'profile.aboutMe': 'À propos de moi',
       'profile.notFound': 'Profil introuvable',
-      'profile.reviews': 'avis',
       
       // Bookings & Notifications
       'nav.bookings': 'Réservations',
@@ -1095,8 +1070,6 @@ const resources = {
       'nav.discover': 'Descubrir',
       'nav.nearby': 'Cercanos',
       'nav.feed': 'Actividad',
-      'nav.bookings': 'Reservas',
-      'nav.notifications': 'Notificaciones',
       
       // Auth
       'auth.login': 'Iniciar Sesión',
@@ -1181,15 +1154,6 @@ const resources = {
       'dashboard.messages': 'Mensajes',
       'dashboard.connectCommunity': 'Conecta con tu comunidad',
       'dashboard.myCompanions': 'Mis Compañeros',
-      
-      // Messages
-      'messages.conversations': 'Conversaciones',
-      'messages.noConversations': 'Sin conversaciones',
-      'messages.matchToChat': 'Cuando hagas match con alguien, podrás chatear aquí y coordinar servicios.',
-      'messages.loadError': 'No se pudieron cargar las conversaciones',
-      'messages.match': 'Match',
-      'messages.sitter': 'Cuidador',
-      'messages.owner': 'Dueño',
       'dashboard.addFirstCompanion': '¡Añade tu primer compañero!',
       'dashboard.registerDogToFind': 'Registra a tu perro para empezar a encontrar paseadores de confianza en tu zona.',
       'dashboard.addFirstDog': 'Añadir mi primer perro',
@@ -1328,7 +1292,6 @@ const resources = {
       'profile.title': 'Perfil',
       'profile.aboutMe': 'Sobre mí',
       'profile.notFound': 'Perfil no encontrado',
-      'profile.reviews': 'reseñas',
       
       // Bookings & Notifications
       'nav.bookings': 'Reservas',
