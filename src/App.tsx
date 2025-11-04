@@ -27,6 +27,7 @@ import NewHomePage from "./components/dashboard/NewHomePage";
 import NewProfilePage from "./components/profile/NewProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
+import PersonalInfoPage from "./pages/PersonalInfoPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import UserProfilePage from "./pages/UserProfilePage";
 import PetProfilePage from "./pages/PetProfilePage";
@@ -704,6 +705,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <ProfileEditPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route 
+                  path="/profile/personal-info" 
+                  element={
+                    <ProtectedRoute>
+                      <PersonalInfoPage />
                     </ProtectedRoute>
                   }
                 />
