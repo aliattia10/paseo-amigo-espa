@@ -75,7 +75,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0, un
             event
           </span>
           <span className={`text-xs ${isActive('/bookings') ? 'font-bold' : 'font-medium'}`}>
-            Bookings
+            {t('nav.bookings')}
           </span>
         </button>
 
@@ -99,7 +99,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0, un
             notifications
           </span>
           <span className={`text-xs ${isActive('/notifications') ? 'font-bold' : 'font-medium'}`}>
-            Notifications
+            {t('nav.notifications')}
           </span>
         </button>
 

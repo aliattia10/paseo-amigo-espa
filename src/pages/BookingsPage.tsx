@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import ReviewModal from '@/components/bookings/ReviewModal';
+import i18n from '@/lib/i18n';
 
 interface Booking {
   id: string;
@@ -113,8 +114,8 @@ const BookingsPage: React.FC = () => {
       if (error) throw error;
       
       toast({ 
-        title: 'Booking Accepted!', 
-        description: 'The owner has been notified to complete payment.' 
+        title: t('bookings.bookingAccepted'), 
+        description: t('bookings.ownerNotified') 
       });
       
       fetchBookings();
@@ -131,7 +132,7 @@ const BookingsPage: React.FC = () => {
         body: { bookingId },
       });
       if (error) throw error;
-      toast({ title: 'Payment Released', description: 'Payment has been released to the sitter.' });
+      toast({ title: t('bookings.paymentReleased'), description: t('bookings.paymentReleasedDesc') });
       fetchBookings();
     } catch (error: any) {
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
@@ -265,8 +266,8 @@ const BookingsPage: React.FC = () => {
       }
       
       toast({ 
-        title: '💰 Payment Released!', 
-        description: 'Payment has been transferred to the sitter.' 
+        title: t('bookings.paymentReleased'), 
+        description: t('bookings.paymentTransferred') 
       });
       
       fetchBookings();
@@ -312,12 +313,22 @@ const BookingsPage: React.FC = () => {
     <div className="relative mx-auto flex h-screen max-w-md flex-col bg-background-light dark:bg-background-dark overflow-y-auto">
       <header className="sticky top-0 z-10 flex items-center justify-between bg-card-light/80 dark:bg-card-dark/80 px-4 py-3 backdrop-blur-sm">
         <button onClick={() => navigate('/dashboard')}><span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">arrow_back</span></button>
-        <h1 className="text-text-primary-light dark:text-text-primary-dark text-xl font-bold">My Bookings</h1>
-        <div className="w-10"></div>
+        <h1 className="text-text-primary-light dark:text-text-primary-dark text-xl font-bold">{t('bookings.myBookings')}</h1>
+        <button
+          onClick={() => {
+            const languages = ['en', 'es', 'fr'];
+            const currentIndex = languages.indexOf(i18n.language);
+            const nextIndex = (currentIndex + 1) % languages.length;
+            i18n.changeLanguage(languages[nextIndex]);
+          }}
+          className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-medium text-gray-700 dark:text-gray-300"
+        >
+          {i18n.language === 'en' ? 'ES' : i18n.language === 'es' ? 'FR' : 'EN'}
+        </button>
       </header>
       <div className="flex px-4 py-3 gap-2 overflow-x-auto">
         {['all', 'pending', 'accepted', 'completed'].map((tab) => (
-          <button key={tab} onClick={() => setFilter(tab as any)} className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${filter === tab ? 'bg-primary text-white' : 'bg-card-light dark:bg-card-dark'}`}>{tab.charAt(0).toUpperCase() + tab.slice(1)}</button>
+          <button key={tab} onClick={() => setFilter(tab as any)} className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${filter === tab ? 'bg-primary text-white' : 'bg-card-light dark:bg-card-dark'}`}>{t(`bookings.filter.${tab}`)}</button>
         ))}
       </div>
       <main className="flex-1 space-y-3 px-4 pb-24">
@@ -335,8 +346,8 @@ const BookingsPage: React.FC = () => {
             {/* Show Accept/Decline buttons when booking is requested (for SITTER) */}
             {(booking.status as string) === 'requested' && currentUser?.id === booking.sitter_id && (
               <div className="flex gap-2 pt-2">
-                <Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">Accept</Button>
-                <Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">Decline</Button>
+                <Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">{t('bookings.accept')}</Button>
+                <Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">{t('bookings.decline')}</Button>
               </div>
             )}
             
@@ -435,7 +446,7 @@ const BookingsPage: React.FC = () => {
             {/* Show Cancel & Refund button when requested and payment held */}
             {(booking.status as string) === 'requested' && booking.payment_status === 'held' && (
               <div className="flex gap-2 pt-2">
-                <Button onClick={() => handleRefund(booking.id)} variant="destructive" className="flex-1">Cancel & Refund</Button>
+                <Button onClick={() => handleRefund(booking.id)} variant="destructive" className="flex-1">{t('bookings.cancelRefund')}</Button>
               </div>
             )}
           </div>

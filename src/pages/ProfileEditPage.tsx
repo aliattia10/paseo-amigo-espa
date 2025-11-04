@@ -369,7 +369,7 @@ const ProfileEditPage: React.FC = () => {
           </span>
         </button>
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-          Edit Profile
+          {t('profile.editProfile')}
         </h2>
         <button
           onClick={() => {
@@ -432,7 +432,7 @@ const ProfileEditPage: React.FC = () => {
         {/* About Me Section */}
         <div className="bg-white dark:bg-[#1a1a1a] p-4 mb-2">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
-            About Me
+            {t('profile.aboutMe')}
           </h3>
           <textarea
             value={formData.bio}

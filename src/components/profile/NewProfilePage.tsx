@@ -30,7 +30,16 @@ const NewProfilePage: React.FC = () => {
   const { currentUser, userProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeRole, setActiveRole] = useState<'sitter' | 'owner'>('sitter');
+  // Initialize activeRole based on user's profile type, defaulting to 'owner' if they have pets
+  const [activeRole, setActiveRole] = useState<'sitter' | 'owner'>(() => {
+    // If user is a sitter/walker, default to sitter tab
+    const userType = userProfile?.userType as string;
+    if (userType === 'walker' || userType === 'sitter') {
+      return 'sitter';
+    }
+    // Otherwise default to owner tab
+    return 'owner';
+  });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [pets, setPets] = useState<Array<{ id: string; name: string; breed: string; age: string; image_url: string; pet_type: 'dog' | 'cat' }>>([]);
   const [loadingPets, setLoadingPets] = useState(true);
@@ -82,7 +91,7 @@ const NewProfilePage: React.FC = () => {
       if (uploadError) {
         console.error('Upload error:', uploadError);
         if (uploadError.message.includes('not found')) {
-          throw new Error('Storage bucket not configured. Please run: database/fix_profile_storage.sql');
+          throw new Error(t('profile.storageBucketError'));
         }
         throw uploadError;
       }
@@ -101,7 +110,7 @@ const NewProfilePage: React.FC = () => {
       
       toast({
         title: t('common.success'),
-        description: 'Profile picture updated successfully',
+        description: t('profile.pictureUpdated'),
       });
 
       // Reload page to show new image
@@ -110,7 +119,7 @@ const NewProfilePage: React.FC = () => {
       console.error('Image upload error:', error);
       toast({
         title: t('common.error'),
-        description: error.message || 'Failed to upload image',
+        description: error.message || t('profile.uploadFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -124,7 +133,7 @@ const NewProfilePage: React.FC = () => {
       if (!file.type.startsWith('image/')) {
         toast({
           title: t('common.error'),
-          description: 'Please select an image file',
+          description: t('profile.selectImageFile'),
           variant: 'destructive',
         });
         return;
@@ -133,7 +142,7 @@ const NewProfilePage: React.FC = () => {
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: t('common.error'),
-          description: 'Image size must be less than 5MB',
+          description: t('profile.imageSizeLimit'),
           variant: 'destructive',
         });
         return;
@@ -355,7 +364,7 @@ const NewProfilePage: React.FC = () => {
                   {userProfile?.rating ? userProfile.rating.toFixed(1) : '5.0'}
                 </p>
                 <p className="text-text-secondary-light dark:text-text-secondary-dark text-base">
-                  ({userProfile?.totalWalks || reviews.length || 0} reviews)
+                  ({userProfile?.totalWalks || reviews.length || 0} {t('profile.reviews')})
                 </p>
               </div>
             )}
@@ -402,54 +411,64 @@ const NewProfilePage: React.FC = () => {
               onClick={() => {
                 // For owners, check if they have pets first
                 if (activeRole === 'owner') {
+                  if (loadingPets) {
+                    // Still loading, wait
+                    return;
+                  }
                   if (pets.length === 0) {
                     toast({
-                      title: 'No Pets Yet',
-                      description: 'Please add a pet profile first before editing.',
+                      title: t('profile.noPetsYet'),
+                      description: t('profile.addPetFirst'),
                       variant: 'default',
                     });
                     // Redirect to add pet page
                     setTimeout(() => navigate('/pet-profile-setup'), 1500);
                   } else {
                     // Navigate to edit first pet's profile
-                    navigate(`/pet/edit/${pets[0].id}`);
+                    navigate(`/pet/${pets[0].id}/edit`);
                   }
                 } else {
                   // For sitters, edit their own profile
                   navigate('/profile/edit');
                 }
               }}
-              className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em]"
+              disabled={activeRole === 'owner' && loadingPets}
+              className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary/20 dark:bg-primary/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="truncate">
-                {activeRole === 'owner' ? 'Edit Pet Profile' : t('dashboard.editProfile')}
+                {activeRole === 'owner' ? t('profile.editPetProfile') : t('dashboard.editProfile')}
               </span>
             </button>
             <button 
               onClick={() => {
                 // For owners, check if they have pets first
                 if (activeRole === 'owner') {
+                  if (loadingPets) {
+                    // Still loading, wait
+                    return;
+                  }
                   if (pets.length === 0) {
                     toast({
-                      title: 'No Pets Yet',
-                      description: 'Please add a pet profile first to view your pet profile.',
+                      title: t('profile.noPetsYet'),
+                      description: t('profile.addPetToView'),
                       variant: 'default',
                     });
                     // Optionally navigate to add pet page
                     setTimeout(() => navigate('/pet-profile-setup'), 1500);
                   } else {
-                    // Navigate to first pet's profile
-                    navigate(`/pet/${pets[0].id}`);
+                    // Navigate to first pet's edit page (which shows full profile)
+                    navigate(`/pet/${pets[0].id}/edit`);
                   }
                 } else {
                   // For sitters, show their public profile
                   navigate('/profile/public');
                 }
               }}
-              className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]"
+              disabled={activeRole === 'owner' && loadingPets}
+              className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="truncate">
-                {activeRole === 'owner' ? 'View Pet Profile' : 'View Public Profile'}
+                {activeRole === 'owner' ? t('profile.viewPetProfile') : t('profile.viewPublicProfile')}
               </span>
             </button>
           </div>
@@ -463,7 +482,7 @@ const NewProfilePage: React.FC = () => {
                 ? 'bg-card-light dark:bg-card-dark shadow-sm text-text-primary-light dark:text-text-primary-dark' 
                 : 'text-text-secondary-light dark:text-text-secondary-dark'
             }`}>
-              <span className="truncate">Sitter</span>
+              <span className="truncate">{t('auth.sitter')}</span>
               <input 
                 checked={activeRole === 'sitter'} 
                 onChange={() => setActiveRole('sitter')}
@@ -477,7 +496,7 @@ const NewProfilePage: React.FC = () => {
                 ? 'bg-card-light dark:bg-card-dark shadow-sm text-text-primary-light dark:text-text-primary-dark' 
                 : 'text-text-secondary-light dark:text-text-secondary-dark'
             }`}>
-              <span className="truncate">Owner</span>
+              <span className="truncate">{t('profile.owner')}</span>
               <input 
                 checked={activeRole === 'owner'} 
                 onChange={() => setActiveRole('owner')}
@@ -495,13 +514,13 @@ const NewProfilePage: React.FC = () => {
           {activeRole === 'owner' && (
             <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">My Pets</h3>
+                <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{t('profile.myPets')}</h3>
                 <button 
                   onClick={() => navigate('/pet-profile-setup')}
                   className="text-primary font-bold text-sm flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-base">add</span>
-                  Add Pet
+                  {t('profile.addPet')}
                 </button>
               </div>
               <div className="flex flex-col gap-3">
@@ -537,7 +556,7 @@ const NewProfilePage: React.FC = () => {
                             {pet.pet_type === 'cat' ? '🐱' : '🐶'} {pet.name}
                           </p>
                           <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">
-                            {pet.breed || 'Mixed'} • {pet.age}
+                            {pet.breed || t('profile.mixed')} • {pet.age}
                           </p>
                         </div>
                         <button 
@@ -551,7 +570,7 @@ const NewProfilePage: React.FC = () => {
                   })
                 ) : (
                   <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center py-2">
-                    Add your pet's profile to find the perfect sitter
+                    {t('profile.addPetToFindSitter')}
                   </p>
                 )}
               </div>
@@ -562,18 +581,26 @@ const NewProfilePage: React.FC = () => {
           {activeRole === 'sitter' && (
             <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">My Availability</h3>
+                <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{t('profile.myAvailability')}</h3>
                 <button 
                   onClick={() => navigate('/availability')}
                   className="text-primary font-bold text-sm"
                 >
-                  Manage
+                  {t('profile.manage')}
                 </button>
               </div>
               <div className="grid grid-cols-7 gap-2 text-center">
                 {(() => {
                   const today = new Date();
-                  const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                  const days = [
+                    t('profile.days.sun'),
+                    t('profile.days.mon'),
+                    t('profile.days.tue'),
+                    t('profile.days.wed'),
+                    t('profile.days.thu'),
+                    t('profile.days.fri'),
+                    t('profile.days.sat')
+                  ];
                   const nextSevenDays = Array.from({ length: 7 }, (_, i) => {
                     const date = new Date(today);
                     date.setDate(today.getDate() + i);
@@ -588,7 +615,7 @@ const NewProfilePage: React.FC = () => {
                     return (
                       <div key={index} className={`flex flex-col items-center ${isToday ? 'p-2 rounded-full bg-primary/20 dark:bg-primary/30' : ''}`}>
                         <p className={`text-xs ${isToday ? 'text-primary font-bold' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}>
-                          {isToday ? 'TODAY' : dayName}
+                          {isToday ? t('profile.today') : dayName}
                         </p>
                         <p className={`font-bold text-lg ${isToday ? 'text-primary' : 'text-text-primary-light dark:text-text-primary-dark'}`}>
                           {dayNumber}
@@ -610,7 +637,7 @@ const NewProfilePage: React.FC = () => {
               >
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">event</span>
-                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">My Bookings</span>
+                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">{t('bookings.myBookings')}</span>
                 </div>
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
@@ -620,7 +647,7 @@ const NewProfilePage: React.FC = () => {
               >
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">person</span>
-                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">Personal Info</span>
+                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">{t('profile.personalInfo')}</span>
                 </div>
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
@@ -630,7 +657,7 @@ const NewProfilePage: React.FC = () => {
               >
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">payment</span>
-                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">Payment Methods</span>
+                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">{t('profile.paymentMethods')}</span>
                 </div>
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
@@ -640,7 +667,7 @@ const NewProfilePage: React.FC = () => {
               >
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">notifications</span>
-                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">Notifications</span>
+                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">{t('notifications.title')}</span>
                 </div>
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
@@ -649,7 +676,7 @@ const NewProfilePage: React.FC = () => {
 
           {/* Booking History */}
           <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5 pb-1 text-text-primary-light dark:text-text-primary-dark">
-            Booking History
+            {t('profile.bookingHistory')}
           </h2>
           <div className="flex flex-col gap-2">
             {loadingBookings ? (
@@ -664,7 +691,7 @@ const NewProfilePage: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-text-primary-light dark:text-text-primary-dark capitalize">
-                      {booking.service_type === 'walk' ? '🚶 Walk' : '🏠 Care'} {booking.pet_name ? `with ${booking.pet_name}` : ''}
+                      {booking.service_type === 'walk' ? `🚶 ${t('profile.walk')}` : `🏠 ${t('profile.care')}`} {booking.pet_name ? t('profile.withPet', { petName: booking.pet_name }) : ''}
                     </p>
                     <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
                       With {booking.sitter_name || booking.owner_name || 'User'}
@@ -680,7 +707,7 @@ const NewProfilePage: React.FC = () => {
                       booking.status === 'pending' ? 'text-yellow-500 bg-yellow-500/10' :
                       'text-gray-500 bg-gray-500/10'
                     }`}>
-                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      {t(`profile.status.${booking.status}`)}
                     </span>
                   </div>
                 </div>
@@ -689,7 +716,7 @@ const NewProfilePage: React.FC = () => {
               <div className="text-center py-8 bg-card-light dark:bg-card-dark rounded-xl">
                 <span className="material-symbols-outlined text-5xl text-gray-400 mb-2">calendar_month</span>
                 <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                  No bookings yet
+                  {t('profile.noBookingsYet')}
                 </p>
               </div>
             )}
@@ -697,7 +724,7 @@ const NewProfilePage: React.FC = () => {
 
           {/* Reviews */}
           <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5 pb-1 text-text-primary-light dark:text-text-primary-dark">
-            Reviews Received
+            {t('profile.reviewsReceived')}
           </h2>
           <div className="flex flex-col gap-3">
             {loadingReviews ? (
@@ -760,7 +787,7 @@ const NewProfilePage: React.FC = () => {
               <div className="text-center py-8 bg-card-light dark:bg-card-dark rounded-xl">
                 <span className="material-symbols-outlined text-5xl text-gray-400 mb-2">rate_review</span>
                 <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                  No reviews yet
+                  {t('profile.noReviewsYet')}
                 </p>
               </div>
             )}

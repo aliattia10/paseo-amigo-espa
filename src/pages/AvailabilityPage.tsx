@@ -218,7 +218,7 @@ const AvailabilityPage: React.FC = () => {
           className="w-full bg-primary text-white"
         >
           <span className="material-symbols-outlined mr-2">add</span>
-          Add Availability Slot
+          {t('availability.addSlot')}
         </Button>
 
         {/* Add Slot Form */}

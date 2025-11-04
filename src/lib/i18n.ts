@@ -15,6 +15,8 @@ const resources = {
       'nav.discover': 'Discover',
       'nav.nearby': 'Nearby',
       'nav.feed': 'Feed',
+      'nav.bookings': 'Bookings',
+      'nav.notifications': 'Notifications',
       
       // Auth
       'auth.login': 'Login',
@@ -72,6 +74,12 @@ const resources = {
       'auth.passwordUpdatedSuccess': 'Your password has been updated successfully',
       'auth.passwordTooShort': 'Password must be at least 6 characters long',
       'auth.noValidSession': 'No valid session found. Please request a new reset link',
+      'auth.joinPetflik': 'Join Petflik. Are you a...',
+      'auth.petOwner': 'Pet Owner',
+      'auth.petOwnerDesc': 'Find trusted sitters for your furry friends.',
+      'auth.sitter': 'Sitter',
+      'auth.sitterDesc': 'Earn money doing what you love.',
+      'auth.signIn': 'Sign In',
       
       // Dashboard
       'dashboard.welcome': 'Welcome to Paseo',
@@ -295,6 +303,114 @@ const resources = {
       'home.readyToStartSubtitle': 'Join thousands of pet owners who trust Paseo for their dog\'s care.',
       'home.startFreeToday': 'Start Free Today',
       'home.learnMore': 'Learn More',
+      
+      // Bookings
+      'bookings.myBookings': 'My Bookings',
+      'bookings.bookingAccepted': 'Booking Accepted!',
+      'bookings.ownerNotified': 'The owner has been notified to complete payment.',
+      'bookings.paymentReleased': '💰 Payment Released!',
+      'bookings.paymentTransferred': 'Payment has been transferred to the sitter.',
+      'bookings.paymentReleasedDesc': 'Payment has been released to the sitter.',
+      'bookings.filter.all': 'All',
+      'bookings.filter.pending': 'Pending',
+      'bookings.filter.accepted': 'Accepted',
+      'bookings.filter.completed': 'Completed',
+      
+      // Notifications
+      'notifications.title': 'Notifications',
+      'notifications.markAllRead': 'Mark all as read',
+      
+      // Profile
+      'profile.myPets': 'My Pets',
+      'profile.addPet': 'Add Pet',
+      'profile.myAvailability': 'My Availability',
+      'profile.manage': 'Manage',
+      'profile.paymentMethods': 'Payment Methods',
+      'profile.personalInfo': 'Personal Info',
+      'profile.noPetsYet': 'No Pets Yet',
+      'profile.addPetFirst': 'Please add a pet profile first before editing.',
+      'profile.addPetToView': 'Please add a pet profile first to view your pet profile.',
+      'profile.pictureUpdated': 'Profile picture updated successfully',
+      'profile.storageBucketError': 'Storage bucket not configured. Please contact support.',
+      'profile.addPetToFindSitter': 'Add your pet\'s profile to find the perfect sitter',
+      'profile.today': 'TODAY',
+      'profile.viewPetProfile': 'View Pet Profile',
+      'profile.viewPublicProfile': 'View Public Profile',
+      'profile.editPetProfile': 'Edit Pet Profile',
+      'profile.owner': 'Owner',
+      'profile.mixed': 'Mixed',
+      'profile.reviews': 'reviews',
+      'profile.imageSizeLimit': 'Image size must be less than 5MB',
+      'profile.selectImageFile': 'Please select an image file',
+      'profile.uploadFailed': 'Failed to upload image',
+      'profile.days.sun': 'SUN',
+      'profile.days.mon': 'MON',
+      'profile.days.tue': 'TUE',
+      'profile.days.wed': 'WED',
+      'profile.days.thu': 'THU',
+      'profile.days.fri': 'FRI',
+      'profile.days.sat': 'SAT',
+      'profile.noBookingsYet': 'No bookings yet',
+      'profile.reviewsReceived': 'Reviews Received',
+      'profile.bookingHistory': 'Booking History',
+      'profile.noReviewsYet': 'No reviews yet',
+      'profile.walk': 'Walk',
+      'profile.care': 'Care',
+      'profile.withPet': 'with {{petName}}',
+      'profile.status.completed': 'Completed',
+      'profile.status.accepted': 'Accepted',
+      'profile.status.confirmed': 'Confirmed',
+      'profile.status.pending': 'Pending',
+      'profile.status.cancelled': 'Cancelled',
+      'profile.status.requested': 'Requested',
+      
+      // Availability
+      'availability.addSlot': 'Add Availability Slot',
+      
+      // Pet
+      'pet.maxPhotos': 'Maximum 6 photos',
+      'pet.addPhoto': 'Add Photo ({{count}}/{{max}})',
+      
+      // Payment
+      'payment.service': 'Service:',
+      'payment.walk': 'Walk',
+      'payment.totalAmount': 'Total Amount:',
+      'payment.sitterReceives': 'Sitter receives:',
+      
+      // Bookings - Additional
+      'bookings.accept': 'Accept',
+      'bookings.decline': 'Decline',
+      'bookings.cancelRefund': 'Cancel & Refund',
+      
+      // Booking Request
+      'booking.chargeNotice': 'You won\'t be charged until the walker accepts your request',
+      
+      // Notifications - Additional
+      'notifications.filter.all': 'All',
+      'notifications.filter.messages': 'Messages',
+      'notifications.filter.bookings': 'Bookings',
+      
+      // Error Pages
+      'error.pageNotFound': 'Oops! Page not found',
+      'error.returnHome': 'Return to Home',
+      
+      // Home Page - Additional
+      'home.findSitters': 'Find Sitters',
+      'home.findPets': 'Find Pets',
+      'home.loadingProfiles': 'Loading profiles...',
+      'home.noMoreProfiles': 'No more profiles',
+      'home.seenAllProfiles': 'You\'ve seen all available {{type}} in your area.',
+      'home.sitters': 'sitters',
+      'home.pets': 'pets',
+      'home.startOver': 'Start Over',
+      'home.resetComplete': 'Reset Complete',
+      'home.allProfilesAvailable': 'All profiles are available again',
+      'home.failedToReset': 'Failed to reset profiles',
+      'home.new': 'New',
+      'home.global': 'Global',
+      'home.kmAway': '{{distance}} km away',
+      'home.like': 'LIKE',
+      'home.nope': 'NOPE',
     }
   },
   fr: {
@@ -305,6 +421,8 @@ const resources = {
       'nav.messages': 'Messages',
       'nav.profile': 'Profil',
       'nav.subscription': 'Abonnement',
+      'nav.bookings': 'Réservations',
+      'nav.notifications': 'Notifications',
       
       // Auth
       'auth.login': 'Connexion',
@@ -334,6 +452,12 @@ const resources = {
       'auth.rateLimitMessage': 'Pour des raisons de sécurité, attendez un moment avant de réessayer',
       'auth.emailExistsTitle': 'Email déjà enregistré',
       'auth.emailExistsMessage': 'Cet email est déjà enregistré. Essayez de vous connecter',
+      'auth.joinPetflik': 'Rejoignez Petflik. Êtes-vous un...',
+      'auth.petOwner': 'Propriétaire d\'Animal',
+      'auth.petOwnerDesc': 'Trouvez des gardiens de confiance pour vos amis à fourrure.',
+      'auth.sitter': 'Gardien',
+      'auth.sitterDesc': 'Gagnez de l\'argent en faisant ce que vous aimez.',
+      'auth.signIn': 'Se Connecter',
       
       // Dashboard
       'dashboard.welcome': 'Bienvenue sur Paseo',
@@ -473,6 +597,114 @@ const resources = {
       'payout.complete_again': 'Veuillez compléter la configuration à nouveau',
       'payout.create_failed': 'Impossible de créer le compte de paiement',
       'payout.onboarding_failed': 'Impossible de démarrer la configuration',
+      
+      // Bookings
+      'bookings.myBookings': 'Mes Réservations',
+      'bookings.bookingAccepted': 'Réservation Acceptée!',
+      'bookings.ownerNotified': 'Le propriétaire a été notifié pour compléter le paiement.',
+      'bookings.paymentReleased': '💰 Paiement Libéré!',
+      'bookings.paymentTransferred': 'Le paiement a été transféré au gardien.',
+      'bookings.paymentReleasedDesc': 'Le paiement a été libéré au gardien.',
+      'bookings.filter.all': 'Tous',
+      'bookings.filter.pending': 'En Attente',
+      'bookings.filter.accepted': 'Accepté',
+      'bookings.filter.completed': 'Terminé',
+      
+      // Notifications
+      'notifications.title': 'Notifications',
+      'notifications.markAllRead': 'Tout marquer comme lu',
+      
+      // Profile
+      'profile.myPets': 'Mes Animaux',
+      'profile.addPet': 'Ajouter Animal',
+      'profile.myAvailability': 'Ma Disponibilité',
+      'profile.manage': 'Gérer',
+      'profile.paymentMethods': 'Méthodes de Paiement',
+      'profile.personalInfo': 'Informations Personnelles',
+      'profile.noPetsYet': 'Pas Encore d\'Animaux',
+      'profile.addPetFirst': 'Veuillez ajouter un profil d\'animal avant de modifier.',
+      'profile.addPetToView': 'Veuillez ajouter un profil d\'animal pour voir le profil de votre animal.',
+      'profile.pictureUpdated': 'Photo de profil mise à jour avec succès',
+      'profile.storageBucketError': 'Stockage non configuré. Veuillez contacter le support.',
+      'profile.addPetToFindSitter': 'Ajoutez le profil de votre animal pour trouver le gardien parfait',
+      'profile.today': 'AUJOURD\'HUI',
+      'profile.viewPetProfile': 'Voir Profil de l\'Animal',
+      'profile.viewPublicProfile': 'Voir Profil Public',
+      'profile.editPetProfile': 'Modifier Profil de l\'Animal',
+      'profile.owner': 'Propriétaire',
+      'profile.mixed': 'Mixte',
+      'profile.reviews': 'avis',
+      'profile.imageSizeLimit': 'La taille de l\'image doit être inférieure à 5 Mo',
+      'profile.selectImageFile': 'Veuillez sélectionner un fichier image',
+      'profile.uploadFailed': 'Échec du téléchargement de l\'image',
+      'profile.days.sun': 'DIM',
+      'profile.days.mon': 'LUN',
+      'profile.days.tue': 'MAR',
+      'profile.days.wed': 'MER',
+      'profile.days.thu': 'JEU',
+      'profile.days.fri': 'VEN',
+      'profile.days.sat': 'SAM',
+      'profile.noBookingsYet': 'Pas encore de réservations',
+      'profile.reviewsReceived': 'Avis Reçus',
+      'profile.bookingHistory': 'Historique des Réservations',
+      'profile.noReviewsYet': 'Pas encore d\'avis',
+      'profile.walk': 'Promenade',
+      'profile.care': 'Garde',
+      'profile.withPet': 'avec {{petName}}',
+      'profile.status.completed': 'Terminé',
+      'profile.status.accepted': 'Accepté',
+      'profile.status.confirmed': 'Confirmé',
+      'profile.status.pending': 'En Attente',
+      'profile.status.cancelled': 'Annulé',
+      'profile.status.requested': 'Demandé',
+      
+      // Availability
+      'availability.addSlot': 'Ajouter un Créneau de Disponibilité',
+      
+      // Pet
+      'pet.maxPhotos': 'Maximum 6 photos',
+      'pet.addPhoto': 'Ajouter Photo ({{count}}/{{max}})',
+      
+      // Payment
+      'payment.service': 'Service:',
+      'payment.walk': 'Promenade',
+      'payment.totalAmount': 'Montant Total:',
+      'payment.sitterReceives': 'Le gardien reçoit:',
+      
+      // Bookings - Additional
+      'bookings.accept': 'Accepter',
+      'bookings.decline': 'Refuser',
+      'bookings.cancelRefund': 'Annuler et Rembourser',
+      
+      // Booking Request
+      'booking.chargeNotice': 'Vous ne serez pas facturé tant que le promeneur n\'aura pas accepté votre demande',
+      
+      // Notifications - Additional
+      'notifications.filter.all': 'Tous',
+      'notifications.filter.messages': 'Messages',
+      'notifications.filter.bookings': 'Réservations',
+      
+      // Error Pages
+      'error.pageNotFound': 'Oups! Page non trouvée',
+      'error.returnHome': 'Retour à l\'Accueil',
+      
+      // Home Page - Additional
+      'home.findSitters': 'Trouver des Gardiens',
+      'home.findPets': 'Trouver des Animaux',
+      'home.loadingProfiles': 'Chargement des profils...',
+      'home.noMoreProfiles': 'Plus de profils',
+      'home.seenAllProfiles': 'Vous avez vu tous les {{type}} disponibles dans votre région.',
+      'home.sitters': 'gardiens',
+      'home.pets': 'animaux',
+      'home.startOver': 'Recommencer',
+      'home.resetComplete': 'Réinitialisation Terminée',
+      'home.allProfilesAvailable': 'Tous les profils sont à nouveau disponibles',
+      'home.failedToReset': 'Échec de la réinitialisation des profils',
+      'home.new': 'Nouveau',
+      'home.global': 'Global',
+      'home.kmAway': '{{distance}} km',
+      'home.like': 'J\'AIME',
+      'home.nope': 'NON',
     }
   },
   de: {
@@ -664,6 +896,8 @@ const resources = {
       'nav.discover': 'Descubrir',
       'nav.nearby': 'Cercanos',
       'nav.feed': 'Actividad',
+      'nav.bookings': 'Reservas',
+      'nav.notifications': 'Notificaciones',
       
       // Auth
       'auth.login': 'Iniciar Sesión',
@@ -677,7 +911,7 @@ const resources = {
       'auth.city': 'Ciudad',
       'auth.postalCode': 'Código Postal',
       'auth.userType': 'Tipo de Usuario',
-      'auth.petOwner': 'Soy dueño de una mascota',
+      'auth.dogOwner': 'Soy dueño de una mascota',
       'auth.wantToCare': 'Quiero cuidar mascotas',
       'auth.createAccount': 'Crear Cuenta',
       'auth.alreadyHaveAccount': '¿Ya tienes una cuenta?',
@@ -721,6 +955,12 @@ const resources = {
       'auth.passwordUpdatedSuccess': 'Tu contraseña ha sido actualizada exitosamente',
       'auth.passwordTooShort': 'La contraseña debe tener al menos 6 caracteres',
       'auth.noValidSession': 'No se encontró una sesión válida. Solicita un nuevo enlace de restablecimiento',
+      'auth.joinPetflik': 'Únete a Petflik. ¿Eres un...',
+      'auth.petOwner': 'Dueño de Mascota',
+      'auth.petOwnerDesc': 'Encuentra cuidadores de confianza para tus amigos peludos.',
+      'auth.sitter': 'Cuidador',
+      'auth.sitterDesc': 'Gana dinero haciendo lo que amas.',
+      'auth.signIn': 'Iniciar Sesión',
       
       // Dashboard
       'dashboard.welcome': 'Bienvenido a Paseo',
@@ -944,6 +1184,114 @@ const resources = {
       'home.readyToStartSubtitle': 'Únete a miles de dueños de mascotas que confían en Paseo para el cuidado de sus perros.',
       'home.startFreeToday': 'Comienza Gratis Hoy',
       'home.learnMore': 'Saber Más',
+      
+      // Bookings
+      'bookings.myBookings': 'Mis Reservas',
+      'bookings.bookingAccepted': '¡Reserva Aceptada!',
+      'bookings.ownerNotified': 'El dueño ha sido notificado para completar el pago.',
+      'bookings.paymentReleased': '💰 ¡Pago Liberado!',
+      'bookings.paymentTransferred': 'El pago ha sido transferido al cuidador.',
+      'bookings.paymentReleasedDesc': 'El pago ha sido liberado al cuidador.',
+      'bookings.filter.all': 'Todos',
+      'bookings.filter.pending': 'Pendiente',
+      'bookings.filter.accepted': 'Aceptado',
+      'bookings.filter.completed': 'Completado',
+      
+      // Notifications
+      'notifications.title': 'Notificaciones',
+      'notifications.markAllRead': 'Marcar todo como leído',
+      
+      // Profile
+      'profile.myPets': 'Mis Mascotas',
+      'profile.addPet': 'Añadir Mascota',
+      'profile.myAvailability': 'Mi Disponibilidad',
+      'profile.manage': 'Gestionar',
+      'profile.paymentMethods': 'Métodos de Pago',
+      'profile.personalInfo': 'Información Personal',
+      'profile.noPetsYet': 'Aún No Hay Mascotas',
+      'profile.addPetFirst': 'Por favor añade un perfil de mascota antes de editar.',
+      'profile.addPetToView': 'Por favor añade un perfil de mascota para ver el perfil de tu mascota.',
+      'profile.pictureUpdated': 'Foto de perfil actualizada exitosamente',
+      'profile.storageBucketError': 'Almacenamiento no configurado. Por favor contacta soporte.',
+      'profile.addPetToFindSitter': 'Añade el perfil de tu mascota para encontrar el cuidador perfecto',
+      'profile.today': 'HOY',
+      'profile.viewPetProfile': 'Ver Perfil de Mascota',
+      'profile.viewPublicProfile': 'Ver Perfil Público',
+      'profile.editPetProfile': 'Editar Perfil de Mascota',
+      'profile.owner': 'Propietario',
+      'profile.mixed': 'Mixto',
+      'profile.reviews': 'reseñas',
+      'profile.imageSizeLimit': 'El tamaño de la imagen debe ser menor a 5MB',
+      'profile.selectImageFile': 'Por favor selecciona un archivo de imagen',
+      'profile.uploadFailed': 'Error al subir la imagen',
+      'profile.days.sun': 'DOM',
+      'profile.days.mon': 'LUN',
+      'profile.days.tue': 'MAR',
+      'profile.days.wed': 'MIÉ',
+      'profile.days.thu': 'JUE',
+      'profile.days.fri': 'VIE',
+      'profile.days.sat': 'SÁB',
+      'profile.noBookingsYet': 'Aún no hay reservas',
+      'profile.reviewsReceived': 'Reseñas Recibidas',
+      'profile.bookingHistory': 'Historial de Reservas',
+      'profile.noReviewsYet': 'Aún no hay reseñas',
+      'profile.walk': 'Paseo',
+      'profile.care': 'Cuidado',
+      'profile.withPet': 'con {{petName}}',
+      'profile.status.completed': 'Completado',
+      'profile.status.accepted': 'Aceptado',
+      'profile.status.confirmed': 'Confirmado',
+      'profile.status.pending': 'Pendiente',
+      'profile.status.cancelled': 'Cancelado',
+      'profile.status.requested': 'Solicitado',
+      
+      // Availability
+      'availability.addSlot': 'Añadir Horario Disponible',
+      
+      // Pet
+      'pet.maxPhotos': 'Máximo 6 fotos',
+      'pet.addPhoto': 'Añadir Foto ({{count}}/{{max}})',
+      
+      // Payment
+      'payment.service': 'Servicio:',
+      'payment.walk': 'Paseo',
+      'payment.totalAmount': 'Monto Total:',
+      'payment.sitterReceives': 'El cuidador recibe:',
+      
+      // Bookings - Additional
+      'bookings.accept': 'Aceptar',
+      'bookings.decline': 'Rechazar',
+      'bookings.cancelRefund': 'Cancelar y Reembolsar',
+      
+      // Booking Request
+      'booking.chargeNotice': 'No se te cobrará hasta que el paseador acepte tu solicitud',
+      
+      // Notifications - Additional
+      'notifications.filter.all': 'Todos',
+      'notifications.filter.messages': 'Mensajes',
+      'notifications.filter.bookings': 'Reservas',
+      
+      // Error Pages
+      'error.pageNotFound': '¡Ups! Página no encontrada',
+      'error.returnHome': 'Volver al Inicio',
+      
+      // Home Page - Additional
+      'home.findSitters': 'Buscar Cuidadores',
+      'home.findPets': 'Buscar Mascotas',
+      'home.loadingProfiles': 'Cargando perfiles...',
+      'home.noMoreProfiles': 'No hay más perfiles',
+      'home.seenAllProfiles': 'Has visto todos los {{type}} disponibles en tu área.',
+      'home.sitters': 'cuidadores',
+      'home.pets': 'mascotas',
+      'home.startOver': 'Empezar de Nuevo',
+      'home.resetComplete': 'Reinicio Completo',
+      'home.allProfilesAvailable': 'Todos los perfiles están disponibles nuevamente',
+      'home.failedToReset': 'Error al reiniciar perfiles',
+      'home.new': 'Nuevo',
+      'home.global': 'Global',
+      'home.kmAway': '{{distance}} km de distancia',
+      'home.like': 'ME GUSTA',
+      'home.nope': 'NO',
     }
   },
   pt: {

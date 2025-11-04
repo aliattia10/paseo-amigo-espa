@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import { playNotificationSound } from '@/lib/sounds';
+import i18n from '@/lib/i18n';
 
 interface Notification {
   id: string;
@@ -165,27 +166,40 @@ const NotificationsPage: React.FC = () => {
       {/* Top App Bar */}
       <header className="sticky top-0 z-10 flex items-center justify-between bg-card-light/80 dark:bg-card-dark/80 px-4 py-3 backdrop-blur-sm">
         <h1 className="text-text-primary-light dark:text-text-primary-dark text-xl font-bold leading-tight tracking-[-0.015em]">
-          Notifications
+          {t('notifications.title')}
         </h1>
-        <div className="relative">
-          <button 
-            onClick={() => setShowMenu(!showMenu)}
-            className="text-text-primary-light dark:text-text-primary-dark flex h-10 w-10 items-center justify-center"
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const languages = ['en', 'es', 'fr'];
+              const currentIndex = languages.indexOf(i18n.language);
+              const nextIndex = (currentIndex + 1) % languages.length;
+              i18n.changeLanguage(languages[nextIndex]);
+            }}
+            className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-medium text-gray-700 dark:text-gray-300"
           >
-            <span className="material-symbols-outlined">more_vert</span>
+            {i18n.language === 'en' ? 'ES' : i18n.language === 'es' ? 'FR' : 'EN'}
           </button>
-          
-          {showMenu && (
-            <div className="absolute right-0 top-12 bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark min-w-[160px] z-20">
-              <button
-                onClick={markAllAsRead}
-                className="w-full px-4 py-3 text-left text-text-primary-light dark:text-text-primary-dark hover:bg-background-light dark:hover:bg-background-dark rounded-lg flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-base">done_all</span>
-                Mark all as read
-              </button>
-            </div>
-          )}
+          <div className="relative">
+            <button 
+              onClick={() => setShowMenu(!showMenu)}
+              className="text-text-primary-light dark:text-text-primary-dark flex h-10 w-10 items-center justify-center"
+            >
+              <span className="material-symbols-outlined">more_vert</span>
+            </button>
+            
+            {showMenu && (
+              <div className="absolute right-0 top-12 bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark min-w-[160px] z-20">
+                <button
+                  onClick={markAllAsRead}
+                  className="w-full px-4 py-3 text-left text-text-primary-light dark:text-text-primary-dark hover:bg-background-light dark:hover:bg-background-dark rounded-lg flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-base">done_all</span>
+                  {t('notifications.markAllRead')}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -195,7 +209,7 @@ const NotificationsPage: React.FC = () => {
           <label className={`flex h-full grow cursor-pointer items-center justify-center overflow-hidden rounded-md px-2 text-sm font-medium leading-normal ${
             filter === 'all' ? 'bg-primary text-white shadow-sm' : 'text-text-secondary-light dark:text-text-secondary-dark'
           }`}>
-            <span className="truncate">All</span>
+            <span className="truncate">{t('notifications.filter.all')}</span>
             <input 
               checked={filter === 'all'} 
               onChange={() => setFilter('all')}
@@ -207,7 +221,7 @@ const NotificationsPage: React.FC = () => {
           <label className={`flex h-full grow cursor-pointer items-center justify-center overflow-hidden rounded-md px-2 text-sm font-medium leading-normal ${
             filter === 'messages' ? 'bg-primary text-white shadow-sm' : 'text-text-secondary-light dark:text-text-secondary-dark'
           }`}>
-            <span className="truncate">Messages</span>
+            <span className="truncate">{t('notifications.filter.messages')}</span>
             <input 
               checked={filter === 'messages'} 
               onChange={() => setFilter('messages')}
@@ -219,7 +233,7 @@ const NotificationsPage: React.FC = () => {
           <label className={`flex h-full grow cursor-pointer items-center justify-center overflow-hidden rounded-md px-2 text-sm font-medium leading-normal ${
             filter === 'bookings' ? 'bg-primary text-white shadow-sm' : 'text-text-secondary-light dark:text-text-secondary-dark'
           }`}>
-            <span className="truncate">Bookings</span>
+            <span className="truncate">{t('notifications.filter.bookings')}</span>
             <input 
               checked={filter === 'bookings'} 
               onChange={() => setFilter('bookings')}

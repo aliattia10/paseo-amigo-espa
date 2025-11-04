@@ -101,7 +101,7 @@ const UserProfilePage: React.FC = () => {
               <div className="bg-card-light dark:bg-card-dark p-4 rounded-2xl shadow">
                 <div className="flex items-center gap-2 font-semibold mb-2">
                   <span className="material-symbols-outlined text-base">format_quote</span>
-                  About me
+                  {t('profile.aboutMe')}
                 </div>
                 <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">{user.bio}</p>
               </div>

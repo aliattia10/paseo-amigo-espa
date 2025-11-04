@@ -34,7 +34,7 @@ const RoleSelectionPage: React.FC = () => {
 
       {/* HeadlineText */}
       <h1 className="text-role-text-light dark:text-role-text-dark tracking-tight text-[32px] font-bold leading-tight px-4 text-center pb-3 pt-6">
-        Join Petflik. Are you a...
+        {t('auth.joinPetflik')}
       </h1>
 
       {/* ButtonGroup */}
@@ -46,10 +46,10 @@ const RoleSelectionPage: React.FC = () => {
           >
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined">pets</span>
-              <span className="truncate text-lg">Pet Owner</span>
+              <span className="truncate text-lg">{t('auth.petOwner')}</span>
             </div>
             <p className="text-sm font-normal text-role-background-dark/80">
-              Find trusted sitters for your furry friends.
+              {t('auth.petOwnerDesc')}
             </p>
           </button>
 
@@ -59,10 +59,10 @@ const RoleSelectionPage: React.FC = () => {
           >
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined">school</span>
-              <span className="truncate text-lg">Sitter</span>
+              <span className="truncate text-lg">{t('auth.sitter')}</span>
             </div>
             <p className="text-sm font-normal text-role-background-dark/80">
-              Earn money doing what you love.
+              {t('auth.sitterDesc')}
             </p>
           </button>
         </div>
@@ -70,12 +70,12 @@ const RoleSelectionPage: React.FC = () => {
 
       {/* MetaText */}
       <p className="text-role-text-light/70 dark:text-role-text-dark/70 text-sm font-normal leading-normal pb-6 pt-3 px-4 text-center">
-        Already have an account?{' '}
+        {t('auth.alreadyHaveAccount')}{' '}
         <button 
           onClick={() => navigate('/auth?mode=login')} 
           className="font-bold underline text-role-primary hover:opacity-80 transition-opacity"
         >
-          Sign In
+          {t('auth.signIn')}
         </button>
       </p>
 

@@ -325,7 +325,7 @@ const BookingRequestPage: React.FC = () => {
           </Button>
 
           <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark text-center">
-            You won't be charged until the walker accepts your request
+            {t('booking.chargeNotice')}
           </p>
         </form>
       </main>

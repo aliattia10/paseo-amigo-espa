@@ -660,7 +660,7 @@ const NewHomePage: React.FC = () => {
               }`}
             >
               <span className="material-symbols-outlined text-base mr-1">pets</span>
-              Find Sitters
+              {t('home.findSitters')}
             </button>
             <button
               onClick={() => handleRoleChange('sitter')}
@@ -671,7 +671,7 @@ const NewHomePage: React.FC = () => {
               }`}
             >
               <span className="material-symbols-outlined text-base mr-1">school</span>
-              Find Pets
+              {t('home.findPets')}
             </button>
           </div>
         </div>
@@ -684,7 +684,7 @@ const NewHomePage: React.FC = () => {
             /* Loading state */
             <div className="flex flex-col items-center justify-center h-full">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-home-primary mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading profiles...</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('home.loadingProfiles')}</p>
             </div>
           ) : profiles.length === 0 ? (
             /* No more profiles message */
@@ -693,10 +693,10 @@ const NewHomePage: React.FC = () => {
                 {userRole === 'owner' ? 'person_search' : 'pets'}
               </span>
               <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-                No more profiles
+                {t('home.noMoreProfiles')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                You've seen all available {userRole === 'owner' ? 'sitters' : 'pets'} in your area.
+                {t('home.seenAllProfiles', { type: userRole === 'owner' ? t('home.sitters') : t('home.pets') })}
               </p>
               <button
                 onClick={async (e) => {
@@ -727,21 +727,21 @@ const NewHomePage: React.FC = () => {
                     setCurrentImageIndex(0);
                     
                     toast({
-                      title: 'Reset Complete',
-                      description: 'All profiles are available again',
+                      title: t('home.resetComplete'),
+                      description: t('home.allProfilesAvailable'),
                     });
                   } catch (error) {
                     console.error('Error resetting profiles:', error);
                     toast({
-                      title: 'Error',
-                      description: 'Failed to reset profiles',
+                      title: t('common.error'),
+                      description: t('home.failedToReset'),
                       variant: 'destructive',
                     });
                   }
                 }}
                 className="px-6 py-3 bg-home-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
               >
-                Start Over
+                {t('home.startOver')}
               </button>
             </div>
           ) : (
@@ -810,12 +810,12 @@ const NewHomePage: React.FC = () => {
               {/* Swipe indicators */}
               {dragOffset.x > 50 && (
                 <div className="absolute top-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform rotate-12 shadow-lg z-20">
-                  LIKE
+                  {t('home.like')}
                 </div>
               )}
               {dragOffset.x < -50 && (
                 <div className="absolute top-8 left-8 bg-red-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform -rotate-12 shadow-lg z-20">
-                  NOPE
+                  {t('home.nope')}
                 </div>
               )}
               
@@ -830,7 +830,7 @@ const NewHomePage: React.FC = () => {
                   <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg self-start">
                     <span className="material-symbols-outlined text-white text-lg">location_on</span>
                     <p className="text-white text-base font-medium">
-                      {isGlobalMode ? 'Global' : `${currentProfile.distance.toFixed(1)} km away`}
+                      {isGlobalMode ? t('home.global') : t('home.kmAway', { distance: currentProfile.distance.toFixed(1) })}
                     </p>
                   </div>
                   
@@ -855,7 +855,7 @@ const NewHomePage: React.FC = () => {
                     {!currentProfile.rating && (
                       <div className="bg-blue-500/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full shadow-lg">
                         <p className="text-sm font-medium">
-                          ✨ New
+                          ✨ {t('home.new')}
                         </p>
                       </div>
                     )}

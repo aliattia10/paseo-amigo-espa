@@ -567,13 +567,13 @@ const PetEditPage: React.FC = () => {
               disabled={uploadingImage || petData.imageUrls.length >= 6}
             >
               <span className="material-symbols-outlined mr-2">add_photo_alternate</span>
-              {uploadingImage ? 'Uploading...' : petData.imageUrls.length >= 6 ? 'Maximum 6 photos' : `Add Photo (${petData.imageUrls.length}/6)`}
+              {uploadingImage ? t('common.uploading') : petData.imageUrls.length >= 6 ? t('pet.maxPhotos') : t('pet.addPhoto', { count: petData.imageUrls.length, max: 6 })}
             </Button>
             
             {uploadingImage && (
               <div className="flex items-center justify-center gap-2 mt-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                <span>Uploading...</span>
+                <span>{t('common.uploading')}</span>
               </div>
             )}
           </div>

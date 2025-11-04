@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import TinderProfileView from '@/components/profile/TinderProfileView';
 
 const PublicProfilePage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser, userProfile } = useAuth();
   const [reviews, setReviews] = useState<any[]>([]);
@@ -129,7 +131,7 @@ const PublicProfilePage: React.FC = () => {
             <button 
               onClick={() => navigate('/profile/edit')}
               className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              title="Edit Profile"
+              title={t('profile.editProfile')}
             >
               <span className="material-symbols-outlined">edit</span>
             </button>
@@ -160,7 +162,7 @@ const PublicProfilePage: React.FC = () => {
             <div className="flex items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark mb-3">
               <span className="material-symbols-outlined text-lg">location_on</span>
               <span className="text-sm font-medium">
-                📍 {userProfile?.city || 'Location not set'}
+                📍 {userProfile?.city || t('profile.locationNotSet')}
               </span>
             </div>
 
@@ -228,7 +230,7 @@ const PublicProfilePage: React.FC = () => {
             <div className="mb-4 p-4 bg-background-light dark:bg-background-dark rounded-xl">
               <h3 className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark mb-2 flex items-center gap-2">
                 <span className="material-symbols-outlined text-base">info</span>
-                About Me
+                {t('profile.aboutMe')}
               </h3>
               <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">
                 {userProfile.bio}
@@ -324,7 +326,7 @@ const PublicProfilePage: React.FC = () => {
           onClick={() => navigate('/profile/edit')}
           className="w-full bg-gradient-to-r from-[#FD5564] to-[#FF6B7A] hover:from-[#FD4458] hover:to-[#FF5A6E] text-white font-bold py-3 rounded-full transition-colors shadow-lg"
         >
-          Edit Profile
+          {t('profile.editProfile')}
         </button>
       </div>
 

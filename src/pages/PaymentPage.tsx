@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -78,6 +79,7 @@ function PaymentForm({ bookingId, amount, onSuccess }: { bookingId: string; amou
 }
 
 export default function PaymentPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -177,11 +179,11 @@ export default function PaymentPage() {
         <CardContent>
           <div className="mb-6 p-4 bg-muted rounded-lg space-y-3">
             <div className="flex justify-between">
-              <span className="text-sm">Service:</span>
-              <span className="text-sm font-medium capitalize">{booking.service_type || 'Walk'}</span>
+              <span className="text-sm">{t('payment.service')}</span>
+              <span className="text-sm font-medium capitalize">{booking.service_type || t('payment.walk')}</span>
             </div>
             <div className="flex justify-between border-t pt-2">
-              <span className="text-base font-semibold">Total Amount:</span>
+              <span className="text-base font-semibold">{t('payment.totalAmount')}</span>
               <span className="text-base font-bold">€{(booking.total_price || booking.payment_amount)?.toFixed(2)}</span>
             </div>
             <div className="text-xs text-muted-foreground space-y-1 border-t pt-2">
@@ -195,7 +197,7 @@ export default function PaymentPage() {
               </div>
             </div>
             <div className="flex justify-between text-muted-foreground">
-              <span className="text-xs">Sitter receives:</span>
+              <span className="text-xs">{t('payment.sitterReceives')}</span>
               <span className="text-xs">€{(booking.total_price - booking.commission_fee)?.toFixed(2)}</span>
             </div>
           </div>
