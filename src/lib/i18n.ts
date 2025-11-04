@@ -423,6 +423,8 @@ const resources = {
       'bookings.accept': 'Accept',
       'bookings.decline': 'Decline',
       'bookings.cancelRefund': 'Cancel & Refund',
+      'bookings.confirmed': 'Confirmed',
+      'bookings.payNow': 'Pay Now',
       
       // Booking Request
       'booking.chargeNotice': 'You won\'t be charged until the walker accepts your request',
@@ -759,6 +761,8 @@ const resources = {
       'bookings.accept': 'Accepter',
       'bookings.decline': 'Refuser',
       'bookings.cancelRefund': 'Annuler et Rembourser',
+      'bookings.confirmed': 'Confirmé',
+      'bookings.payNow': 'Payer Maintenant',
       
       // Booking Request
       'booking.chargeNotice': 'Vous ne serez pas facturé tant que le promeneur n\'aura pas accepté votre demande',
@@ -1388,6 +1392,8 @@ const resources = {
       'bookings.accept': 'Aceptar',
       'bookings.decline': 'Rechazar',
       'bookings.cancelRefund': 'Cancelar y Reembolsar',
+      'bookings.confirmed': 'Confirmado',
+      'bookings.payNow': 'Pagar Ahora',
       
       // Booking Request
       'booking.chargeNotice': 'No se te cobrará hasta que el paseador acepte tu solicitud',

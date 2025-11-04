@@ -17,7 +17,7 @@ interface Booking {
   start_time: string;
   duration_hours: number;
   total_amount: number;
-  status: 'pending' | 'accepted' | 'completed' | 'cancelled';
+  status: 'pending' | 'accepted' | 'confirmed' | 'completed' | 'cancelled' | 'requested' | 'in-progress';
   notes?: string;
   payment_status?: string;
   owner_id?: string;
@@ -336,7 +336,9 @@ const BookingsPage: React.FC = () => {
           <div key={booking.id} className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm space-y-3">
             <div className="flex justify-between items-start">
               <div><p className="text-lg font-bold">{booking.walker_name}</p><p className="text-sm">{booking.dog_name}</p></div>
-              <span className={`text-xs font-bold px-3 py-1 rounded-full ${getStatusColor(booking.status)}`}>{booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}</span>
+              <span className={`text-xs font-bold px-3 py-1 rounded-full ${getStatusColor(booking.status)}`}>
+                {booking.status === 'confirmed' ? t('bookings.confirmed') : booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+              </span>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">calendar_today</span><span>{new Date(booking.booking_date).toLocaleDateString()}</span></div>
@@ -358,7 +360,7 @@ const BookingsPage: React.FC = () => {
                   onClick={() => navigate(`/payment?bookingId=${booking.id}&amount=${booking.total_amount}`)} 
                   className="flex-1 bg-primary text-white"
                 >
-                  💳 Pay Now - €{booking.total_amount.toFixed(2)}
+                  💳 {t('bookings.payNow')} - €{booking.total_amount.toFixed(2)}
                 </Button>
               </div>
             )}
