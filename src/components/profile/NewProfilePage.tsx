@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import i18n from '@/lib/i18n';
 
 interface Booking {
   id: string;
@@ -306,6 +307,18 @@ const NewProfilePage: React.FC = () => {
           {t('nav.profile')}
         </h2>
         <div className="flex gap-2 items-center justify-end">
+          <button
+            onClick={() => {
+              const languages = ['en', 'es', 'fr'];
+              const currentIndex = languages.indexOf(i18n.language);
+              const nextIndex = (currentIndex + 1) % languages.length;
+              i18n.changeLanguage(languages[nextIndex]);
+            }}
+            className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-medium text-gray-700 dark:text-gray-300"
+            title="Change language"
+          >
+            {i18n.language === 'en' ? 'ES' : i18n.language === 'es' ? 'FR' : 'EN'}
+          </button>
           <button onClick={() => navigate('/notifications')} className="relative">
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
               notifications

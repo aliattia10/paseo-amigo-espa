@@ -1629,7 +1629,7 @@ i18n
       lookupLocalStorage: 'i18nextLng',
     },
     
-    supportedLngs: ['en', 'es'], // Only English and Spanish for now
+    supportedLngs: ['en', 'es', 'fr'], // English, Spanish, and French
     
     interpolation: {
       escapeValue: false,

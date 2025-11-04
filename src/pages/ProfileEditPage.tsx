@@ -373,12 +373,14 @@ const ProfileEditPage: React.FC = () => {
         </h2>
         <button
           onClick={() => {
-            const newLang = i18n.language === 'en' ? 'es' : 'en';
-            i18n.changeLanguage(newLang);
+            const languages = ['en', 'es', 'fr'];
+            const currentIndex = languages.indexOf(i18n.language);
+            const nextIndex = (currentIndex + 1) % languages.length;
+            i18n.changeLanguage(languages[nextIndex]);
           }}
           className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300"
         >
-          {i18n.language === 'en' ? 'ES' : 'EN'}
+          {i18n.language === 'en' ? 'ES' : i18n.language === 'es' ? 'FR' : 'EN'}
         </button>
       </div>
 

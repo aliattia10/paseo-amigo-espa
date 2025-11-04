@@ -5,9 +5,17 @@ import { Globe } from 'lucide-react';
 export const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
 
+  const languages = [
+    { code: 'en', label: 'EN', flag: '🇬🇧' },
+    { code: 'es', label: 'ES', flag: '🇪🇸' },
+    { code: 'fr', label: 'FR', flag: '🇫🇷' },
+  ];
+
+  const currentIndex = languages.findIndex(lang => lang.code === i18n.language);
+  const nextLanguage = languages[(currentIndex + 1) % languages.length];
+
   const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'es' : 'en';
-    i18n.changeLanguage(newLang);
+    i18n.changeLanguage(nextLanguage.code);
   };
 
   return (
@@ -15,10 +23,11 @@ export const LanguageSwitcher: React.FC = () => {
       onClick={toggleLanguage}
       className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card-light dark:bg-card-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       aria-label="Switch language"
+      title={`Switch to ${nextLanguage.label}`}
     >
       <Globe className="w-5 h-5" />
       <span className="text-sm font-medium">
-        {i18n.language === 'en' ? 'ES' : 'EN'}
+        {nextLanguage.label}
       </span>
     </button>
   );
