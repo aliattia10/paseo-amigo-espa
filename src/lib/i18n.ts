@@ -483,6 +483,9 @@ const resources = {
       'nav.messages': 'Messages',
       'nav.profile': 'Profil',
       'nav.subscription': 'Abonnement',
+      'nav.discover': 'Découvrir',
+      'nav.nearby': 'À Proximité',
+      'nav.feed': 'Fil',
       'nav.bookings': 'Réservations',
       'nav.notifications': 'Notifications',
       

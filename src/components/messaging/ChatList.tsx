@@ -222,7 +222,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
             {walkRequests.map((request) => {
               const otherUser = {
                 id: userProfile?.userType === 'owner' ? request.walkerId : request.ownerId,
-                name: userProfile?.userType === 'owner' ? 'Compañero' : 'Dueño',
+                name: userProfile?.userType === 'owner' ? t('messages.sitter') : t('messages.owner'),
                 profileImage: undefined,
               };
 
