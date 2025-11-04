@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from '@/contexts/AuthContext';
 import { getWalkRequestsByOwner, getWalkRequestsByWalker } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import { MessageCircle, Clock, MapPin, Dog, Heart } from 'lucide-react';
 import type { WalkRequest } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +32,7 @@ interface ChatListProps {
 const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const { userProfile, currentUser } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [walkRequests, setWalkRequests] = useState<WalkRequest[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,8 +93,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       } catch (error) {
         console.error('Error loading chats:', error);
         toast({
-          title: "Error",
-          description: "No se pudieron cargar las conversaciones.",
+          title: t('common.error'),
+          description: t('messages.loadError') || 'Could not load conversations.',
           variant: "destructive",
         });
       } finally {
@@ -109,13 +111,13 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
-      return 'Hoy';
+      return t('common.today') || 'Today';
     } else if (diffDays === 1) {
-      return 'Ayer';
+      return t('common.yesterday') || 'Yesterday';
     } else if (diffDays < 7) {
-      return `Hace ${diffDays} días`;
+      return `${diffDays} ${t('common.daysAgo') || 'days ago'}`;
     } else {
-      return date.toLocaleDateString('es-ES');
+      return date.toLocaleDateString();
     }
   };
 
@@ -135,11 +137,11 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'accepted':
-        return 'Aceptado';
+        return t('walk.accepted') || 'Accepted';
       case 'in-progress':
-        return 'En progreso';
+        return t('walk.inProgress') || 'In Progress';
       case 'completed':
-        return 'Completado';
+        return t('walk.completed') || 'Completed';
       default:
         return status;
     }
@@ -150,7 +152,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta mx-auto mb-2"></div>
-          <p className="text-muted-foreground">Cargando conversaciones...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -161,9 +163,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       <Card>
         <CardContent className="p-6 text-center">
           <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No hay conversaciones</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('messages.noConversations') || 'No conversations'}</h3>
           <p className="text-muted-foreground">
-            Cuando hagas match con alguien, podrás chatear aquí y coordinar servicios.
+            {t('messages.matchToChat') || 'When you match with someone, you can chat here and coordinate services.'}
           </p>
         </CardContent>
       </Card>
@@ -175,7 +177,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       <CardHeader className="flex-shrink-0 border-b">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <MessageCircle className="w-5 h-5" />
-          Conversaciones
+          {t('messages.conversations') || 'Conversations'}
         </h2>
       </CardHeader>
 

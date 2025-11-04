@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ChatList from './ChatList';
 import ChatWindow from './ChatWindow';
 import type { WalkRequest } from '@/types';
@@ -10,6 +11,7 @@ import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 const MessagingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [selectedChat, setSelectedChat] = useState<{
     walkRequest: WalkRequest | null;
     otherUser: { id: string; name: string; profileImage?: string; role?: string };
@@ -45,15 +47,15 @@ const MessagingPage: React.FC = () => {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-stitch-text-primary-light font-display">
-                    Mensajes
+                    {t('dashboard.messages')}
                   </h1>
-                  <p className="text-sm text-stitch-text-secondary-light">Conecta con tu comunidad</p>
+                  <p className="text-sm text-stitch-text-secondary-light">{t('dashboard.connectCommunity')}</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <div className="px-3 py-1.5 bg-green-100 text-green-800 rounded-xl text-sm font-medium shadow-sm">
-                Activo
+                {t('common.active') || 'Active'}
               </div>
               <LanguageSwitcher />
             </div>
