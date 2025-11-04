@@ -326,7 +326,7 @@ const NewProfilePage: React.FC = () => {
             className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-medium text-gray-700 dark:text-gray-300"
             title="Change language"
           >
-            {i18n.language === 'en' ? 'ES' : i18n.language === 'es' ? 'FR' : 'EN'}
+            {i18n.language === 'en' ? 'EN' : i18n.language === 'es' ? 'ES' : 'FR'}
           </button>
           <button onClick={() => navigate('/notifications')} className="relative">
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
@@ -456,8 +456,8 @@ const NewProfilePage: React.FC = () => {
                     // Optionally navigate to add pet page
                     setTimeout(() => navigate('/pet-profile-setup'), 1500);
                   } else {
-                    // Navigate to first pet's edit page (which shows full profile)
-                    navigate(`/pet/${pets[0].id}/edit`);
+                    // Navigate to first pet's profile view page
+                    navigate(`/pet/${pets[0].id}`);
                   }
                 } else {
                   // For sitters, show their public profile

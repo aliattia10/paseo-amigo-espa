@@ -618,7 +618,7 @@ const NewHomePage: React.FC = () => {
               className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-3 bg-transparent text-[#0e1b13] dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
               title="Change language"
             >
-              {i18n.language === 'en' ? 'ES' : i18n.language === 'es' ? 'FR' : 'EN'}
+              {i18n.language === 'en' ? 'EN' : i18n.language === 'es' ? 'ES' : 'FR'}
             </button>
             <button 
               onClick={() => setShowFilters(true)}

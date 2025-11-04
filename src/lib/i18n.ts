@@ -363,6 +363,11 @@ const resources = {
       'profile.status.pending': 'Pending',
       'profile.status.cancelled': 'Cancelled',
       'profile.status.requested': 'Requested',
+      'profile.cat': 'Cat',
+      'profile.dog': 'Dog',
+      'profile.age': 'Age',
+      'profile.breed': 'Breed',
+      'profile.aboutPet': 'About Pet',
       
       // Availability
       'availability.addSlot': 'Add Availability Slot',
@@ -657,6 +662,11 @@ const resources = {
       'profile.status.pending': 'En Attente',
       'profile.status.cancelled': 'Annulé',
       'profile.status.requested': 'Demandé',
+      'profile.cat': 'Chat',
+      'profile.dog': 'Chien',
+      'profile.age': 'Âge',
+      'profile.breed': 'Race',
+      'profile.aboutPet': 'À Propos de l\'Animal',
       
       // Availability
       'availability.addSlot': 'Ajouter un Créneau de Disponibilité',
@@ -1244,6 +1254,11 @@ const resources = {
       'profile.status.pending': 'Pendiente',
       'profile.status.cancelled': 'Cancelado',
       'profile.status.requested': 'Solicitado',
+      'profile.cat': 'Gato',
+      'profile.dog': 'Perro',
+      'profile.age': 'Edad',
+      'profile.breed': 'Raza',
+      'profile.aboutPet': 'Sobre la Mascota',
       
       // Availability
       'availability.addSlot': 'Añadir Horario Disponible',

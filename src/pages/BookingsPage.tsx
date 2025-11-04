@@ -323,7 +323,7 @@ const BookingsPage: React.FC = () => {
           }}
           className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-medium text-gray-700 dark:text-gray-300"
         >
-          {i18n.language === 'en' ? 'ES' : i18n.language === 'es' ? 'FR' : 'EN'}
+          {i18n.language === 'en' ? 'EN' : i18n.language === 'es' ? 'ES' : 'FR'}
         </button>
       </header>
       <div className="flex px-4 py-3 gap-2 overflow-x-auto">

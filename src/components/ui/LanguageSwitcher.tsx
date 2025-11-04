@@ -12,6 +12,7 @@ export const LanguageSwitcher: React.FC = () => {
   ];
 
   const currentIndex = languages.findIndex(lang => lang.code === i18n.language);
+  const currentLanguage = languages[currentIndex] || languages[0];
   const nextLanguage = languages[(currentIndex + 1) % languages.length];
 
   const toggleLanguage = () => {
@@ -27,7 +28,7 @@ export const LanguageSwitcher: React.FC = () => {
     >
       <Globe className="w-5 h-5" />
       <span className="text-sm font-medium">
-        {nextLanguage.label}
+        {currentLanguage.label}
       </span>
     </button>
   );
