@@ -392,10 +392,31 @@ const NewProfilePage: React.FC = () => {
               <span className="truncate">{t('dashboard.editProfile')}</span>
             </button>
             <button 
-              onClick={() => navigate('/profile/public')}
+              onClick={() => {
+                // For owners, check if they have pets first
+                if (activeRole === 'owner') {
+                  if (pets.length === 0) {
+                    toast({
+                      title: 'No Pets Yet',
+                      description: 'Please add a pet profile first to view your pet profile.',
+                      variant: 'default',
+                    });
+                    // Optionally navigate to add pet page
+                    setTimeout(() => navigate('/pet-profile-setup'), 1500);
+                  } else {
+                    // Navigate to first pet's profile
+                    navigate(`/pet/${pets[0].id}`);
+                  }
+                } else {
+                  // For sitters, show their public profile
+                  navigate('/profile/public');
+                }
+              }}
               className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]"
             >
-              <span className="truncate">View Public Profile</span>
+              <span className="truncate">
+                {activeRole === 'owner' ? 'View Pet Profile' : 'View Public Profile'}
+              </span>
             </button>
           </div>
         </div>
