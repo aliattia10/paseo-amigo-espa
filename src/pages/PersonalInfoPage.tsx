@@ -26,22 +26,51 @@ const PersonalInfoPage: React.FC = () => {
 
   // Password change data
   const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
 
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [sendingResetEmail, setSendingResetEmail] = useState(false);
 
-  // Load user data from Supabase
+  // Load user data from Supabase - fetch fresh data on mount
   useEffect(() => {
-    if (currentUser && userProfile) {
-      setFormData({
-        name: userProfile.name || '',
-        email: currentUser.email || '',
-        phone: userProfile.phone || '',
-      });
-    }
+    const loadUserData = async () => {
+      if (!currentUser) return;
+      
+      try {
+        // Fetch latest user data from database
+        const { data, error } = await supabase
+          .from('users')
+          .select('name, phone, email')
+          .eq('id', currentUser.id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setFormData({
+            name: data.name || '',
+            email: currentUser.email || data.email || '',
+            phone: data.phone || '',
+          });
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        // Fallback to context data
+        if (userProfile) {
+          setFormData({
+            name: userProfile.name || '',
+            email: currentUser.email || '',
+            phone: userProfile.phone || '',
+          });
+        }
+      }
+    };
+    
+    loadUserData();
   }, [currentUser, userProfile]);
 
   // Track if form has changes
@@ -96,57 +125,33 @@ const PersonalInfoPage: React.FC = () => {
     }
   };
 
-  // Handle password change
-  const handlePasswordChange = async () => {
-    // Validate password fields
-    if (!passwordData.newPassword || !passwordData.confirmPassword) {
+  // Handle password reset email
+  const handleSendPasswordResetEmail = async () => {
+    if (!currentUser?.email) {
       toast({
         title: t('common.error'), // i18n
-        description: t('personalInfo.fillAllPasswordFields'), // i18n
+        description: t('personalInfo.noEmailFound'), // i18n
         variant: 'destructive',
       });
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      toast({
-        title: t('common.error'), // i18n
-        description: t('personalInfo.passwordTooShort'), // i18n
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast({
-        title: t('common.error'), // i18n
-        description: t('personalInfo.passwordsDoNotMatch'), // i18n
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setUpdatingPassword(true);
+    setSendingResetEmail(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: passwordData.newPassword,
+      const { error } = await supabase.auth.resetPasswordForEmail(currentUser.email, {
+        redirectTo: `${window.location.origin}/auth?mode=reset-password`,
       });
 
       if (error) throw error;
 
       toast({
         title: t('common.success'), // i18n
-        description: t('personalInfo.passwordUpdated'), // i18n
+        description: t('personalInfo.passwordResetEmailSent'), // i18n
       });
 
-      // Clear password fields
-      setPasswordData({
-        newPassword: '',
-        confirmPassword: '',
-      });
       setShowPasswordSection(false);
     } catch (error: any) {
-      console.error('Password update error:', error);
+      console.error('Password reset email error:', error);
       toast({
         title: t('common.error'), // i18n
         description: error.message || t('personalInfo.passwordUpdateFailed'), // i18n
@@ -157,7 +162,7 @@ const PersonalInfoPage: React.FC = () => {
     }
   };
 
-  // Handle save changes (name, phone)
+  // Handle save changes (name, phone, email)
   const handleSaveChanges = async () => {
     if (!currentUser) return;
 
@@ -174,14 +179,15 @@ const PersonalInfoPage: React.FC = () => {
     setLoading(true);
     try {
       // Update user profile in database
-      const { error: profileError } = await supabase
+      const { data: updateData, error: profileError } = await supabase
         .from('users')
         .update({
           name: formData.name.trim(),
           phone: formData.phone.trim() || null,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', currentUser.id);
+        .eq('id', currentUser.id)
+        .select();
 
       if (profileError) throw profileError;
 
@@ -190,8 +196,23 @@ const PersonalInfoPage: React.FC = () => {
         await handleEmailUpdate();
       }
 
-      // Refresh user profile to get latest data
+      // Refresh user profile to get latest data from database
       await refreshUserProfile();
+      
+      // Re-fetch and update local state with fresh data
+      const { data: freshData } = await supabase
+        .from('users')
+        .select('name, phone, email')
+        .eq('id', currentUser.id)
+        .single();
+      
+      if (freshData) {
+        setFormData({
+          name: freshData.name || '',
+          email: currentUser.email || freshData.email || '',
+          phone: freshData.phone || '',
+        });
+      }
 
       toast({
         title: t('common.success'), // i18n
@@ -342,60 +363,26 @@ const PersonalInfoPage: React.FC = () => {
 
             {showPasswordSection ? (
               <div className="space-y-4">
-                {/* New Password */}
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">
-                    {t('personalInfo.newPassword')} {/* i18n */}
-                  </label>
-                  {/* i18n */}
-                  <Input
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                    className="w-full bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark text-text-primary-light dark:text-text-primary-dark"
-                    placeholder={t('personalInfo.newPasswordPlaceholder')}
-                  />
-                </div>
-
-                {/* Confirm Password */}
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">
-                    {t('personalInfo.confirmPassword')} {/* i18n */}
-                  </label>
-                  {/* i18n */}
-                  <Input
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                    className="w-full bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark text-text-primary-light dark:text-text-primary-dark"
-                    placeholder={t('personalInfo.confirmPasswordPlaceholder')}
-                  />
-                </div>
-
-                {/* Password Requirements */}
-                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                  {t('personalInfo.passwordRequirements')} {/* i18n */}
+                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                  {t('personalInfo.passwordResetDescription')} {/* i18n */}
                 </p>
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 mt-4">
                   <Button
-                    onClick={() => {
-                      setShowPasswordSection(false);
-                      setPasswordData({ newPassword: '', confirmPassword: '' });
-                    }}
+                    onClick={() => setShowPasswordSection(false)}
                     variant="outline"
                     className="flex-1"
-                    disabled={updatingPassword}
+                    disabled={sendingResetEmail}
                   >
                     {t('common.cancel')} {/* i18n */}
                   </Button>
                   <Button
-                    onClick={handlePasswordChange}
+                    onClick={handleSendPasswordResetEmail}
                     className="flex-1 bg-primary text-white"
-                    disabled={updatingPassword}
+                    disabled={sendingResetEmail}
                   >
-                    {updatingPassword ? t('common.updating') : t('personalInfo.updatePassword')} {/* i18n */}
+                    {sendingResetEmail ? t('common.sending') : t('personalInfo.sendResetEmail')} {/* i18n */}
                   </Button>
                 </div>
               </div>
