@@ -204,11 +204,11 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                         <h3 className="font-semibold truncate">{match.otherUser.name}</h3>
                         <Badge className="bg-pink-100 text-pink-800">
                           <Heart className="w-3 h-3 mr-1" />
-                          Match
+                          {t('messages.match')}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{match.otherUser.role === 'sitter' ? '🐾 Sitter' : '🏠 Owner'}</span>
+                        <span>{match.otherUser.role === 'sitter' ? `🐾 ${t('messages.sitter')}` : `🏠 ${t('messages.owner')}`}</span>
                         <span>•</span>
                         <span>{formatDate(new Date(match.created_at))}</span>
                       </div>
