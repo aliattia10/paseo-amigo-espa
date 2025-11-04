@@ -33,14 +33,24 @@ ADD COLUMN IF NOT EXISTS last_active TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE users 
 ADD COLUMN IF NOT EXISTS profile_completion INTEGER DEFAULT 0;
 
--- Add constraints
-ALTER TABLE users 
-ADD CONSTRAINT IF NOT EXISTS users_rating_check 
-CHECK (rating >= 0 AND rating <= 5);
+-- Add constraints (drop first if exists to avoid errors)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'users_rating_check'
+  ) THEN
+    ALTER TABLE users ADD CONSTRAINT users_rating_check CHECK (rating >= 0 AND rating <= 5);
+  END IF;
+END $$;
 
-ALTER TABLE users 
-ADD CONSTRAINT IF NOT EXISTS users_profile_completion_check 
-CHECK (profile_completion >= 0 AND profile_completion <= 100);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'users_profile_completion_check'
+  ) THEN
+    ALTER TABLE users ADD CONSTRAINT users_profile_completion_check CHECK (profile_completion >= 0 AND profile_completion <= 100);
+  END IF;
+END $$;
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_users_rating ON users(rating);

@@ -10,9 +10,14 @@ ALTER TABLE users
 ADD COLUMN IF NOT EXISTS review_count INTEGER DEFAULT 0;
 
 -- Add constraint to ensure rating is between 0 and 5
-ALTER TABLE users 
-ADD CONSTRAINT IF NOT EXISTS users_rating_check 
-CHECK (rating >= 0 AND rating <= 5);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'users_rating_check'
+  ) THEN
+    ALTER TABLE users ADD CONSTRAINT users_rating_check CHECK (rating >= 0 AND rating <= 5);
+  END IF;
+END $$;
 
 -- Create index for faster rating queries
 CREATE INDEX IF NOT EXISTS idx_users_rating ON users(rating);
