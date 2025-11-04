@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
+import i18n from '@/lib/i18n';
 
 const ProfileEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -370,7 +371,15 @@ const ProfileEditPage: React.FC = () => {
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
           Edit Profile
         </h2>
-        <div className="w-10"></div>
+        <button
+          onClick={() => {
+            const newLang = i18n.language === 'en' ? 'es' : 'en';
+            i18n.changeLanguage(newLang);
+          }}
+          className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          {i18n.language === 'en' ? 'ES' : 'EN'}
+        </button>
       </div>
 
       {/* Main Content - Scrollable */}

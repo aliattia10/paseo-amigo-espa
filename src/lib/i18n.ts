@@ -1621,16 +1621,15 @@ i18n
   .init({
     resources,
     fallbackLng: 'en',
-    lng: detectLanguageFromLocation(),
+    lng: localStorage.getItem('i18nextLng') || 'en', // Default to English, respect user's choice
     
     detection: {
-      order: ['localStorage', 'path', 'htmlTag', 'navigator'],
+      order: ['localStorage'], // Only use localStorage, ignore browser/location detection
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
-      lookupFromPathIndex: 0,
     },
     
-    supportedLngs: ['en', 'fr', 'de', 'es', 'pt', 'it', 'ru', 'pl'],
+    supportedLngs: ['en', 'es'], // Only English and Spanish for now
     
     interpolation: {
       escapeValue: false,

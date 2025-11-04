@@ -9,6 +9,7 @@ import MatchModal from '@/components/ui/MatchModal';
 import FiltersModal, { FilterOptions } from '@/components/ui/FiltersModal';
 import { playMatchSound, playLikeSound } from '@/lib/sounds';
 import { supabase } from '@/integrations/supabase/client';
+import i18n from '@/lib/i18n';
 
 interface Profile {
   id: string;
@@ -607,6 +608,16 @@ const NewHomePage: React.FC = () => {
             Petflik
           </h1>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const newLang = i18n.language === 'en' ? 'es' : 'en';
+                i18n.changeLanguage(newLang);
+              }}
+              className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-3 bg-transparent text-[#0e1b13] dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+              title="Change language"
+            >
+              {i18n.language === 'en' ? 'ES' : 'EN'}
+            </button>
             <button 
               onClick={() => setShowFilters(true)}
               className="relative flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
