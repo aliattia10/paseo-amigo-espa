@@ -1,11 +1,13 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = React.useState(true);
   const [user, setUser] = React.useState<any | null>(null);
   const [photos, setPhotos] = React.useState<string[]>([]);
@@ -50,7 +52,7 @@ const UserProfilePage: React.FC = () => {
         <button onClick={() => navigate(-1)} className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center">
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
-        <h1 className="text-[#0e1b13] dark:text-gray-100 text-xl font-bold flex-1 text-center">Profile</h1>
+        <h1 className="text-[#0e1b13] dark:text-gray-100 text-xl font-bold flex-1 text-center">{t('profile.title')}</h1>
         <div className="w-10" />
       </header>
 
@@ -90,7 +92,7 @@ const UserProfilePage: React.FC = () => {
                 {typeof user.reviews_count === 'number' && (
                   <span className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-semibold px-3 py-1 rounded-full">
                     <span className="material-symbols-outlined text-sm">reviews</span>
-                    {user.reviews_count} reviews
+                    {user.reviews_count} {t('profile.reviews')}
                   </span>
                 )}
               </div>
@@ -117,7 +119,7 @@ const UserProfilePage: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="text-center text-gray-600 dark:text-gray-400">Profile not found</div>
+          <div className="text-center text-gray-600 dark:text-gray-400">{t('profile.notFound')}</div>
         )}
       </main>
     </div>

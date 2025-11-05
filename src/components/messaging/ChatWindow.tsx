@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Send, ArrowLeft, MessageCircle, Image, Video, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ChatMessage, WalkRequest } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 interface ChatWindowProps {
   walkRequest: WalkRequest | null;
@@ -25,6 +26,7 @@ interface ChatWindowProps {
 const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser, matchId }) => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -273,7 +275,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta mx-auto mb-2"></div>
-          <p className="text-muted-foreground">Cargando mensajes...</p>
+          <p className="text-muted-foreground">{t('messages.loadingMessages')}</p>
         </div>
       </div>
     );
@@ -309,7 +311,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               }}
               className="bg-primary hover:bg-primary/90"
             >
-              📅 Book Now
+              📅 {t('messages.bookNow')}
             </Button>
           )}
         </div>
@@ -321,7 +323,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             <div className="flex flex-col items-center justify-center h-full text-center">
               <MessageCircle className="w-12 h-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">
-                No hay mensajes aún. ¡Inicia la conversación!
+                {t('messages.noMessages')}
               </p>
             </div>
           ) : (
@@ -436,7 +438,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Escribe un mensaje..."
+              placeholder={t('messages.writeMessage')}
               className="flex-1"
               disabled={sending || uploading}
             />

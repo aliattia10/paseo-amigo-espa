@@ -15,8 +15,6 @@ const resources = {
       'nav.discover': 'Discover',
       'nav.nearby': 'Nearby',
       'nav.feed': 'Feed',
-      'nav.bookings': 'Bookings',
-      'nav.notifications': 'Notifications',
       
       // Auth
       'auth.login': 'Login',
@@ -101,15 +99,6 @@ const resources = {
       'dashboard.messages': 'Messages',
       'dashboard.connectCommunity': 'Connect with your community',
       'dashboard.myCompanions': 'My Companions',
-      
-      // Messages
-      'messages.conversations': 'Conversations',
-      'messages.noConversations': 'No conversations',
-      'messages.matchToChat': 'When you match with someone, you can chat here and coordinate services.',
-      'messages.loadError': 'Could not load conversations',
-      'messages.match': 'Match',
-      'messages.sitter': 'Sitter',
-      'messages.owner': 'Owner',
       'dashboard.addFirstCompanion': 'Add your first companion!',
       'dashboard.registerDogToFind': 'Register your dog to start finding trusted walkers in your area.',
       'dashboard.addFirstDog': 'Add my first dog',
@@ -231,6 +220,27 @@ const resources = {
       'common.back': 'Back',
       'common.next': 'Next',
       'common.previous': 'Previous',
+      
+      // Messages & Chat
+      'messages.writeMessage': 'Write a message...',
+      'messages.conversations': 'Conversations',
+      'messages.noConversations': 'No conversations',
+      'messages.matchDescription': 'When you match with someone, you can chat here and coordinate services.',
+      'messages.loadingMessages': 'Loading messages...',
+      'messages.noMessages': 'No messages yet. Start the conversation!',
+      'messages.bookNow': 'Book Now',
+      'messages.match': 'Match',
+      'messages.owner': 'Owner',
+      'messages.sitter': 'Sitter',
+      
+      // Profile
+      'profile.title': 'Profile',
+      'profile.aboutMe': 'About me',
+      'profile.notFound': 'Profile not found',
+      
+      // Bookings & Notifications
+      'nav.bookings': 'Bookings',
+      'nav.notifications': 'Notifications',
       
       // Home
       'home.noUsersAvailable': 'No users available',
@@ -486,8 +496,6 @@ const resources = {
       'nav.discover': 'Découvrir',
       'nav.nearby': 'À Proximité',
       'nav.feed': 'Fil',
-      'nav.bookings': 'Réservations',
-      'nav.notifications': 'Notifications',
       
       // Auth
       'auth.login': 'Connexion',
@@ -532,16 +540,6 @@ const resources = {
       'dashboard.messages': 'Messages',
       'dashboard.connectCommunity': 'Connectez-vous avec votre communauté',
       'dashboard.myCompanions': 'Mes Compagnons',
-      
-      // Messages
-      'messages.conversations': 'Conversations',
-      'messages.noConversations': 'Aucune conversation',
-      'messages.matchToChat': 'Lorsque vous faites un match avec quelqu\'un, vous pouvez discuter ici et coordonner les services.',
-      'messages.loadError': 'Impossible de charger les conversations',
-      'messages.match': 'Match',
-      'messages.sitter': 'Gardien',
-      'messages.owner': 'Propriétaire',
-      
       'dashboard.myDogs': 'Mes Chiens',
       'dashboard.addDog': 'Ajouter un Chien',
       'dashboard.upcomingWalks': 'Promenades à Venir',
@@ -624,6 +622,27 @@ const resources = {
       'common.back': 'Retour',
       'common.next': 'Suivant',
       'common.previous': 'Précédent',
+      
+      // Messages & Chat
+      'messages.writeMessage': 'Écrire un message...',
+      'messages.conversations': 'Conversations',
+      'messages.noConversations': 'Aucune conversation',
+      'messages.matchDescription': 'Quand vous matcherez avec quelqu\'un, vous pourrez discuter ici et coordonner les services.',
+      'messages.loadingMessages': 'Chargement des messages...',
+      'messages.noMessages': 'Pas encore de messages. Commencez la conversation !',
+      'messages.bookNow': 'Réserver Maintenant',
+      'messages.match': 'Match',
+      'messages.owner': 'Propriétaire',
+      'messages.sitter': 'Gardien',
+      
+      // Profile
+      'profile.title': 'Profil',
+      'profile.aboutMe': 'À propos de moi',
+      'profile.notFound': 'Profil introuvable',
+      
+      // Bookings & Notifications
+      'nav.bookings': 'Réservations',
+      'nav.notifications': 'Notifications',
       
       // Home
       'home.noUsersAvailable': 'Aucun utilisateur disponible',
@@ -957,6 +976,28 @@ const resources = {
       'common.next': 'Weiter',
       'common.previous': 'Vorherige',
       
+      // Messages & Chat
+      'messages.writeMessage': 'Nachricht schreiben...',
+      'messages.conversations': 'Unterhaltungen',
+      'messages.noConversations': 'Keine Unterhaltungen',
+      'messages.matchDescription': 'Wenn Sie mit jemandem matchen, können Sie hier chatten und Dienstleistungen koordinieren.',
+      'messages.loadingMessages': 'Nachrichten werden geladen...',
+      'messages.noMessages': 'Noch keine Nachrichten. Starten Sie das Gespräch!',
+      'messages.bookNow': 'Jetzt Buchen',
+      'messages.match': 'Match',
+      'messages.owner': 'Besitzer',
+      'messages.sitter': 'Betreuer',
+      
+      // Profile
+      'profile.title': 'Profil',
+      'profile.aboutMe': 'Über mich',
+      'profile.notFound': 'Profil nicht gefunden',
+      'profile.reviews': 'Bewertungen',
+      
+      // Bookings & Notifications
+      'nav.bookings': 'Buchungen',
+      'nav.notifications': 'Benachrichtigungen',
+      
       // Home
       'home.noUsersAvailable': 'Keine Benutzer verfügbar',
       'home.noWalkersFound': 'Wir konnten keine Hundesitter in Ihrer Nähe finden. Versuchen Sie es später noch einmal oder erweitern Sie Ihre Suche.',
@@ -1029,8 +1070,6 @@ const resources = {
       'nav.discover': 'Descubrir',
       'nav.nearby': 'Cercanos',
       'nav.feed': 'Actividad',
-      'nav.bookings': 'Reservas',
-      'nav.notifications': 'Notificaciones',
       
       // Auth
       'auth.login': 'Iniciar Sesión',
@@ -1115,15 +1154,6 @@ const resources = {
       'dashboard.messages': 'Mensajes',
       'dashboard.connectCommunity': 'Conecta con tu comunidad',
       'dashboard.myCompanions': 'Mis Compañeros',
-      
-      // Messages
-      'messages.conversations': 'Conversaciones',
-      'messages.noConversations': 'Sin conversaciones',
-      'messages.matchToChat': 'Cuando hagas match con alguien, podrás chatear aquí y coordinar servicios.',
-      'messages.loadError': 'No se pudieron cargar las conversaciones',
-      'messages.match': 'Match',
-      'messages.sitter': 'Cuidador',
-      'messages.owner': 'Dueño',
       'dashboard.addFirstCompanion': '¡Añade tu primer compañero!',
       'dashboard.registerDogToFind': 'Registra a tu perro para empezar a encontrar paseadores de confianza en tu zona.',
       'dashboard.addFirstDog': 'Añadir mi primer perro',
@@ -1245,6 +1275,27 @@ const resources = {
       'common.back': 'Atrás',
       'common.next': 'Siguiente',
       'common.previous': 'Anterior',
+      
+      // Messages & Chat
+      'messages.writeMessage': 'Escribe un mensaje...',
+      'messages.conversations': 'Conversaciones',
+      'messages.noConversations': 'No hay conversaciones',
+      'messages.matchDescription': 'Cuando hagas match con alguien, podrás chatear aquí y coordinar servicios.',
+      'messages.loadingMessages': 'Cargando mensajes...',
+      'messages.noMessages': 'No hay mensajes aún. ¡Inicia la conversación!',
+      'messages.bookNow': 'Reservar Ahora',
+      'messages.match': 'Match',
+      'messages.owner': 'Dueño',
+      'messages.sitter': 'Sitter',
+      
+      // Profile
+      'profile.title': 'Perfil',
+      'profile.aboutMe': 'Sobre mí',
+      'profile.notFound': 'Perfil no encontrado',
+      
+      // Bookings & Notifications
+      'nav.bookings': 'Reservas',
+      'nav.notifications': 'Notificaciones',
       
       // Home
       'home.noUsersAvailable': 'No hay usuarios disponibles',
@@ -1606,6 +1657,28 @@ const resources = {
       'common.next': 'Próximo',
       'common.previous': 'Anterior',
       
+      // Messages & Chat
+      'messages.writeMessage': 'Escrever uma mensagem...',
+      'messages.conversations': 'Conversas',
+      'messages.noConversations': 'Sem conversas',
+      'messages.matchDescription': 'Quando você fizer match com alguém, poderá conversar aqui e coordenar serviços.',
+      'messages.loadingMessages': 'Carregando mensagens...',
+      'messages.noMessages': 'Ainda sem mensagens. Comece a conversa!',
+      'messages.bookNow': 'Agendar Agora',
+      'messages.match': 'Match',
+      'messages.owner': 'Dono',
+      'messages.sitter': 'Cuidador',
+      
+      // Profile
+      'profile.title': 'Perfil',
+      'profile.aboutMe': 'Sobre mim',
+      'profile.notFound': 'Perfil não encontrado',
+      'profile.reviews': 'avaliações',
+      
+      // Bookings & Notifications
+      'nav.bookings': 'Reservas',
+      'nav.notifications': 'Notificações',
+      
       // Home
       'home.noUsersAvailable': 'Nenhum usuário disponível',
       'home.noWalkersFound': 'Não encontramos passeadores na sua área. Tente novamente mais tarde ou expanda sua busca.',
@@ -1752,6 +1825,28 @@ const resources = {
       'common.back': 'Indietro',
       'common.next': 'Avanti',
       'common.previous': 'Precedente',
+      
+      // Messages & Chat
+      'messages.writeMessage': 'Scrivi un messaggio...',
+      'messages.conversations': 'Conversazioni',
+      'messages.noConversations': 'Nessuna conversazione',
+      'messages.matchDescription': 'Quando fai match con qualcuno, puoi chattare qui e coordinare i servizi.',
+      'messages.loadingMessages': 'Caricamento messaggi...',
+      'messages.noMessages': 'Ancora nessun messaggio. Inizia la conversazione!',
+      'messages.bookNow': 'Prenota Ora',
+      'messages.match': 'Match',
+      'messages.owner': 'Proprietario',
+      'messages.sitter': 'Custode',
+      
+      // Profile
+      'profile.title': 'Profilo',
+      'profile.aboutMe': 'Chi sono',
+      'profile.notFound': 'Profilo non trovato',
+      'profile.reviews': 'recensioni',
+      
+      // Bookings & Notifications
+      'nav.bookings': 'Prenotazioni',
+      'nav.notifications': 'Notifiche',
       
       // Home
       'home.noUsersAvailable': 'Nessun utente disponibile',
@@ -1900,6 +1995,28 @@ const resources = {
       'common.next': 'Далее',
       'common.previous': 'Предыдущий',
       
+      // Messages & Chat
+      'messages.writeMessage': 'Написать сообщение...',
+      'messages.conversations': 'Беседы',
+      'messages.noConversations': 'Нет бесед',
+      'messages.matchDescription': 'Когда вы совпадете с кем-то, вы сможете общаться здесь и координировать услуги.',
+      'messages.loadingMessages': 'Загрузка сообщений...',
+      'messages.noMessages': 'Пока нет сообщений. Начните разговор!',
+      'messages.bookNow': 'Забронировать Сейчас',
+      'messages.match': 'Совпадение',
+      'messages.owner': 'Владелец',
+      'messages.sitter': 'Ситтер',
+      
+      // Profile
+      'profile.title': 'Профиль',
+      'profile.aboutMe': 'Обо мне',
+      'profile.notFound': 'Профиль не найден',
+      'profile.reviews': 'отзывов',
+      
+      // Bookings & Notifications
+      'nav.bookings': 'Бронирования',
+      'nav.notifications': 'Уведомления',
+      
       // Home
       'home.noUsersAvailable': 'Нет доступных пользователей',
       'home.noWalkersFound': 'Мы не нашли выгульщиков в вашем районе. Попробуйте позже или расширьте область поиска.',
@@ -2046,6 +2163,28 @@ const resources = {
       'common.back': 'Wstecz',
       'common.next': 'Dalej',
       'common.previous': 'Poprzedni',
+      
+      // Messages & Chat
+      'messages.writeMessage': 'Napisz wiadomość...',
+      'messages.conversations': 'Rozmowy',
+      'messages.noConversations': 'Brak rozmów',
+      'messages.matchDescription': 'Gdy zrobisz dopasowanie z kimś, będziesz mógł rozmawiać tutaj i koordynować usługi.',
+      'messages.loadingMessages': 'Ładowanie wiadomości...',
+      'messages.noMessages': 'Jeszcze brak wiadomości. Rozpocznij rozmowę!',
+      'messages.bookNow': 'Zarezerwuj Teraz',
+      'messages.match': 'Dopasowanie',
+      'messages.owner': 'Właściciel',
+      'messages.sitter': 'Opiekun',
+      
+      // Profile
+      'profile.title': 'Profil',
+      'profile.aboutMe': 'O mnie',
+      'profile.notFound': 'Profil nie znaleziony',
+      'profile.reviews': 'opinie',
+      
+      // Bookings & Notifications
+      'nav.bookings': 'Rezerwacje',
+      'nav.notifications': 'Powiadomienia',
       
       // Home
       'home.noUsersAvailable': 'Brak dostępnych użytkowników',

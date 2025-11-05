@@ -152,7 +152,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta mx-auto mb-2"></div>
-          <p className="text-muted-foreground">{t('common.loading')}</p>
+          <p className="text-muted-foreground">{t('messages.loadingMessages') || t('common.loading') || 'Loading...'}</p>
         </div>
       </div>
     );
@@ -165,7 +165,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
           <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">{t('messages.noConversations') || 'No conversations'}</h3>
           <p className="text-muted-foreground">
-            {t('messages.matchToChat') || 'When you match with someone, you can chat here and coordinate services.'}
+            {t('messages.matchDescription') || t('messages.matchToChat') || 'When you match with someone, you can chat here and coordinate services.'}
           </p>
         </CardContent>
       </Card>
