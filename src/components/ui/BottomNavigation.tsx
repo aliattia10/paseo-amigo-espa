@@ -10,12 +10,15 @@ interface BottomNavigationProps {
 const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadCount = 0, unreadNotifications = 0 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const isActive = (path: string) => location.pathname === path;
+  
+  // Force re-render when language changes
+  const currentLanguage = i18n.language;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-10 bg-card-light/90 dark:bg-card-dark/90 border-t border-border-light dark:border-border-dark backdrop-blur-sm">
+    <nav key={currentLanguage} className="fixed bottom-0 left-0 right-0 z-10 bg-card-light/90 dark:bg-card-dark/90 border-t border-border-light dark:border-border-dark backdrop-blur-sm">
       <div className="flex justify-around items-center h-16 px-2 max-w-md mx-auto">
         <button 
           onClick={() => navigate('/dashboard')} 
