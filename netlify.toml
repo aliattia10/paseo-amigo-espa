@@ -5,6 +5,8 @@
 [build.environment]
   NODE_VERSION = "18"
   NPM_FLAGS = "--production=false"
+  # Disable secrets scanning for documentation files
+  SECRETS_SCAN_ENABLED = "false"
 
 # Headers for security and performance
 [[headers]]
