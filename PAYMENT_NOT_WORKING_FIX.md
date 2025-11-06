@@ -27,9 +27,9 @@ The payment form can't load because `VITE_STRIPE_PUBLISHABLE_KEY` is not set in 
 Create a file named `.env` in your project root:
 
 ```env
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_KEY_HERE
-VITE_SUPABASE_URL=https://zxbfygofxxmfivddwdqt.supabase.co
-VITE_SUPABASE_ANON_KEY=YOUR_ANON_KEY_HERE
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_ACTUAL_KEY_HERE
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your_actual_anon_key_here
 ```
 
 Replace:
@@ -39,7 +39,7 @@ Replace:
 ### Step 3: Add Stripe Secret Key to Supabase
 
 1. Go to https://app.supabase.com
-2. Select your project (zxbfygofxxmfivddwdqt)
+2. Select your project
 3. Go to Edge Functions → Manage secrets
 4. Click "Add secret"
 5. Name: `STRIPE_SECRET_KEY`

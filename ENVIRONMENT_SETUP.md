@@ -74,9 +74,9 @@ STRIPE_SECRET_KEY=sk_test_your_secret_key_here
 
 3. **Add your keys:**
    ```env
-   VITE_SUPABASE_URL=https://zxbfygofxxmfivddwdqt.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-actual-anon-key
-   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your-actual-key
+   VITE_SUPABASE_URL=https://your-project-id.supabase.co
+   VITE_SUPABASE_ANON_KEY=your_actual_anon_key_here
+   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_actual_key_here
    ```
 
 4. **Restart your dev server:**
