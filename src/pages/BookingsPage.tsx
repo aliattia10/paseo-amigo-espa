@@ -310,10 +310,17 @@ const BookingsPage: React.FC = () => {
   };
 
   return (
-    <div className="relative mx-auto flex h-screen max-w-md flex-col bg-background-light dark:bg-background-dark overflow-y-auto">
-      <header className="sticky top-0 z-10 flex items-center justify-between bg-card-light/80 dark:bg-card-dark/80 px-4 py-3 backdrop-blur-sm">
-        <button onClick={() => navigate('/dashboard')}><span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">arrow_back</span></button>
-        <h1 className="text-text-primary-light dark:text-text-primary-dark text-xl font-bold">{t('bookings.myBookings')}</h1>
+    <div className="relative mx-auto flex h-screen max-w-md flex-col bg-background-light dark:bg-background-dark">
+      {/* Header */}
+      <header className="sticky top-0 z-20 flex items-center justify-between bg-card-light/95 dark:bg-card-dark/95 px-4 py-3 backdrop-blur-sm border-b border-border-light dark:border-border-dark">
+        <button onClick={() => navigate('/dashboard')}>
+          <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
+            arrow_back
+          </span>
+        </button>
+        <h1 className="text-text-primary-light dark:text-text-primary-dark text-xl font-bold">
+          {t('bookings.myBookings')}
+        </h1>
         <button
           onClick={() => {
             const languages = ['en', 'es', 'fr'];
@@ -326,133 +333,178 @@ const BookingsPage: React.FC = () => {
           {i18n.language === 'en' ? 'EN' : i18n.language === 'es' ? 'ES' : 'FR'}
         </button>
       </header>
-      <div className="flex px-4 py-3 gap-2 overflow-x-auto">
+      
+      {/* Filter Tabs */}
+      <div className="sticky top-[60px] z-10 flex px-4 py-3 gap-2 overflow-x-auto bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark">
         {['all', 'pending', 'accepted', 'completed'].map((tab) => (
-          <button key={tab} onClick={() => setFilter(tab as any)} className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${filter === tab ? 'bg-primary text-white' : 'bg-card-light dark:bg-card-dark'}`}>{t(`bookings.filter.${tab}`)}</button>
+          <button 
+            key={tab} 
+            onClick={() => setFilter(tab as any)} 
+            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap text-sm transition-colors flex-shrink-0 ${
+              filter === tab 
+                ? 'bg-primary text-white shadow-sm' 
+                : 'bg-card-light dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark hover:bg-gray-100 dark:hover:bg-gray-800'
+            }`}
+          >
+            {t(`bookings.filter.${tab}`)}
+          </button>
         ))}
       </div>
-      <main className="flex-1 space-y-3 px-4 pb-24">
-        {loading ? <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div> : filteredBookings.length === 0 ? <div className="flex flex-col items-center justify-center py-12 text-center"><span className="material-symbols-outlined text-6xl mb-4 text-text-secondary-light dark:text-text-secondary-dark">event_busy</span><p className="font-medium text-text-primary-light dark:text-text-primary-dark mb-2">No bookings found</p><p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4">Start browsing sitters to make your first booking!</p></div> : filteredBookings.map((booking) => (
-          <div key={booking.id} className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm space-y-3">
-            <div className="flex justify-between items-start">
-              <div><p className="text-lg font-bold">{booking.walker_name}</p><p className="text-sm">{booking.dog_name}</p></div>
-              <span className={`text-xs font-bold px-3 py-1 rounded-full ${getStatusColor(booking.status)}`}>
-                {booking.status === 'confirmed' ? t('bookings.confirmed') : booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+      {/* Main Content - Scrollable */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="space-y-3 px-4 py-3 pb-24">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredBookings.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <span className="material-symbols-outlined text-6xl mb-4 text-text-secondary-light dark:text-text-secondary-dark">
+                event_busy
               </span>
+              <p className="font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                No bookings found
+              </p>
+              <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4">
+                Start browsing sitters to make your first booking!
+              </p>
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">calendar_today</span><span>{new Date(booking.booking_date).toLocaleDateString()}</span></div>
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-base">schedule</span><span>{booking.start_time} • {booking.duration_hours}h</span></div>
-            </div>
-            
-            {/* Show Accept/Decline buttons when booking is requested (for SITTER) */}
-            {(booking.status as string) === 'requested' && currentUser?.id === booking.sitter_id && (
-              <div className="flex gap-2 pt-2">
-                <Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">{t('bookings.accept')}</Button>
-                <Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">{t('bookings.decline')}</Button>
+          ) : (
+            filteredBookings.map((booking) => (
+            <div key={booking.id} className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{booking.walker_name}</p>
+                  <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">{booking.dog_name}</p>
+                </div>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap ${getStatusColor(booking.status)}`}>
+                  {booking.status === 'confirmed' ? t('bookings.confirmed') : booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                </span>
               </div>
-            )}
+              
+              <div className="space-y-2 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base">calendar_today</span>
+                  <span>{new Date(booking.booking_date).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base">schedule</span>
+                  <span>{booking.start_time} • {booking.duration_hours}h</span>
+                </div>
+              </div>
             
-            {/* Show Pay Now button when booking confirmed but not paid (OWNER) */}
-            {(booking.status as string) === 'confirmed' && (!booking.payment_status || booking.payment_status === 'pending') && currentUser?.id === booking.owner_id && (
-              <div className="flex gap-2 pt-2">
+              {/* Show Accept/Decline buttons when booking is requested (for SITTER) */}
+              {(booking.status as string) === 'requested' && currentUser?.id === booking.sitter_id && (
+                <div className="flex gap-2">
+                  <Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">
+                    {t('bookings.accept')}
+                  </Button>
+                  <Button onClick={() => handleCancelBooking(booking.id)} variant="outline" className="flex-1">
+                    {t('bookings.decline')}
+                  </Button>
+                </div>
+              )}
+              
+              {/* Show Pay Now button when booking confirmed but not paid (OWNER) */}
+              {(booking.status as string) === 'confirmed' && (!booking.payment_status || booking.payment_status === 'pending') && currentUser?.id === booking.owner_id && (
                 <Button 
-                  onClick={() => navigate(`/payment?bookingId=${booking.id}&amount=${booking.total_amount}`)} 
-                  className="flex-1 bg-primary text-white"
+                  onClick={() => navigate(`/payment?bookingId=${booking.id}`)} 
+                  className="w-full bg-primary text-white"
                 >
                   💳 {t('bookings.payNow')} - €{booking.total_amount.toFixed(2)}
                 </Button>
-              </div>
-            )}
-            
-            {/* Show waiting message when confirmed and paid */}
-            {(booking.status as string) === 'confirmed' && booking.payment_status === 'held' && (
-              <div className="pt-2">
-                <div className="text-sm text-center text-green-600 dark:text-green-400 mb-2">
-                  ✓ Payment secured - Waiting for service
-                </div>
-                {/* SITTER: Show "Mark as Complete" button */}
-                {currentUser?.id === booking.sitter_id && (
-                  <Button 
-                    onClick={() => handleMarkComplete(booking.id)} 
-                    className="w-full bg-green-600 text-white hover:bg-green-700"
-                  >
-                    ✅ Mark Service Complete
-                  </Button>
-                )}
-              </div>
-            )}
-            
-            {/* Service completed by sitter, waiting for owner confirmation */}
-            {(booking.status as string) === 'completed' && booking.completed_at && !booking.completion_confirmed_at && (
-              <div className="pt-2">
-                {currentUser?.id === booking.owner_id ? (
-                  <>
-                    <div className="text-sm text-center text-blue-600 dark:text-blue-400 mb-2">
-                      🎉 Service completed! Please confirm and review
-                    </div>
+              )}
+              
+              {/* Show waiting message when confirmed and paid */}
+              {(booking.status as string) === 'confirmed' && booking.payment_status === 'held' && (
+                <div>
+                  <div className="text-sm text-center text-green-600 dark:text-green-400 mb-2">
+                    ✓ Payment secured - Waiting for service
+                  </div>
+                  {/* SITTER: Show "Mark as Complete" button */}
+                  {currentUser?.id === booking.sitter_id && (
                     <Button 
-                      onClick={() => handleConfirmCompletion(booking.id, booking)} 
-                      className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                      onClick={() => handleMarkComplete(booking.id)} 
+                      className="w-full bg-green-600 text-white hover:bg-green-700"
                     >
-                      ✓ Confirm & Review
+                      ✅ Mark Service Complete
                     </Button>
-                  </>
-                ) : (
-                  <div className="text-sm text-center text-blue-600 dark:text-blue-400">
-                    ⏳ Waiting for owner confirmation
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* Completion confirmed, payment in 3-day hold */}
-            {(booking.status as string) === 'completed' && booking.completion_confirmed_at && booking.payment_status === 'held' && !booking.payment_released_at && (
-              <div className="pt-2">
-                <div className="text-sm text-center mb-2">
-                  <div className="text-green-600 dark:text-green-400 font-medium">
-                    ✅ Service Confirmed
-                  </div>
-                  {booking.eligible_for_release_at && (
-                    <div className="text-gray-600 dark:text-gray-400 text-xs mt-1">
-                      Payment release: {getReleaseCountdown(booking.eligible_for_release_at)}
+                  )}
+                </div>
+              )}
+              
+              {/* Service completed by sitter, waiting for owner confirmation */}
+              {(booking.status as string) === 'completed' && booking.completed_at && !booking.completion_confirmed_at && (
+                <div>
+                  {currentUser?.id === booking.owner_id ? (
+                    <>
+                      <div className="text-sm text-center text-blue-600 dark:text-blue-400 mb-2">
+                        🎉 Service completed! Please confirm and review
+                      </div>
+                      <Button 
+                        onClick={() => handleConfirmCompletion(booking.id, booking)} 
+                        className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        ✓ Confirm & Review
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="text-sm text-center text-blue-600 dark:text-blue-400">
+                      ⏳ Waiting for owner confirmation
                     </div>
                   )}
                 </div>
-                {/* OWNER: Can force early release */}
-                {currentUser?.id === booking.owner_id && booking.eligible_for_release_at && (
-                  <Button 
-                    onClick={() => handleForceReleasePayment(booking.id)} 
-                    variant="outline"
-                    className="w-full"
-                  >
-                    💰 Release Payment Now
-                  </Button>
-                )}
-                {/* SITTER: Just shows waiting */}
-                {currentUser?.id === booking.sitter_id && (
-                  <div className="text-xs text-center text-gray-500">
-                    Payment will be automatically released after 3 days
+              )}
+              
+              {/* Completion confirmed, payment in 3-day hold */}
+              {(booking.status as string) === 'completed' && booking.completion_confirmed_at && booking.payment_status === 'held' && !booking.payment_released_at && (
+                <div>
+                  <div className="text-sm text-center mb-2">
+                    <div className="text-green-600 dark:text-green-400 font-medium">
+                      ✅ Service Confirmed
+                    </div>
+                    {booking.eligible_for_release_at && (
+                      <div className="text-gray-600 dark:text-gray-400 text-xs mt-1">
+                        Payment release: {getReleaseCountdown(booking.eligible_for_release_at)}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
-            
-            {/* Payment released */}
-            {booking.payment_status === 'released' && booking.payment_released_at && (
-              <div className="pt-2 text-sm text-center text-green-600 dark:text-green-400 font-medium">
-                💵 Payment Released - Transferred to sitter
-              </div>
-            )}
-            
-            {/* Show Cancel & Refund button when requested and payment held */}
-            {(booking.status as string) === 'requested' && booking.payment_status === 'held' && (
-              <div className="flex gap-2 pt-2">
-                <Button onClick={() => handleRefund(booking.id)} variant="destructive" className="flex-1">{t('bookings.cancelRefund')}</Button>
-              </div>
-            )}
-          </div>
-        ))}
+                  {/* OWNER: Can force early release */}
+                  {currentUser?.id === booking.owner_id && booking.eligible_for_release_at && (
+                    <Button 
+                      onClick={() => handleForceReleasePayment(booking.id)} 
+                      variant="outline"
+                      className="w-full"
+                    >
+                      💰 Release Payment Now
+                    </Button>
+                  )}
+                  {/* SITTER: Just shows waiting */}
+                  {currentUser?.id === booking.sitter_id && (
+                    <div className="text-xs text-center text-gray-500">
+                      Payment will be automatically released after 3 days
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Payment released */}
+              {booking.payment_status === 'released' && booking.payment_released_at && (
+                <div className="text-sm text-center text-green-600 dark:text-green-400 font-medium">
+                  💵 Payment Released - Transferred to sitter
+                </div>
+              )}
+              
+              {/* Show Cancel & Refund button when requested and payment held */}
+              {(booking.status as string) === 'requested' && booking.payment_status === 'held' && (
+                <Button onClick={() => handleRefund(booking.id)} variant="destructive" className="w-full">
+                  {t('bookings.cancelRefund')}
+                </Button>
+              )}
+            </div>
+          ))
+        )}
+        </div>
       </main>
       <BottomNavigation />
       

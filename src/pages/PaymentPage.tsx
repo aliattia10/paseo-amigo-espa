@@ -10,7 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+if (!STRIPE_KEY) {
+  console.error('❌ VITE_STRIPE_PUBLISHABLE_KEY is not set in environment variables!');
+  console.error('Please add it to your .env file:');
+  console.error('VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...');
+}
+
+const stripePromise = loadStripe(STRIPE_KEY || '');
 
 function PaymentForm({ bookingId, amount, onSuccess }: { bookingId: string; amount: number; onSuccess: () => void }) {
   const stripe = useStripe();
@@ -115,6 +123,8 @@ export default function PaymentPage() {
         const amount = bookingData.total_price || bookingData.payment_amount || 0;
 
         // Create payment intent with Stripe Connect (20% platform fee)
+        console.log('Creating payment for booking:', bookingData.id, 'Amount:', amount);
+        
         const { data, error } = await supabase.functions.invoke('create-payment-with-connect', {
           body: {
             bookingId: bookingData.id,
@@ -122,16 +132,26 @@ export default function PaymentPage() {
           },
         });
 
+        console.log('Payment creation response:', { data, error });
+
         if (error) {
           console.error('Payment creation error:', error);
           console.error('Error details:', JSON.stringify(error, null, 2));
-          throw new Error(error.message || 'Failed to create payment');
+          
+          // Show more specific error message
+          const errorMessage = error.message || error.msg || 'Failed to create payment';
+          toast.error(`Payment Error: ${errorMessage}`);
+          throw new Error(errorMessage);
         }
 
         if (!data || !data.clientSecret) {
           console.error('Response data:', data);
-          throw new Error(data?.error || 'No client secret returned from payment creation');
+          const errorMsg = data?.error || 'No client secret returned from payment creation';
+          toast.error(`Payment Setup Error: ${errorMsg}`);
+          throw new Error(errorMsg);
         }
+
+        console.log('Payment intent created successfully, client secret received');
 
         // Store platform fee and sitter amount for display
         setPlatformFee(data.platformFee || amount * 0.20);

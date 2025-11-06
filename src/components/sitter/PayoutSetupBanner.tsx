@@ -10,29 +10,30 @@ export const PayoutSetupBanner: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
   const navigate = useNavigate();
-  const [connectAccount, setConnectAccount] = useState<any>(null);
+  const [hasPayoutMethod, setHasPayoutMethod] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    loadConnectAccount();
+    checkPayoutMethod();
   }, [currentUser]);
 
-  const loadConnectAccount = async () => {
+  const checkPayoutMethod = async () => {
     if (!currentUser) return;
 
     try {
       const { data, error } = await supabase
-        .from('stripe_connect_accounts')
-        .select('*')
-        .eq('user_id', currentUser.id)
+        .from('users')
+        .select('paypal_email, iban')
+        .eq('id', currentUser.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error loading Connect account:', error);
+        console.error('Error loading payout method:', error);
       }
 
-      setConnectAccount(data);
+      // User has payout method if they have either PayPal or bank details
+      setHasPayoutMethod(!!(data?.paypal_email || data?.iban));
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -44,13 +45,15 @@ export const PayoutSetupBanner: React.FC = () => {
   // - Loading
   // - User dismissed it
   // - Not a walker/sitter
-  // - Already fully set up
+  // - Already set up payout method
+  const isWalkerOrBoth = userProfile?.userType === 'walker' || userProfile?.userType === 'both';
+  
   if (
     loading ||
     dismissed ||
     !userProfile ||
-    (userProfile.user_type !== 'walker' && userProfile.user_type !== 'both') ||
-    (connectAccount?.payouts_enabled && connectAccount?.charges_enabled)
+    !isWalkerOrBoth ||
+    hasPayoutMethod
   ) {
     return null;
   }
@@ -71,20 +74,18 @@ export const PayoutSetupBanner: React.FC = () => {
         
         <div className="flex-1">
           <h3 className="font-bold text-lg mb-1">
-            {connectAccount ? t('payout.complete_setup') : t('payout.setup_payouts')}
+            {t('payout.setup_payouts')}
           </h3>
           <p className="text-sm text-white/90 mb-3">
-            {connectAccount
-              ? t('payout.complete_description')
-              : t('payout.connect_bank')}
+            {t('payout.add_payout_method_description')}
           </p>
           
           <Button
-            onClick={() => navigate('/payout-setup')}
+            onClick={() => navigate('/payout-methods')}
             className="bg-white text-green-600 hover:bg-white/90 font-semibold"
             size="sm"
           >
-            {connectAccount ? t('payout.continue_setup') : t('payout.start_setup')}
+            {t('payout.add_payout_method')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>

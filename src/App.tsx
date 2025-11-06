@@ -38,7 +38,8 @@ import AvailabilityPage from "./pages/AvailabilityPage";
 import BookingsPage from "./pages/BookingsPage";
 import BookingRequestPage from "./pages/BookingRequestPage";
 import PaymentPage from "./pages/PaymentPage";
-import { PayoutSetupPage } from "./pages/PayoutSetupPage";
+import PayoutMethodsPage from "./pages/PayoutMethodsPage";
+import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
@@ -821,10 +822,18 @@ const App = () => (
                   } 
                 />
                 <Route 
-                  path="/payout-setup" 
+                  path="/payout-methods" 
                   element={
                     <ProtectedRoute>
-                      <PayoutSetupPage />
+                      <PayoutMethodsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/payouts" 
+                  element={
+                    <ProtectedRoute>
+                      <AdminPayoutsPage />
                     </ProtectedRoute>
                   } 
                 />
