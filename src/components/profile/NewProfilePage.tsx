@@ -653,7 +653,7 @@ const NewProfilePage: React.FC = () => {
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
               <li 
-                onClick={() => navigate('/payout-setup')}
+                onClick={() => navigate('/payout-methods')}
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark"
               >
                 <div className="flex items-center gap-4">

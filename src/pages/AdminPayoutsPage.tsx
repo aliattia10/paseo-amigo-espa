@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
-// This is a simple admin page to process payout requests
-// In production, you would add proper admin authentication
+// Admin credentials
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'aliattiapetflik*10';
 
 const AdminPayoutsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -16,15 +18,38 @@ const AdminPayoutsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   
-  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [payoutRequests, setPayoutRequests] = useState<any[]>([]);
   const [processing, setProcessing] = useState<string | null>(null);
 
   useEffect(() => {
-    loadPayoutRequests();
-  }, []);
+    if (isAuthenticated) {
+      loadPayoutRequests();
+    }
+  }, [isAuthenticated]);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      toast({
+        title: t('common.success'),
+        description: 'Admin access granted',
+      });
+    } else {
+      toast({
+        title: t('common.error'),
+        description: 'Invalid credentials',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const loadPayoutRequests = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('payout_requests')
@@ -89,6 +114,42 @@ const AdminPayoutsPage: React.FC = () => {
       setProcessing(null);
     }
   };
+
+  // Login form
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
+        <div className="w-full max-w-md p-8 bg-card-light dark:bg-card-dark rounded-xl shadow-lg">
+          <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Username</label>
+              <Input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter username"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Password</label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
