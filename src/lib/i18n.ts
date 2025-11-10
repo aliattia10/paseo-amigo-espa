@@ -836,7 +836,7 @@ const resources = {
       'profile.pictureUpdated': 'Photo de profil mise à jour avec succès',
       'profile.storageBucketError': 'Stockage non configuré. Veuillez contacter le support.',
       'profile.addPetToFindSitter': 'Ajoutez le profil de votre animal pour trouver le gardien parfait',
-      'profile.today': 'AUJOURD\'HUI',
+      'profile.today': 'AUJ.',
       'profile.viewPetProfile': 'Voir Profil de l\'Animal',
       'profile.viewPublicProfile': 'Voir Profil Public',
       'profile.editPetProfile': 'Modifier Profil de l\'Animal',

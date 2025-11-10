@@ -615,7 +615,7 @@ const NewProfilePage: React.FC = () => {
                     
                     return (
                       <div key={index} className={`flex flex-col items-center ${isToday ? 'p-2 rounded-full bg-primary/20 dark:bg-primary/30' : ''}`}>
-                        <p className={`text-xs ${isToday ? 'text-primary font-bold' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}>
+                        <p className={`text-[10px] ${isToday ? 'text-primary font-bold' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}>
                           {isToday ? t('profile.today') : dayName}
                         </p>
                         <p className={`font-bold text-lg ${isToday ? 'text-primary' : 'text-text-primary-light dark:text-text-primary-dark'}`}>

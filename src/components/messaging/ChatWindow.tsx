@@ -175,14 +175,29 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     const fileName = `${currentUser!.id}/${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('message-media')
+    // Try message-media bucket first, fallback to avatars if it doesn't exist
+    let bucketName = 'message-media';
+    let { error: uploadError } = await supabase.storage
+      .from(bucketName)
       .upload(filePath, file);
 
-    if (uploadError) throw uploadError;
+    // If message-media bucket doesn't exist, try avatars bucket
+    if (uploadError && uploadError.message.includes('not found')) {
+      console.log('message-media bucket not found, using avatars bucket');
+      bucketName = 'avatars';
+      const result = await supabase.storage
+        .from(bucketName)
+        .upload(filePath, file);
+      uploadError = result.error;
+    }
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw new Error(`Failed to upload media: ${uploadError.message}`);
+    }
 
     const { data: { publicUrl } } = supabase.storage
-      .from('message-media')
+      .from(bucketName)
       .getPublicUrl(filePath);
 
     const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
