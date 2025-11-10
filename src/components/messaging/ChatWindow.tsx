@@ -407,33 +407,43 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           )}
         </ScrollArea>
 
-        <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t">
+        <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t space-y-3">
           {/* Media preview */}
           {mediaPreview && (
-            <div className="mb-3 relative inline-block">
-              <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-terracotta">
+            <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-primary flex-shrink-0">
                 {selectedMedia?.type.startsWith('image/') ? (
                   <img src={mediaPreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
                   <video src={mediaPreview} className="w-full h-full object-cover" />
                 )}
-                <button
-                  type="button"
-                  onClick={clearMedia}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  </div>
+                )}
               </div>
-              {uploading && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                </div>
-              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {selectedMedia?.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {selectedMedia && (selectedMedia.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={clearMedia}
+                className="flex-shrink-0 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors"
+                disabled={uploading}
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           )}
           
-          <div className="flex gap-2">
+          {/* Input area */}
+          <div className="flex gap-2 items-end">
             <input
               ref={fileInputRef}
               type="file"
@@ -447,6 +457,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={sending || uploading}
+              className="flex-shrink-0"
             >
               <Image className="w-4 h-4" />
             </Button>
@@ -461,6 +472,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               type="submit"
               size="icon"
               disabled={(!newMessage.trim() && !selectedMedia) || sending || uploading}
+              className="flex-shrink-0 bg-primary hover:bg-primary/90"
             >
               {uploading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
