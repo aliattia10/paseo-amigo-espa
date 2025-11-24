@@ -123,7 +123,7 @@ export default function PaymentPage() {
 
         // Create payment intent with Stripe Connect (20% platform fee)
         console.log('Creating payment for booking:', bookingData.id, 'Amount:', amount);
-        
+
         const { data, error } = await supabase.functions.invoke('create-payment-with-connect', {
           body: {
             bookingId: bookingData.id,
@@ -136,7 +136,7 @@ export default function PaymentPage() {
         if (error) {
           console.error('Payment creation error:', error);
           console.error('Error details:', JSON.stringify(error, null, 2));
-          
+
           // Show more specific error message
           const errorMessage = error.message || error.msg || 'Failed to create payment';
           toast.error(`Payment Error: ${errorMessage}`);
