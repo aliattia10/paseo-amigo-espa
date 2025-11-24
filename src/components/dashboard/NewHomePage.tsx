@@ -21,6 +21,7 @@ interface Profile {
   bio?: string;
   hourlyRate?: number;
   type: 'dog' | 'walker';
+  petType?: 'dog' | 'cat'; // Pet type for pet profiles
 }
 
 const NewHomePage: React.FC = () => {
@@ -39,7 +40,7 @@ const NewHomePage: React.FC = () => {
   const [passedProfiles, setPassedProfiles] = useState<Set<string>>(new Set());
   const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
   const [showMatchModal, setShowMatchModal] = useState(false);
-  const [matchedUser, setMatchedUser] = useState<{ id: string; name: string; imageUrl: string } | null>(null);
+  const [matchedUser, setMatchedUser] = useState<{ id: string; name: string; imageUrl: string; petType?: 'dog' | 'cat' } | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -59,62 +60,46 @@ const NewHomePage: React.FC = () => {
     const loadUserInteractions = async () => {
       if (!currentUser?.id) return;
       
-      console.log('=== LOADING USER INTERACTIONS ===');
-      console.log('User ID:', currentUser.id);
-      console.log('User Role:', userRole);
-      console.log('User Email:', currentUser.email);
-      
       try {
         if (userRole === 'owner') {
           // Load owner's likes/passes for sitters
-          const { data: likes, error: likesError } = await supabase
+          const { data: likes } = await supabase
             .from('likes')
             .select('liked_id')
             .eq('liker_id', currentUser.id);
-          
-          console.log('Owner likes:', likes, 'Error:', likesError);
           
           if (likes) {
             setLikedProfileIds(new Set(likes.map((l: any) => l.liked_id)));
           }
           
-          const { data: passes, error: passesError } = await (supabase as any)
+          const { data: passes } = await (supabase as any)
             .from('passes')
             .select('passed_id')
             .eq('passer_id', currentUser.id);
-          
-          console.log('Owner passes:', passes, 'Error:', passesError);
           
           if (passes) {
             setPassedProfileIds(new Set(passes.map((p: any) => p.passed_id)));
           }
         } else {
           // Load sitter's likes/passes for pets
-          const { data: petLikes, error: petLikesError } = await (supabase as any)
+          const { data: petLikes } = await (supabase as any)
             .from('pet_likes')
             .select('pet_id')
             .eq('sitter_id', currentUser.id);
-          
-          console.log('Sitter pet likes:', petLikes, 'Error:', petLikesError);
           
           if (petLikes) {
             setLikedProfileIds(new Set(petLikes.map((l: any) => l.pet_id)));
           }
           
-          const { data: petPasses, error: petPassesError } = await (supabase as any)
+          const { data: petPasses } = await (supabase as any)
             .from('pet_passes')
             .select('pet_id')
             .eq('sitter_id', currentUser.id);
-          
-          console.log('Sitter pet passes:', petPasses, 'Error:', petPassesError);
           
           if (petPasses) {
             setPassedProfileIds(new Set(petPasses.map((p: any) => p.pet_id)));
           }
         }
-        
-        console.log('Final liked IDs:', Array.from(likedProfileIds));
-        console.log('Final passed IDs:', Array.from(passedProfileIds));
       } catch (error) {
         console.error('Error loading user interactions:', error);
       }
@@ -131,16 +116,11 @@ const NewHomePage: React.FC = () => {
         // Exclude pets owned by the current user
         const { data: pets, error: petsError } = await supabase
           .from('pets')
-          .select('id, name, age, image_url, owner_id')
+          .select('id, name, age, image_url, owner_id, pet_type')
           .neq('owner_id', currentUser?.id || '')
           .order('created_at', { ascending: false });
 
-        console.log('=== LOADING PET PROFILES ===');
-        console.log('Pets data:', pets);
-        console.log('Pets error:', petsError);
-        
         if (!petsError && pets) {
-          console.log(`Found ${pets.length} pets in database (excluding current user's pets)`);
           const petProfiles: Profile[] = pets.map(pet => {
             let imageUrls: string[] = [];
             try {
@@ -158,12 +138,10 @@ const NewHomePage: React.FC = () => {
               rating: 5.0, // Default good rating for new profiles
               imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
               type: 'dog' as const,
+              petType: (pet.pet_type as 'dog' | 'cat') || 'dog', // Include pet type
             };
           });
-          console.log('Processed pet profiles:', petProfiles);
           setRealPetProfiles(petProfiles);
-        } else {
-          console.log('No pets found or error occurred');
         }
 
         // Load sitter profiles (for pet owners to browse)
@@ -174,10 +152,6 @@ const NewHomePage: React.FC = () => {
           .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
           .neq('id', currentUser?.id || '')
           .order('created_at', { ascending: false });
-
-        console.log('=== LOADING SITTER PROFILES ===');
-        console.log('Sitters data:', sitters);
-        console.log('Sitters error:', sittersError);
         
         if (!sittersError && sitters && sitters.length > 0) {
           // Filter out test/bot profiles (those with @example.com emails or default names)
@@ -187,7 +161,6 @@ const NewHomePage: React.FC = () => {
             return !isTestEmail && !isDefaultName;
           });
           
-          console.log(`Found ${realSitters.length} real sitters in database (excluding current user and test profiles)`);
           const sitterProfiles: Profile[] = realSitters.map(sitter => {
             // Parse profile_image - it might be a JSON array or a single URL
             let imageUrls: string[] = [];
@@ -216,16 +189,12 @@ const NewHomePage: React.FC = () => {
               type: 'walker' as const,
             };
           });
-          console.log('Processed sitter profiles:', sitterProfiles);
           setRealSitterProfiles(sitterProfiles);
-        } else {
-          console.log('No sitters found or error occurred:', sittersError);
         }
       } catch (error) {
         console.error('Error loading profiles:', error);
       } finally {
         setLoadingProfiles(false);
-        console.log('=== PROFILE LOADING COMPLETE ===');
       }
     };
 
@@ -235,7 +204,6 @@ const NewHomePage: React.FC = () => {
     const petsSubscription = supabase
       .channel('pets-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pets' }, (payload) => {
-        console.log('New pet profile detected!', payload);
         loadProfiles(); // Reload profiles when new pet is added
       })
       .subscribe();
@@ -243,11 +211,9 @@ const NewHomePage: React.FC = () => {
     const usersSubscription = supabase
       .channel('users-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
-        console.log('New user profile detected!', payload);
         loadProfiles(); // Reload profiles when new user is added
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, (payload) => {
-        console.log('User profile updated!', payload);
         loadProfiles(); // Reload profiles when user is updated
       })
       .subscribe();
@@ -442,11 +408,28 @@ const NewHomePage: React.FC = () => {
         
         // If it's a match, show the modal
         if (isMatch) {
-          playMatchSound(); // Play celebration sound
+          // For owner-sitter matches, try to get pet type from owner's pets
+          let petTypeForSound: 'dog' | 'cat' | undefined = undefined;
+          try {
+            const { data: ownerPets } = await supabase
+              .from('pets')
+              .select('pet_type')
+              .eq('owner_id', currentUser.id)
+              .limit(1)
+              .single();
+            if (ownerPets?.pet_type) {
+              petTypeForSound = ownerPets.pet_type as 'dog' | 'cat';
+            }
+          } catch (e) {
+            // If no pets found or error, default to dog sound
+            petTypeForSound = 'dog';
+          }
+          playMatchSound(petTypeForSound); // Play celebration sound based on pet type
           setMatchedUser({
             id: profile.id,
             name: profile.name,
-            imageUrl: profile.imageUrls[0]
+            imageUrl: profile.imageUrls[0],
+            petType: petTypeForSound
           });
           setShowMatchModal(true);
         } else {
@@ -469,11 +452,69 @@ const NewHomePage: React.FC = () => {
           throw error;
         }
         
-        playLikeSound();
-        toast({
-          title: '❤️ Liked!',
-          description: `You liked ${profile.name}`,
-        });
+        // Get pet owner ID and check for mutual match
+        const { data: petData } = await supabase
+          .from('pets')
+          .select('owner_id')
+          .eq('id', profile.id)
+          .single();
+        
+        let isMatch = false;
+        if (petData?.owner_id) {
+          // Check if owner has also liked this sitter
+          const { data: mutualLike } = await supabase
+            .from('likes')
+            .select('id')
+            .eq('liker_id', petData.owner_id)
+            .eq('liked_id', currentUser.id)
+            .maybeSingle();
+          
+          if (mutualLike) {
+            isMatch = true;
+            // Create match record between owner and sitter
+            const { data: matchResult } = await supabase.rpc('check_and_create_match', {
+              liker_user_id: petData.owner_id,
+              liked_user_id: currentUser.id
+            });
+            
+            // Get owner's name for match modal
+            const { data: ownerData } = await supabase
+              .from('users')
+              .select('name, profile_image')
+              .eq('id', petData.owner_id)
+              .single();
+            
+            // Play match sound based on pet type
+            const petType = profile.petType || 'dog';
+            playMatchSound(petType);
+            
+            let ownerImageUrl = profile.imageUrls[0];
+            if (ownerData?.profile_image) {
+              try {
+                const parsed = JSON.parse(ownerData.profile_image);
+                ownerImageUrl = Array.isArray(parsed) ? parsed[0] : ownerData.profile_image;
+              } catch {
+                ownerImageUrl = ownerData.profile_image;
+              }
+            }
+            
+            setMatchedUser({
+              id: petData.owner_id,
+              name: ownerData?.name || 'Pet Owner',
+              imageUrl: ownerImageUrl,
+              petType: petType
+            });
+            setShowMatchModal(true);
+          }
+        }
+        
+        if (!isMatch) {
+          playLikeSound();
+          toast({
+            title: '❤️ Liked!',
+            description: `You liked ${profile.name}`,
+          });
+        }
       }
     } catch (error) {
       console.error('Error saving like:', error);
@@ -929,6 +970,7 @@ const NewHomePage: React.FC = () => {
           isOpen={showMatchModal}
           onClose={() => setShowMatchModal(false)}
           matchedUser={matchedUser}
+          petType={matchedUser.petType}
         />
       )}
       

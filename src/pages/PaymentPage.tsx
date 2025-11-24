@@ -10,12 +10,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
+if (!stripeKey) {
+  console.error('Stripe Publishable Key is missing!');
+} else {
+  console.log('Stripe initialized with key:', stripeKey.substring(0, 8) + '...');
+}
+const stripePromise = loadStripe(stripeKey);
 
 function PaymentForm({ bookingId, amount, onSuccess }: { bookingId: string; amount: number; onSuccess: () => void }) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +67,8 @@ function PaymentForm({ bookingId, amount, onSuccess }: { bookingId: string; amou
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement />
-      <Button type="submit" disabled={!stripe || isProcessing} className="w-full">
+      <PaymentElement onReady={() => setIsReady(true)} />
+      <Button type="submit" disabled={!stripe || isProcessing || !isReady} className="w-full">
         {isProcessing ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -132,6 +139,8 @@ export default function PaymentPage() {
           console.error('Response data:', data);
           throw new Error(data?.error || 'No client secret returned from payment creation');
         }
+        
+        console.log('Client secret received:', data.clientSecret.substring(0, 15) + '...');
 
         // Store platform fee and sitter amount for display
         setPlatformFee(data.platformFee || amount * 0.20);

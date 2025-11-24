@@ -33,28 +33,34 @@ export const playDogSound = () => {
   }
 };
 
-// Cat meow sound
+// Cat meow sound (meow meow!)
 export const playCatSound = () => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    const playMeow = (startTime: number) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Cat meow is a high-pitched warble
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + startTime);
+      oscillator.frequency.linearRampToValueAtTime(1200, audioContext.currentTime + startTime + 0.1);
+      oscillator.frequency.linearRampToValueAtTime(900, audioContext.currentTime + startTime + 0.15);
+      oscillator.type = 'triangle';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + startTime + 0.2);
+      
+      oscillator.start(audioContext.currentTime + startTime);
+      oscillator.stop(audioContext.currentTime + startTime + 0.2);
+    };
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // Cat meow is a high-pitched warble
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.linearRampToValueAtTime(1200, audioContext.currentTime + 0.1);
-    oscillator.frequency.linearRampToValueAtTime(900, audioContext.currentTime + 0.2);
-    oscillator.type = 'triangle';
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
+    // Two meows: "Meow meow!"
+    playMeow(0);
+    playMeow(0.25);
     
   } catch (error) {
     console.warn('Could not play cat sound:', error);

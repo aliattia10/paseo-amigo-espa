@@ -96,3 +96,9 @@ CREATE INDEX IF NOT EXISTS idx_notifications_related_id ON notifications(related
 -- 4. Success message
 SELECT 'Database fixed! Refresh your bookings page now.' as message;
 
+
+
+
+
+
+

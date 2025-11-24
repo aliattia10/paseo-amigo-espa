@@ -18,7 +18,7 @@ interface PaymentFormProps {
   onCancel: () => void;
 }
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_publishable_key');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 const PaymentFormContent: React.FC<PaymentFormProps> = ({ 
   selectedPlan, 

@@ -9,9 +9,10 @@ interface MatchModalProps {
     name: string;
     imageUrl: string;
   };
+  petType?: 'dog' | 'cat';
 }
 
-const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser }) => {
+const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, petType = 'dog' }) => {
   const navigate = useNavigate();
 
   if (!isOpen) return null;
@@ -25,13 +26,17 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser })
     onClose();
   };
 
+  // Determine match message based on pet type
+  const matchMessage = petType === 'cat' ? 'Meow Meow! 🐱' : 'Woof Woof! 🐾';
+  const emoji = petType === 'cat' ? '🐱' : '🐾';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="relative w-full max-w-md mx-4 animate-in zoom-in duration-500">
-        {/* Woof Woof! Header */}
+        {/* Match Header - Dynamic based on pet type */}
         <div className="text-center mb-8">
           <h1 className="text-6xl font-bold text-white mb-2 animate-bounce">
-            Woof Woof! 🐾
+            {matchMessage}
           </h1>
           <p className="text-white text-xl font-medium">
             It's a Match!
