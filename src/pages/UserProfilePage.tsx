@@ -11,6 +11,8 @@ const UserProfilePage: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const [user, setUser] = React.useState<any | null>(null);
   const [photos, setPhotos] = React.useState<string[]>([]);
+  const [reviews, setReviews] = React.useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = React.useState(true);
 
   React.useEffect(() => {
     const loadUser = async () => {
@@ -20,7 +22,7 @@ const UserProfilePage: React.FC = () => {
         const { supabase } = await import('@/integrations/supabase/client');
         const { data, error } = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, rating, reviews_count, pets_count, city')
+          .select('id, name, bio, profile_image, hourly_rate, rating, review_count, city')
           .eq('id', userId)
           .single();
         if (error) throw error;
@@ -45,6 +47,34 @@ const UserProfilePage: React.FC = () => {
     };
     loadUser();
   }, [userId, toast]);
+
+  // Load reviews for this user
+  React.useEffect(() => {
+    const loadReviews = async () => {
+      if (!userId) return;
+      setLoadingReviews(true);
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data, error } = await supabase
+          .from('reviews')
+          .select(`
+            *,
+            reviewer:users!reviews_reviewer_id_fkey(name, profile_image)
+          `)
+          .eq('reviewee_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        
+        if (error) throw error;
+        setReviews(data || []);
+      } catch (e: any) {
+        console.error('Failed to load reviews', e);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    loadReviews();
+  }, [userId]);
 
   return (
     <div className="relative flex h-screen w-full flex-col bg-home-background-light dark:bg-home-background-dark overflow-hidden">
@@ -89,10 +119,10 @@ const UserProfilePage: React.FC = () => {
                     {user.city}
                   </span>
                 )}
-                {typeof user.reviews_count === 'number' && (
+                {typeof user.review_count === 'number' && user.review_count > 0 && (
                   <span className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-semibold px-3 py-1 rounded-full">
                     <span className="material-symbols-outlined text-sm">reviews</span>
-                    {user.reviews_count} {t('profile.reviews')}
+                    {user.review_count} {t('profile.reviews')}
                   </span>
                 )}
               </div>
@@ -117,6 +147,80 @@ const UserProfilePage: React.FC = () => {
                 ))}
               </div>
             )}
+
+            {/* Reviews Section */}
+            <div className="bg-card-light dark:bg-card-dark p-4 rounded-2xl shadow">
+              <div className="flex items-center gap-2 font-semibold mb-4">
+                <span className="material-symbols-outlined text-base">rate_review</span>
+                <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
+                  Reviews ({reviews.length})
+                </h3>
+              </div>
+
+              {loadingReviews ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.map((review) => {
+                    // Parse reviewer image
+                    let reviewerImageUrl = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (review.reviewer?.name || 'User');
+                    try {
+                      if (review.reviewer?.profile_image) {
+                        const parsed = JSON.parse(review.reviewer.profile_image);
+                        reviewerImageUrl = Array.isArray(parsed) ? parsed[0] : review.reviewer.profile_image;
+                      }
+                    } catch {
+                      reviewerImageUrl = review.reviewer?.profile_image || reviewerImageUrl;
+                    }
+
+                    return (
+                      <div key={review.id} className="border-b border-border-light dark:border-border-dark pb-4 last:border-0 last:pb-0">
+                        <div className="flex items-start gap-3 mb-2">
+                          <div 
+                            className="w-10 h-10 rounded-full bg-cover bg-center flex-shrink-0" 
+                            style={{ backgroundImage: `url('${reviewerImageUrl}')` }} 
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm text-text-primary-light dark:text-text-primary-dark mb-1">
+                              {review.reviewer?.name || 'Anonymous'}
+                            </p>
+                            <div className="flex gap-0.5 mb-2">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span 
+                                  key={star} 
+                                  className={`material-symbols-outlined text-sm ${
+                                    star <= review.rating 
+                                      ? 'text-yellow-400' 
+                                      : 'text-gray-300 dark:text-gray-600'
+                                  }`}
+                                  style={{ fontVariationSettings: '"FILL" 1' }}
+                                >
+                                  star
+                                </span>
+                              ))}
+                            </div>
+                            {review.comment && (
+                              <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">
+                                "{review.comment}"
+                              </p>
+                            )}
+                            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2 opacity-60">
+                              {new Date(review.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center py-4">
+                  No reviews yet
+                </p>
+              )}
+            </div>
           </div>
         ) : (
           <div className="text-center text-gray-600 dark:text-gray-400">{t('profile.notFound')}</div>

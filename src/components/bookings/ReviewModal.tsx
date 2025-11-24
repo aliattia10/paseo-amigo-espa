@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Star } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export default function ReviewModal({
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +53,12 @@ export default function ReviewModal({
         throw new Error(data?.error || 'Failed to submit review');
       }
 
-      // Success!
+      // Success! The trigger will automatically release payment to balance
+      toast({
+        title: '✅ Review Submitted!',
+        description: 'Thank you! Payment has been released to the sitter\'s balance.',
+      });
+
       if (onReviewSubmitted) {
         onReviewSubmitted();
       }
@@ -74,7 +81,10 @@ export default function ReviewModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-md w-full p-6">
         <h2 className="text-2xl font-bold mb-4">Leave a Review</h2>
-        <p className="text-gray-600 mb-6">How was your experience with {revieweeName}?</p>
+        <p className="text-gray-600 mb-2">How was your experience with {revieweeName}?</p>
+        <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+          💡 <strong>Note:</strong> After submitting your review, the payment will be automatically released to the sitter's balance.
+        </div>
 
         <form onSubmit={handleSubmit}>
           {/* Star Rating */}

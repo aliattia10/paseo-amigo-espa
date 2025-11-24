@@ -26,6 +26,8 @@ interface Booking {
   completion_confirmed_at?: string;
   eligible_for_release_at?: string;
   payment_released_at?: string;
+  balance_released_at?: string;
+  review_submitted_at?: string;
 }
 
 const BookingsPage: React.FC = () => {
@@ -90,7 +92,9 @@ const BookingsPage: React.FC = () => {
         completed_at: booking.completed_at,
         completion_confirmed_at: booking.completion_confirmed_at,
         eligible_for_release_at: booking.eligible_for_release_at,
-        payment_released_at: booking.payment_released_at
+        payment_released_at: booking.payment_released_at,
+        balance_released_at: booking.balance_released_at,
+        review_submitted_at: booking.review_submitted_at
       })) || [];
       
       setBookings(formattedBookings);
@@ -236,7 +240,7 @@ const BookingsPage: React.FC = () => {
       
       toast({ 
         title: '✅ Completion Confirmed!', 
-        description: 'Payment will be released in 3 days. Please leave a review!' 
+        description: 'Please leave a review to release payment to the sitter\'s balance!' 
       });
       
       // Open review modal
@@ -456,42 +460,41 @@ const BookingsPage: React.FC = () => {
                 </div>
               )}
               
-              {/* Completion confirmed, payment in 3-day hold */}
-              {(booking.status as string) === 'completed' && booking.completion_confirmed_at && booking.payment_status === 'held' && !booking.payment_released_at && (
+              {/* Completion confirmed, waiting for review to release payment */}
+              {(booking.status as string) === 'completed' && booking.completion_confirmed_at && booking.payment_status === 'held' && !booking.balance_released_at && (
                 <div>
-                  <div className="text-sm text-center mb-2">
-                    <div className="text-green-600 dark:text-green-400 font-medium">
-                      ✅ Service Confirmed
-                    </div>
-                    {booking.eligible_for_release_at && (
-                      <div className="text-gray-600 dark:text-gray-400 text-xs mt-1">
-                        Payment release: {getReleaseCountdown(booking.eligible_for_release_at)}
+                  {currentUser?.id === booking.owner_id ? (
+                    <>
+                      <div className="text-sm text-center mb-2">
+                        <div className="text-blue-600 dark:text-blue-400 font-medium">
+                          ⭐ Review Required
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400 text-xs mt-1">
+                          Submit a review to release payment to sitter's balance
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  {/* OWNER: Can force early release */}
-                  {currentUser?.id === booking.owner_id && booking.eligible_for_release_at && (
-                    <Button 
-                      onClick={() => handleForceReleasePayment(booking.id)} 
-                      variant="outline"
-                      className="w-full"
-                    >
-                      💰 Release Payment Now
-                    </Button>
-                  )}
-                  {/* SITTER: Just shows waiting */}
-                  {currentUser?.id === booking.sitter_id && (
-                    <div className="text-xs text-center text-gray-500">
-                      Payment will be automatically released after 3 days
+                      <Button 
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setReviewModalOpen(true);
+                        }}
+                        className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        📝 Leave Review & Release Payment
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="text-sm text-center text-blue-600 dark:text-blue-400">
+                      ⏳ Waiting for owner to submit review and release payment
                     </div>
                   )}
                 </div>
               )}
               
-              {/* Payment released */}
-              {booking.payment_status === 'released' && booking.payment_released_at && (
+              {/* Payment released to balance */}
+              {booking.payment_status === 'released' && booking.balance_released_at && (
                 <div className="text-sm text-center text-green-600 dark:text-green-400 font-medium">
-                  💵 Payment Released - Transferred to sitter
+                  💵 Payment Released - Added to sitter's balance
                 </div>
               )}
               

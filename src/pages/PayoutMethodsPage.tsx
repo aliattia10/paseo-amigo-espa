@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { validateEmail, validateIBAN, validateBankName, validateAccountHolderName, formatIBAN } from '@/lib/validation';
 
 const PayoutMethodsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -23,6 +24,18 @@ const PayoutMethodsPage: React.FC = () => {
   });
   const [balance, setBalance] = useState(0);
   const [pendingPayouts, setPendingPayouts] = useState<any[]>([]);
+  const [withdrawalInfo, setWithdrawalInfo] = useState<{
+    canWithdraw: boolean;
+    daysRemaining?: number;
+    nextEligibleDate?: string;
+    message?: string;
+  } | null>(null);
+  const [errors, setErrors] = useState<{
+    paypalEmail?: string;
+    iban?: string;
+    bankName?: string;
+    accountHolderName?: string;
+  }>({});
 
   // Load existing payout info and balance
   useEffect(() => {
@@ -47,20 +60,47 @@ const PayoutMethodsPage: React.FC = () => {
           });
         }
 
-        // Calculate balance from completed bookings
-        const { data: bookings } = await supabase
-          .from('bookings')
-          .select('total_amount, commission_fee, payment_status')
-          .eq('sitter_id', currentUser.id)
-          .eq('status', 'completed')
-          .eq('payment_status', 'held');
+        // Calculate balance using the new function (only released payments with reviews)
+        const { data: balanceData, error: balanceError } = await (supabase as any)
+          .rpc('get_sitter_available_balance', {
+            p_sitter_id: currentUser.id
+          });
         
-        if (bookings) {
-          const totalBalance = bookings.reduce((sum, b) => {
-            const sitterAmount = b.total_amount - (b.commission_fee || 0);
-            return sum + sitterAmount;
-          }, 0);
-          setBalance(totalBalance);
+        if (!balanceError && balanceData !== null) {
+          setBalance(Number(balanceData) || 0);
+        } else {
+          // Fallback: calculate manually
+          const { data: bookings } = await supabase
+            .from('bookings')
+            .select('total_price, commission_fee, payment_status, review_submitted_at, balance_released_at')
+            .eq('sitter_id', currentUser.id)
+            .eq('status', 'completed')
+            .eq('payment_status', 'released')
+            .not('review_submitted_at', 'is', null)
+            .not('balance_released_at', 'is', null);
+          
+          if (bookings) {
+            const totalBalance = bookings.reduce((sum, b) => {
+              const sitterAmount = (b.total_price || 0) - (b.commission_fee || 0);
+              return sum + sitterAmount;
+            }, 0);
+            setBalance(totalBalance);
+          }
+        }
+
+        // Check withdrawal eligibility
+        const { data: withdrawalData, error: withdrawalError } = await (supabase as any)
+          .rpc('can_sitter_withdraw', {
+            p_sitter_id: currentUser.id
+          });
+        
+        if (!withdrawalError && withdrawalData) {
+          setWithdrawalInfo({
+            canWithdraw: withdrawalData.can_withdraw,
+            daysRemaining: withdrawalData.days_remaining,
+            nextEligibleDate: withdrawalData.next_eligible_date,
+            message: withdrawalData.message,
+          });
         }
 
         // Load pending payout requests
@@ -80,23 +120,44 @@ const PayoutMethodsPage: React.FC = () => {
     loadPayoutInfo();
   }, [currentUser]);
 
+  // Validate form based on selected method
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    if (payoutMethod === 'paypal') {
+      const emailValidation = validateEmail(formData.paypalEmail);
+      if (!emailValidation.isValid) {
+        newErrors.paypalEmail = emailValidation.error;
+      }
+    } else {
+      const ibanValidation = validateIBAN(formData.iban);
+      if (!ibanValidation.isValid) {
+        newErrors.iban = ibanValidation.error;
+      }
+
+      const bankNameValidation = validateBankName(formData.bankName);
+      if (!bankNameValidation.isValid) {
+        newErrors.bankName = bankNameValidation.error;
+      }
+
+      const accountHolderValidation = validateAccountHolderName(formData.accountHolderName);
+      if (!accountHolderValidation.isValid) {
+        newErrors.accountHolderName = accountHolderValidation.error;
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async () => {
     if (!currentUser) return;
 
-    // Validate based on selected method
-    if (payoutMethod === 'paypal' && !formData.paypalEmail) {
+    // Validate form
+    if (!validateForm()) {
       toast({
         title: t('common.error'),
-        description: t('payout.paypalEmailRequired'),
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (payoutMethod === 'bank' && (!formData.iban || !formData.accountHolderName)) {
-      toast({
-        title: t('common.error'),
-        description: t('payout.bankDetailsRequired'),
+        description: t('payout.pleaseFixErrors'),
         variant: 'destructive',
       });
       return;
@@ -110,14 +171,15 @@ const PayoutMethodsPage: React.FC = () => {
       };
 
       if (payoutMethod === 'paypal') {
-        updateData.paypal_email = formData.paypalEmail.trim();
+        updateData.paypal_email = formData.paypalEmail.trim().toLowerCase();
         updateData.bank_name = null;
         updateData.iban = null;
         updateData.account_holder_name = null;
       } else {
         updateData.paypal_email = null;
         updateData.bank_name = formData.bankName.trim();
-        updateData.iban = formData.iban.trim();
+        // Store IBAN without spaces for consistency
+        updateData.iban = formData.iban.replace(/\s/g, '').toUpperCase();
         updateData.account_holder_name = formData.accountHolderName.trim();
       }
 
@@ -127,6 +189,9 @@ const PayoutMethodsPage: React.FC = () => {
         .eq('id', currentUser.id);
 
       if (error) throw error;
+
+      // Clear errors on success
+      setErrors({});
 
       toast({
         title: t('common.success'),
@@ -154,17 +219,45 @@ const PayoutMethodsPage: React.FC = () => {
       return;
     }
 
-    if (!formData.paypalEmail && !formData.iban) {
+    // Check withdrawal eligibility (2-week restriction)
+    if (withdrawalInfo && !withdrawalInfo.canWithdraw) {
       toast({
         title: t('common.error'),
-        description: t('payout.addMethodFirst'),
+        description: withdrawalInfo.message || `You can withdraw in ${withdrawalInfo.daysRemaining} days`,
         variant: 'destructive',
       });
       return;
     }
 
+    // Validate that payout method is properly set up
+    if (payoutMethod === 'paypal') {
+      const emailValidation = validateEmail(formData.paypalEmail);
+      if (!emailValidation.isValid) {
+        toast({
+          title: t('common.error'),
+          description: t('payout.addMethodFirst'),
+          variant: 'destructive',
+        });
+        return;
+      }
+    } else {
+      const ibanValidation = validateIBAN(formData.iban);
+      const bankNameValidation = validateBankName(formData.bankName);
+      const accountHolderValidation = validateAccountHolderName(formData.accountHolderName);
+      
+      if (!ibanValidation.isValid || !bankNameValidation.isValid || !accountHolderValidation.isValid) {
+        toast({
+          title: t('common.error'),
+          description: t('payout.addMethodFirst'),
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     try {
-      const { error } = await supabase
+      // Create payout request
+      const { error: payoutError } = await supabase
         .from('payout_requests')
         .insert({
           sitter_id: currentUser!.id,
@@ -176,14 +269,24 @@ const PayoutMethodsPage: React.FC = () => {
           status: 'pending',
         });
 
-      if (error) throw error;
+      if (payoutError) throw payoutError;
+
+      // Update withdrawal date (2-week restriction)
+      const { error: updateError } = await (supabase as any)
+        .rpc('update_withdrawal_date', {
+          p_sitter_id: currentUser!.id
+        });
+
+      if (updateError) {
+        console.warn('Failed to update withdrawal date:', updateError);
+      }
 
       toast({
         title: t('common.success'),
         description: t('payout.requestSubmitted'),
       });
 
-      // Reload pending payouts
+      // Reload pending payouts and withdrawal info
       const { data: payouts } = await supabase
         .from('payout_requests')
         .select('*')
@@ -192,6 +295,21 @@ const PayoutMethodsPage: React.FC = () => {
         .order('created_at', { ascending: false });
       
       setPendingPayouts(payouts || []);
+
+      // Refresh withdrawal info
+      const { data: withdrawalData } = await (supabase as any)
+        .rpc('can_sitter_withdraw', {
+          p_sitter_id: currentUser!.id
+        });
+      
+      if (withdrawalData) {
+        setWithdrawalInfo({
+          canWithdraw: withdrawalData.can_withdraw,
+          daysRemaining: withdrawalData.days_remaining,
+          nextEligibleDate: withdrawalData.next_eligible_date,
+          message: withdrawalData.message,
+        });
+      }
     } catch (error: any) {
       console.error('Payout request error:', error);
       toast({
@@ -222,14 +340,43 @@ const PayoutMethodsPage: React.FC = () => {
         {/* Balance Card */}
         <div className="rounded-xl bg-gradient-to-br from-primary to-secondary p-6 shadow-lg text-white">
           <p className="text-sm opacity-90 mb-1">{t('payout.availableBalance')}</p>
-          <p className="text-4xl font-bold mb-4">${balance.toFixed(2)}</p>
+          <p className="text-4xl font-bold mb-2">€{balance.toFixed(2)}</p>
+          
+          {/* Withdrawal Restriction Info */}
+          {withdrawalInfo && !withdrawalInfo.canWithdraw && (
+            <div className="mb-4 p-3 bg-white/20 rounded-lg text-sm">
+              <p className="font-medium mb-1">⏳ Withdrawal Restriction</p>
+              <p className="text-xs opacity-90">
+                {withdrawalInfo.message || `You can withdraw in ${withdrawalInfo.daysRemaining} days`}
+              </p>
+              {withdrawalInfo.nextEligibleDate && (
+                <p className="text-xs opacity-75 mt-1">
+                  Next eligible: {new Date(withdrawalInfo.nextEligibleDate).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+          )}
+
           <Button
             onClick={handleRequestPayout}
-            disabled={balance <= 0 || pendingPayouts.length > 0}
-            className="w-full bg-white text-primary hover:bg-gray-100"
+            disabled={
+              balance <= 0 || 
+              pendingPayouts.length > 0 || 
+              (withdrawalInfo && !withdrawalInfo.canWithdraw)
+            }
+            className="w-full bg-white text-primary hover:bg-gray-100 disabled:opacity-50"
           >
-            {pendingPayouts.length > 0 ? t('payout.requestPending') : t('payout.requestPayout')}
+            {pendingPayouts.length > 0 
+              ? t('payout.requestPending') 
+              : withdrawalInfo && !withdrawalInfo.canWithdraw
+              ? `Withdraw in ${withdrawalInfo.daysRemaining} days`
+              : t('payout.requestPayout')
+            }
           </Button>
+          
+          <p className="text-xs opacity-75 mt-2 text-center">
+            💡 Balance includes only payments released after reviews
+          </p>
         </div>
 
         {/* Pending Payouts */}
@@ -283,15 +430,36 @@ const PayoutMethodsPage: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">
-                  {t('payout.paypalEmail')}
+                  {t('payout.paypalEmail')} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="email"
                   value={formData.paypalEmail}
-                  onChange={(e) => setFormData({ ...formData, paypalEmail: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ ...formData, paypalEmail: value });
+                    // Real-time validation
+                    if (value && errors.paypalEmail) {
+                      const validation = validateEmail(value);
+                      if (validation.isValid) {
+                        setErrors({ ...errors, paypalEmail: undefined });
+                      } else {
+                        setErrors({ ...errors, paypalEmail: validation.error });
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validateEmail(formData.paypalEmail);
+                    if (!validation.isValid) {
+                      setErrors({ ...errors, paypalEmail: validation.error });
+                    }
+                  }}
                   placeholder="your@email.com"
-                  className="w-full"
+                  className={`w-full ${errors.paypalEmail ? 'border-red-500' : ''}`}
                 />
+                {errors.paypalEmail && (
+                  <p className="text-xs text-red-500 mt-1">{errors.paypalEmail}</p>
+                )}
                 <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
                   {t('payout.paypalNote')}
                 </p>
@@ -304,41 +472,108 @@ const PayoutMethodsPage: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">
-                  {t('payout.accountHolderName')}
+                  {t('payout.accountHolderName')} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="text"
                   value={formData.accountHolderName}
-                  onChange={(e) => setFormData({ ...formData, accountHolderName: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ ...formData, accountHolderName: value });
+                    // Real-time validation
+                    if (value && errors.accountHolderName) {
+                      const validation = validateAccountHolderName(value);
+                      if (validation.isValid) {
+                        setErrors({ ...errors, accountHolderName: undefined });
+                      } else {
+                        setErrors({ ...errors, accountHolderName: validation.error });
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validateAccountHolderName(formData.accountHolderName);
+                    if (!validation.isValid) {
+                      setErrors({ ...errors, accountHolderName: validation.error });
+                    }
+                  }}
                   placeholder={t('payout.fullName')}
-                  className="w-full"
+                  className={`w-full ${errors.accountHolderName ? 'border-red-500' : ''}`}
                 />
+                {errors.accountHolderName && (
+                  <p className="text-xs text-red-500 mt-1">{errors.accountHolderName}</p>
+                )}
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">
-                  {t('payout.iban')}
+                  {t('payout.iban')} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="text"
                   value={formData.iban}
-                  onChange={(e) => setFormData({ ...formData, iban: e.target.value.toUpperCase() })}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
+                    const formatted = formatIBAN(value);
+                    setFormData({ ...formData, iban: formatted });
+                    // Real-time validation
+                    if (formatted && errors.iban) {
+                      const validation = validateIBAN(formatted);
+                      if (validation.isValid) {
+                        setErrors({ ...errors, iban: undefined });
+                      } else {
+                        setErrors({ ...errors, iban: validation.error });
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validateIBAN(formData.iban);
+                    if (!validation.isValid) {
+                      setErrors({ ...errors, iban: validation.error });
+                    }
+                  }}
                   placeholder="ES91 2100 0418 4502 0005 1332"
-                  className="w-full font-mono"
+                  className={`w-full font-mono ${errors.iban ? 'border-red-500' : ''}`}
                 />
+                {errors.iban && (
+                  <p className="text-xs text-red-500 mt-1">{errors.iban}</p>
+                )}
+                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                  Format: 2-letter country code + check digits + account number
+                </p>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">
-                  {t('payout.bankName')}
+                  {t('payout.bankName')} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="text"
                   value={formData.bankName}
-                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ ...formData, bankName: value });
+                    // Real-time validation
+                    if (value && errors.bankName) {
+                      const validation = validateBankName(value);
+                      if (validation.isValid) {
+                        setErrors({ ...errors, bankName: undefined });
+                      } else {
+                        setErrors({ ...errors, bankName: validation.error });
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    const validation = validateBankName(formData.bankName);
+                    if (!validation.isValid) {
+                      setErrors({ ...errors, bankName: validation.error });
+                    }
+                  }}
                   placeholder={t('payout.bankNamePlaceholder')}
-                  className="w-full"
+                  className={`w-full ${errors.bankName ? 'border-red-500' : ''}`}
                 />
+                {errors.bankName && (
+                  <p className="text-xs text-red-500 mt-1">{errors.bankName}</p>
+                )}
               </div>
 
               <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">

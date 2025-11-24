@@ -44,7 +44,7 @@ const PublicProfilePage: React.FC = () => {
             *,
             reviewer:users!reviews_reviewer_id_fkey(name, profile_image)
           `)
-          .eq('reviewed_id', currentUser.id)
+          .eq('reviewee_id', currentUser.id)
           .order('created_at', { ascending: false });
         
         if (!error && data) {
