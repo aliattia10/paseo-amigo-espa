@@ -15,9 +15,11 @@ serve(async (req) => {
   const signature = req.headers.get('stripe-signature')
   
   if (!signature) {
+    console.error('No Stripe signature provided')
+    // Return 200 to prevent Stripe from retrying
     return new Response(
-      JSON.stringify({ error: 'No signature' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ received: true, error: 'No signature' }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     )
   }
 
@@ -26,7 +28,7 @@ serve(async (req) => {
   try {
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
 
-    console.log('Webhook event:', event.type)
+    console.log('✅ Webhook event received:', event.type)
 
     switch (event.type) {
       case 'payment_intent.succeeded': {
@@ -119,13 +121,15 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ received: true }),
-      { headers: { 'Content-Type': 'application/json' } }
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Webhook error:', error)
+    console.error('❌ Webhook error:', error)
+    // Always return 200 to prevent Stripe from disabling the webhook
+    // Log the error but acknowledge receipt
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ received: true, error: error.message }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     )
   }
 })

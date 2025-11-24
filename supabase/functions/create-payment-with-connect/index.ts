@@ -52,18 +52,22 @@ serve(async (req) => {
       )
     }
 
-    // Get sitter's Stripe Connect account
-    const { data: connectAccount, error: accountError } = await supabase
-      .from('stripe_connect_accounts')
-      .select('stripe_account_id, payouts_enabled')
-      .eq('user_id', booking.sitter_id)
-      .single()
-
-    if (accountError || !connectAccount || !connectAccount.payouts_enabled) {
-      return new Response(
-        JSON.stringify({ error: 'Sitter has not completed payout setup' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // Optional: Check if sitter has payout method configured
+    // This is optional for now - sitter can add payout method later
+    try {
+      const { data: sitterProfile } = await supabase
+        .from('users')
+        .select('payout_method, paypal_email, iban')
+        .eq('id', booking.sitter_id)
+        .single()
+      
+      // Log warning if no payout method, but don't block payment
+      if (!sitterProfile || (!sitterProfile.paypal_email && !sitterProfile.iban)) {
+        console.warn('Sitter has not set up payout method yet, but allowing payment to proceed')
+      }
+    } catch (error) {
+      // If columns don't exist yet (migration not run), just log and continue
+      console.warn('Could not check payout method (columns may not exist yet):', error)
     }
 
     // Calculate fees
@@ -71,14 +75,10 @@ serve(async (req) => {
     const platformFee = Math.round(totalAmount * PLATFORM_FEE_PERCENT)
     const sitterAmount = totalAmount - platformFee
 
-    // Create payment intent with application fee
+    // Create standard payment intent (money goes to platform account)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: 'eur',
-      application_fee_amount: platformFee,
-      transfer_data: {
-        destination: connectAccount.stripe_account_id,
-      },
       automatic_payment_methods: {
         enabled: true,
       },
@@ -87,6 +87,7 @@ serve(async (req) => {
         payer_id: user.id,
         receiver_id: booking.sitter_id,
         platform_fee: (platformFee / 100).toString(),
+        sitter_amount: (sitterAmount / 100).toString(),
       },
     })
 
@@ -100,8 +101,6 @@ serve(async (req) => {
       platform_fee: platformFee / 100,
       sitter_payout: sitterAmount / 100,
       stripe_payment_intent_id: paymentIntent.id,
-      stripe_connect_account_id: connectAccount.stripe_account_id,
-      application_fee_amount: platformFee / 100,
       status: 'pending',
     })
 

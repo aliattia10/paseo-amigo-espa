@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
 if (!stripeKey) {
-  console.error('Stripe Publishable Key is missing!');
+  console.error('❌ VITE_STRIPE_PUBLISHABLE_KEY is not set in environment variables!');
 } else {
   console.log('Stripe initialized with key:', stripeKey.substring(0, 8) + '...');
 }
@@ -122,6 +122,8 @@ export default function PaymentPage() {
         const amount = bookingData.total_price || bookingData.payment_amount || 0;
 
         // Create payment intent with Stripe Connect (20% platform fee)
+        console.log('Creating payment for booking:', bookingData.id, 'Amount:', amount);
+        
         const { data, error } = await supabase.functions.invoke('create-payment-with-connect', {
           body: {
             bookingId: bookingData.id,
@@ -129,18 +131,28 @@ export default function PaymentPage() {
           },
         });
 
+        console.log('Payment creation response:', { data, error });
+
         if (error) {
           console.error('Payment creation error:', error);
           console.error('Error details:', JSON.stringify(error, null, 2));
-          throw new Error(error.message || 'Failed to create payment');
+          
+          // Show more specific error message
+          const errorMessage = error.message || error.msg || 'Failed to create payment';
+          toast.error(`Payment Error: ${errorMessage}`);
+          throw new Error(errorMessage);
         }
 
         if (!data || !data.clientSecret) {
           console.error('Response data:', data);
-          throw new Error(data?.error || 'No client secret returned from payment creation');
+          const errorMsg = data?.error || 'No client secret returned from payment creation';
+          toast.error(`Payment Setup Error: ${errorMsg}`);
+          throw new Error(errorMsg);
         }
         
         console.log('Client secret received:', data.clientSecret.substring(0, 15) + '...');
+
+        console.log('Payment intent created successfully, client secret received');
 
         // Store platform fee and sitter amount for display
         setPlatformFee(data.platformFee || amount * 0.20);

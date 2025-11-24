@@ -73,9 +73,10 @@ const BookingRequestPage: React.FC = () => {
   }, [currentUser]);
 
   // Calculate pricing
-  const total = hourlyRate * formData.duration; // Total price (what owner pays)
-  const platformFee = total * 0.20; // 20% platform fee
-  const sitterPayout = total - platformFee; // What sitter receives
+  const subtotal = hourlyRate * formData.duration; // Base price (sitter's hourly rate × hours)
+  const platformFee = subtotal * 0.20; // 20% platform fee
+  const total = subtotal + platformFee; // Total price (what owner pays)
+  const sitterPayout = subtotal; // What sitter receives (subtotal without platform fee)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -302,6 +303,10 @@ const BookingRequestPage: React.FC = () => {
               <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
                 <span>Duration</span>
                 <span>{formData.duration} hour{formData.duration > 1 ? 's' : ''}</span>
+              </div>
+              <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-text-secondary-light dark:text-text-secondary-dark text-sm">
                 <span>Platform Fee (20%)</span>

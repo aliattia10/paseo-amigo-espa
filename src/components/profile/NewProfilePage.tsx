@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import i18n from '@/lib/i18n';
+import BottomNavigation from '@/components/ui/BottomNavigation';
 
 interface Booking {
   id: string;
@@ -614,7 +615,7 @@ const NewProfilePage: React.FC = () => {
                     
                     return (
                       <div key={index} className={`flex flex-col items-center ${isToday ? 'p-2 rounded-full bg-primary/20 dark:bg-primary/30' : ''}`}>
-                        <p className={`text-xs ${isToday ? 'text-primary font-bold' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}>
+                        <p className={`text-[10px] ${isToday ? 'text-primary font-bold' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}>
                           {isToday ? t('profile.today') : dayName}
                         </p>
                         <p className={`font-bold text-lg ${isToday ? 'text-primary' : 'text-text-primary-light dark:text-text-primary-dark'}`}>
@@ -652,7 +653,7 @@ const NewProfilePage: React.FC = () => {
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
               <li 
-                onClick={() => navigate('/payout-setup')}
+                onClick={() => navigate('/payout-methods')}
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark"
               >
                 <div className="flex items-center gap-4">
@@ -795,49 +796,8 @@ const NewProfilePage: React.FC = () => {
         </div>
       </main>
 
-      {/* Bottom Navigation - Mobile Style */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 z-10 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 w-full max-w-md">
-        <div className="flex justify-around items-center h-16 px-2">
-          <button 
-            onClick={() => navigate('/dashboard')} 
-            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-2xl">home</span>
-            <span className="text-xs font-medium mt-0.5">Home</span>
-          </button>
-          
-          <button 
-            onClick={() => navigate('/messages')} 
-            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-2xl">chat_bubble</span>
-            <span className="text-xs font-medium mt-0.5">Messages</span>
-          </button>
-          
-          <button 
-            onClick={() => navigate('/bookings')} 
-            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-2xl">event</span>
-            <span className="text-xs font-medium mt-0.5">Bookings</span>
-          </button>
-          
-          <button 
-            onClick={() => navigate('/notifications')} 
-            className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-2xl">notifications</span>
-            <span className="text-xs font-medium mt-0.5">Notifications</span>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center justify-center flex-1 py-2 text-primary"
-          >
-            <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: '"FILL" 1' }}>person</span>
-            <span className="text-xs font-bold mt-0.5">Profile</span>
-          </button>
-        </div>
-      </nav>
+      {/* Bottom Navigation */}
+      <BottomNavigation />
     </div>
   );
 };
