@@ -10,6 +10,7 @@ import FiltersModal, { FilterOptions } from '@/components/ui/FiltersModal';
 import { playMatchSound, playLikeSound } from '@/lib/sounds';
 import { supabase } from '@/integrations/supabase/client';
 import i18n from '@/lib/i18n';
+import { calculateDistance } from '@/lib/distance';
 
 interface Profile {
   id: string;
@@ -112,11 +113,44 @@ const NewHomePage: React.FC = () => {
   React.useEffect(() => {
     const loadProfiles = async () => {
       try {
+        // Get current user's location for distance calculation
+        let userLat: number | null = null;
+        let userLon: number | null = null;
+        
+        if (location && locationEnabled && !isGlobalMode) {
+          userLat = location.latitude;
+          userLon = location.longitude;
+        } else if (currentUser?.id) {
+          // Try to get user's location from database
+          const { data: userData } = await supabase
+            .from('users')
+            .select('latitude, longitude')
+            .eq('id', currentUser.id)
+            .single();
+          
+          if (userData?.latitude && userData?.longitude) {
+            userLat = Number(userData.latitude);
+            userLon = Number(userData.longitude);
+          }
+        }
+
         // Load pet profiles (for sitters to browse)
         // Exclude pets owned by the current user
+        // Also fetch owner's location for distance calculation
         const { data: pets, error: petsError } = await supabase
           .from('pets')
-          .select('id, name, age, image_url, owner_id, pet_type')
+          .select(`
+            id, 
+            name, 
+            age, 
+            image_url, 
+            owner_id, 
+            pet_type,
+            users!pets_owner_id_fkey (
+              latitude,
+              longitude
+            )
+          `)
           .neq('owner_id', currentUser?.id || '')
           .order('created_at', { ascending: false });
 
@@ -130,11 +164,25 @@ const NewHomePage: React.FC = () => {
               imageUrls = pet.image_url ? [pet.image_url] : [];
             }
 
+            // Calculate real distance if we have coordinates
+            let distance = Infinity;
+            if (userLat && userLon && pet.users) {
+              const owner = Array.isArray(pet.users) ? pet.users[0] : pet.users;
+              if (owner?.latitude && owner?.longitude) {
+                distance = calculateDistance(
+                  userLat,
+                  userLon,
+                  Number(owner.latitude),
+                  Number(owner.longitude)
+                );
+              }
+            }
+
             return {
               id: pet.id,
               name: pet.name,
               age: pet.age ? parseInt(pet.age) : undefined,
-              distance: Math.random() * 10, // TODO: Calculate real distance
+              distance: distance,
               rating: 5.0, // Default good rating for new profiles
               imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
               type: 'dog' as const,
@@ -146,9 +194,10 @@ const NewHomePage: React.FC = () => {
 
         // Load sitter profiles (for pet owners to browse)
         // Exclude current user and filter out test/bot profiles
+        // Also fetch latitude and longitude for distance calculation
         const { data: sitters, error: sittersError } = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, user_type, email')
+          .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude')
           .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
           .neq('id', currentUser?.id || '')
           .order('created_at', { ascending: false });
@@ -178,10 +227,21 @@ const NewHomePage: React.FC = () => {
               imageUrls = ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800'];
             }
 
+            // Calculate real distance if we have coordinates
+            let distance = Infinity;
+            if (userLat && userLon && sitter.latitude && sitter.longitude) {
+              distance = calculateDistance(
+                userLat,
+                userLon,
+                Number(sitter.latitude),
+                Number(sitter.longitude)
+              );
+            }
+
             return {
               id: sitter.id,
               name: sitter.name || 'Pet Sitter',
-              distance: Math.random() * 10, // TODO: Calculate real distance based on location_lat/lng
+              distance: distance,
               rating: 5.0, // Default good rating for new profiles
               imageUrls: imageUrls,
               bio: sitter.bio || undefined,
@@ -208,6 +268,11 @@ const NewHomePage: React.FC = () => {
       })
       .subscribe();
 
+    return () => {
+      petsSubscription.unsubscribe();
+    };
+  }, [currentUser?.id, userRole, location, locationEnabled, isGlobalMode]);
+
     const usersSubscription = supabase
       .channel('users-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
@@ -223,7 +288,7 @@ const NewHomePage: React.FC = () => {
       petsSubscription.unsubscribe();
       usersSubscription.unsubscribe();
     };
-  }, []);
+  }, [currentUser?.id, userRole, location, locationEnabled, isGlobalMode]);
   
   // No mock data - only show real profiles from database
 
@@ -309,8 +374,14 @@ const NewHomePage: React.FC = () => {
     }
 
     // Distance filter (only in local mode)
-    if (!isGlobalMode && filters.maxDistance) {
-      filtered = filtered.filter(p => p.distance <= filters.maxDistance);
+    if (!isGlobalMode && filters.maxDistance && locationEnabled) {
+      filtered = filtered.filter(p => {
+        // Only filter if distance is valid (not Infinity)
+        if (p.distance === Infinity || p.distance === undefined) {
+          return false; // Hide profiles without valid distance when location is enabled
+        }
+        return p.distance <= filters.maxDistance;
+      });
     }
 
     // Rating filter
@@ -871,7 +942,11 @@ const NewHomePage: React.FC = () => {
                   <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg self-start">
                     <span className="material-symbols-outlined text-white text-lg">location_on</span>
                     <p className="text-white text-base font-medium">
-                      {isGlobalMode ? t('home.global') : t('home.kmAway', { distance: currentProfile.distance.toFixed(1) })}
+                      {isGlobalMode 
+                        ? t('home.global') 
+                        : currentProfile.distance === Infinity || currentProfile.distance === undefined
+                          ? t('home.locationUnavailable') || 'Location unavailable'
+                          : t('home.kmAway', { distance: currentProfile.distance.toFixed(1) })}
                     </p>
                   </div>
                   
