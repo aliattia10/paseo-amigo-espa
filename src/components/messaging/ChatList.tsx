@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getWalkRequestsByOwner, getWalkRequestsByWalker } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, Clock, MapPin, Dog, Heart } from 'lucide-react';
+import { MessageCircle, Clock, MapPin, Dog, Heart, ArrowRight } from 'lucide-react';
 import type { WalkRequest } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -160,65 +160,110 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
   if (matches.length === 0 && walkRequests.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">{t('messages.noConversations') || 'No conversations'}</h3>
-          <p className="text-muted-foreground">
-            {t('messages.matchDescription') || t('messages.matchToChat') || 'When you match with someone, you can chat here and coordinate services.'}
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 flex items-center justify-center mb-4">
+          <Heart className="w-12 h-12 text-pink-400" />
+        </div>
+        <h3 className="text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+          {t('messages.noConversations') || 'No conversations yet'}
+        </h3>
+        <p className="text-text-secondary-light dark:text-text-secondary-dark max-w-sm">
+          {t('messages.matchDescription') || t('messages.matchToChat') || 'When you match with someone, you can chat here and coordinate services.'}
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="flex-shrink-0 border-b">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
+    <div className="flex flex-col h-full">
+      <div className="flex-shrink-0 px-4 py-3 border-b bg-card-light dark:bg-card-dark">
+        <h2 className="text-lg font-semibold flex items-center gap-2 text-text-primary-light dark:text-text-primary-dark">
           <MessageCircle className="w-5 h-5" />
           {t('messages.conversations') || 'Conversations'}
         </h2>
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex-1 p-0">
-        <ScrollArea className="h-full">
-          <div className="space-y-1">
-            {/* Show matches first */}
-            {matches.map((match) => {
-              if (!match.otherUser) return null;
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-3">
+          {/* Show matches first - Tinder-style bubbles */}
+          {matches.map((match) => {
+            if (!match.otherUser) return null;
 
-              return (
-                <div
-                  key={match.id}
-                  className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => onSelectChat(null, match.otherUser!, match.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={match.otherUser.profile_image} />
-                      <AvatarFallback>{match.otherUser.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold truncate">{match.otherUser.name}</h3>
-                        <Badge className="bg-pink-100 text-pink-800">
-                          <Heart className="w-3 h-3 mr-1" />
-                          {t('messages.match')}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{match.otherUser.role === 'sitter' ? `🐾 ${t('messages.sitter')}` : `🏠 ${t('messages.owner')}`}</span>
-                        <span>•</span>
-                        <span>{formatDate(new Date(match.created_at))}</span>
-                      </div>
-                    </div>
+            // Parse profile image
+            let profileImageUrl = '';
+            try {
+              if (match.otherUser.profile_image) {
+                const parsed = JSON.parse(match.otherUser.profile_image);
+                profileImageUrl = Array.isArray(parsed) ? parsed[0] : match.otherUser.profile_image;
+              }
+            } catch {
+              profileImageUrl = match.otherUser.profile_image || '';
+            }
+
+            return (
+              <div
+                key={match.id}
+                className="relative bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-2xl p-4 cursor-pointer hover:shadow-lg transition-all transform hover:scale-[1.02] border border-pink-200 dark:border-pink-800"
+                onClick={() => onSelectChat(null, match.otherUser!, match.id)}
+              >
+                {/* Match Badge */}
+                <div className="absolute top-3 right-3">
+                  <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
+                    <Heart className="w-3 h-3 fill-white" />
+                    {t('messages.match') || 'Match'}
                   </div>
                 </div>
-              );
-            })}
 
-            {/* Show walk requests */}
+                <div className="flex items-center gap-4">
+                  {/* Profile Image - Large Circle */}
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 p-0.5">
+                      <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 overflow-hidden">
+                        {profileImageUrl ? (
+                          <img 
+                            src={profileImageUrl} 
+                            alt={match.otherUser.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-purple-200 dark:from-pink-800 dark:to-purple-800">
+                            <span className="text-2xl font-bold text-pink-600 dark:text-pink-300">
+                              {match.otherUser.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Online indicator */}
+                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg text-text-primary-light dark:text-text-primary-dark mb-1 truncate">
+                      {match.otherUser.name}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm mb-2">
+                      <span className="bg-white/60 dark:bg-gray-800/60 px-2 py-0.5 rounded-full text-xs font-medium">
+                        {match.otherUser.role === 'sitter' || match.otherUser.role === 'walker' 
+                          ? `🐾 ${t('messages.sitter') || 'Sitter'}` 
+                          : `🏠 ${t('messages.owner') || 'Owner'}`}
+                      </span>
+                    </div>
+                    <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                      Matched {formatDate(new Date(match.created_at))}
+                    </p>
+                  </div>
+
+                  {/* Arrow indicator */}
+                  <div className="text-pink-400">
+                    <ArrowRight className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+            {/* Show walk requests - Card style */}
             {walkRequests.map((request) => {
               const otherUser = {
                 id: userProfile?.userType === 'owner' ? request.walkerId : request.ownerId,
@@ -229,7 +274,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               return (
                 <div
                   key={request.id}
-                  className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="bg-card-light dark:bg-card-dark rounded-xl p-4 cursor-pointer hover:shadow-md transition-all border border-border-light dark:border-border-dark"
                   onClick={() => onSelectChat(request, otherUser)}
                 >
                   <div className="flex items-center gap-3">
@@ -239,18 +284,18 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold truncate">{otherUser.name}</h3>
+                        <h3 className="font-semibold truncate text-text-primary-light dark:text-text-primary-dark">{otherUser.name}</h3>
                         <Badge className={getStatusColor(request.status)}>
                           {getStatusText(request.status)}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                      <div className="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1">
                         <Dog className="w-4 h-4" />
                         <span>{request.dogId}</span>
                         <Clock className="w-4 h-4 ml-2" />
                         <span>{request.duration} min</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
                         <MapPin className="w-4 h-4" />
                         <span>{request.location}</span>
                         <span>•</span>
@@ -263,8 +308,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
             })}
           </div>
         </ScrollArea>
-      </CardContent>
-    </Card>
+      </div>
   );
 };
 

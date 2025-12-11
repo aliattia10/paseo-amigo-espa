@@ -20,8 +20,8 @@ const Index = () => {
   }
 
   if (!currentUser) {
-    // Redirect unauthenticated users to welcome screen
-    return <Navigate to="/welcome" replace />;
+    // Redirect unauthenticated users to landing page
+    return <Navigate to="/home" replace />;
   }
 
   // If user is logged in, redirect to dashboard

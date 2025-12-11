@@ -342,63 +342,66 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-1 px-2">
               {messages.map((message: any) => {
                 const isOwnMessage = message.sender_id === currentUser?.id;
                 const messageContent = message.content || message.message;
                 const messageTime = message.created_at ? new Date(message.created_at) : new Date();
                 
-                console.log('Rendering message:', {
-                  id: message.id,
-                  sender_id: message.sender_id,
-                  content: message.content,
-                  messageContent,
-                  isOwnMessage
-                });
-                
                 return (
                   <div
                     key={message.id}
-                    className={`flex items-start gap-3 ${
+                    className={`flex items-end gap-2 mb-2 ${
                       isOwnMessage ? 'flex-row-reverse' : ''
                     }`}
                   >
-                    <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarImage 
-                        src={isOwnMessage ? currentUser.user_metadata?.avatar_url : otherUser.profileImage} 
-                      />
-                      <AvatarFallback>
-                        {isOwnMessage 
-                          ? currentUser.email?.charAt(0).toUpperCase()
-                          : otherUser.name.charAt(0)
-                        }
-                      </AvatarFallback>
-                    </Avatar>
-                    <div
-                      className={`max-w-xs rounded-lg overflow-hidden ${
-                        isOwnMessage
-                          ? 'bg-primary text-white'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      {/* Text message */}
-                      {messageContent && (
-                        <div className="px-3 py-2">
-                          <p className="text-sm">{messageContent}</p>
-                        </div>
-                      )}
+                    {/* Avatar - only show for other user's messages */}
+                    {!isOwnMessage && (
+                      <Avatar className="w-8 h-8 flex-shrink-0 mb-1">
+                        <AvatarImage 
+                          src={otherUser.profileImage} 
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-pink-400 to-purple-400 text-white">
+                          {otherUser.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    
+                    {/* Message Bubble - Tinder Style */}
+                    <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-[75%]`}>
+                      <div
+                        className={`rounded-2xl px-4 py-2.5 shadow-sm ${
+                          isOwnMessage
+                            ? 'bg-gradient-to-br from-primary to-primary/90 text-white rounded-br-sm'
+                            : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-sm border border-gray-200 dark:border-gray-700'
+                        }`}
+                      >
+                        <p className={`text-sm leading-relaxed ${isOwnMessage ? 'text-white' : 'text-gray-900 dark:text-gray-100'}`}>
+                          {messageContent}
+                        </p>
+                      </div>
                       
                       {/* Timestamp */}
                       <p
-                        className={`text-xs px-3 pb-2 ${
-                          isOwnMessage
-                            ? 'text-white/70'
-                            : 'text-muted-foreground'
-                        }`}
+                        className={`text-xs mt-1 px-2 ${
+                          isOwnMessage ? 'text-right' : 'text-left'
+                        } text-text-secondary-light dark:text-text-secondary-dark`}
                       >
                         {formatTime(messageTime)}
                       </p>
                     </div>
+
+                    {/* Avatar - only show for own messages */}
+                    {isOwnMessage && (
+                      <Avatar className="w-8 h-8 flex-shrink-0 mb-1">
+                        <AvatarImage 
+                          src={currentUser.user_metadata?.avatar_url} 
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-400 to-cyan-400 text-white">
+                          {currentUser.email?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                   </div>
                 );
               })}
