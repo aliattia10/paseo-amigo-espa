@@ -103,15 +103,25 @@ const LandingPage: React.FC = () => {
               Secure payments, verified reviews, and peace of mind for you and your pets.
             </p>
 
-            {/* Hero Image */}
+            {/* Hero Image - Dogs and Cats */}
             <div className="mb-12 max-w-4xl mx-auto">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1200&h=600&fit=crop" 
-                  alt="Happy dog with sitter"
-                  className="w-full h-auto object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-green-500/20 to-transparent"></div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <img 
+                    src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop" 
+                    alt="Happy dog with sitter"
+                    className="w-full h-64 md:h-80 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/20 to-transparent"></div>
+                </div>
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <img 
+                    src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&h=400&fit=crop" 
+                    alt="Happy cat with sitter"
+                    className="w-full h-64 md:h-80 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/20 to-transparent"></div>
+                </div>
               </div>
             </div>
 
@@ -194,7 +204,7 @@ const LandingPage: React.FC = () => {
               <div className="mb-4">
                 <img 
                   src="https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=400&h=300&fit=crop" 
-                  alt="Create profile"
+                  alt="Create profile with dog and cat"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
               </div>
@@ -205,15 +215,15 @@ const LandingPage: React.FC = () => {
                 Create Your Profile
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                Sign up as a pet owner or sitter. Add your pet's details or your service information.
+                Sign up as a pet owner or sitter. Add your pet's details (dogs or cats) or your service information.
               </p>
             </div>
             
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop" 
-                  alt="Browse and match"
+                  src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop" 
+                  alt="Browse and match cats and dogs"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
               </div>
@@ -232,7 +242,7 @@ const LandingPage: React.FC = () => {
               <div className="mb-4">
                 <img 
                   src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop" 
-                  alt="Book and enjoy"
+                  alt="Book and enjoy with pets"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
               </div>
@@ -275,7 +285,7 @@ const LandingPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Feature Images Grid */}
+        {/* Feature Images Grid - Dogs and Cats */}
         <div className="grid md:grid-cols-3 gap-6 mt-12">
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
@@ -289,8 +299,8 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop" 
-              alt="Dog walking"
+              src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&h=400&fit=crop" 
+              alt="Cat care"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-green-600/60 to-transparent flex items-end p-6">
@@ -299,8 +309,8 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&h=400&fit=crop" 
-              alt="Happy pets"
+              src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&h=400&fit=crop" 
+              alt="Happy dogs and cats"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-green-600/60 to-transparent flex items-end p-6">
@@ -333,13 +343,31 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
             <div className="hidden md:block">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1551717743-49959800b1f6?w=800&h=600&fit=crop" 
-                  alt="Happy pet owner"
-                  className="w-full h-auto object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent"></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative rounded-xl overflow-hidden shadow-lg">
+                  <img 
+                    src="https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=300&fit=crop" 
+                    alt="Happy dog owner"
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent"></div>
+                </div>
+                <div className="relative rounded-xl overflow-hidden shadow-lg">
+                  <img 
+                    src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop" 
+                    alt="Happy cat owner"
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent"></div>
+                </div>
+                <div className="relative rounded-xl overflow-hidden shadow-lg col-span-2">
+                  <img 
+                    src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=300&fit=crop" 
+                    alt="Dogs and cats together"
+                    className="w-full h-32 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -389,10 +417,22 @@ const LandingPage: React.FC = () => {
             </div>
             <div className="hidden md:block">
               <div className="relative">
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <img 
+                    src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=300&h=200&fit=crop" 
+                    alt="Dog sitter"
+                    className="rounded-lg shadow-lg w-full h-32 object-cover"
+                  />
+                  <img 
+                    src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=200&fit=crop" 
+                    alt="Cat sitter"
+                    className="rounded-lg shadow-lg w-full h-32 object-cover"
+                  />
+                </div>
                 <img 
-                  src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&h=400&fit=crop" 
-                  alt="Pet sitter"
-                  className="rounded-xl shadow-2xl w-full"
+                  src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&h=200&fit=crop" 
+                  alt="Pet sitter with dogs and cats"
+                  className="rounded-xl shadow-2xl w-full h-40 object-cover"
                 />
                 <div className="absolute -bottom-6 -right-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl border border-green-200 dark:border-gray-700">
                   <div className="text-center">
