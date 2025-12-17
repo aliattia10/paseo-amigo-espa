@@ -100,7 +100,7 @@ const NotificationsPage: React.FC = () => {
   const getIconColorForType = (type: string) => {
     switch (type) {
       case 'booking_request': return 'text-primary';
-      case 'booking_status_update': return 'text-green-500';
+      case 'booking_status_update': return 'text-medium-jungle';
       case 'message': return 'text-blue-500';
       case 'review': return 'text-secondary';
       default: return 'text-gray-500';

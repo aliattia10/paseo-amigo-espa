@@ -55,7 +55,7 @@ const MessagingPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1.5 bg-green-100 text-green-800 rounded-xl text-sm font-medium shadow-sm">
+              <div className="px-3 py-1.5 bg-sage-green/20 text-medium-jungle rounded-xl text-sm font-medium shadow-sm">
                 Active
               </div>
               <LanguageSwitcher />

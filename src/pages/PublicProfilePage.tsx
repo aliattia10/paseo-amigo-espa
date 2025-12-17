@@ -247,7 +247,7 @@ const PublicProfilePage: React.FC = () => {
                userProfile?.userType === 'both' ? '🐾 Owner & Sitter' : 
                '🐾 Pet Lover'}
             </div>
-            <div className="bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
+            <div className="bg-medium-jungle/20 dark:bg-medium-jungle/30 text-medium-jungle dark:text-sage-green px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>
                 verified
               </span>

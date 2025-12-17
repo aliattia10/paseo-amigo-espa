@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Heart, Shield, Clock, Star, Users, ArrowRight, CheckCircle, MessageCircle, DollarSign, MapPin, Calendar } from 'lucide-react';
+import appLogo from '@/assets/app-logo.png';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -64,28 +65,27 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50/50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-sage-green/30 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-muted-olive/40 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-sage-green/30 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 relative z-10">
           <div className="text-center">
             {/* Logo */}
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <span 
-                className="material-symbols-outlined text-6xl text-green-500" 
-                style={{ fontVariationSettings: '"FILL" 1, "wght" 600, "GRAD" 0, "opsz" 48' }}
-              >
-                pets
-              </span>
-              <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">
-                Petflik
+            <div className="flex flex-col items-center justify-center gap-4 mb-6">
+              <img 
+                src={appLogo} 
+                alt="Petflik Logo" 
+                className="w-24 h-24 md:w-32 md:h-32"
+              />
+              <h1 className="text-5xl md:text-6xl font-extrabold text-medium-jungle">
+                PETFLIK
               </h1>
             </div>
 
@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
                     alt="Happy dog with sitter"
                     className="w-full h-64 md:h-80 object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/20 to-transparent"></div>
                 </div>
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                   <img 
@@ -120,7 +120,7 @@ const LandingPage: React.FC = () => {
                     alt="Happy cat with sitter"
                     className="w-full h-64 md:h-80 object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/20 to-transparent"></div>
                 </div>
               </div>
             </div>
@@ -129,7 +129,7 @@ const LandingPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Button
                 size="lg"
-                className="bg-green-500 hover:bg-green-600 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="bg-medium-jungle hover:bg-medium-jungle/90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
                 onClick={() => navigate('/select-role')}
               >
                 Get Started
@@ -138,7 +138,7 @@ const LandingPage: React.FC = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="px-8 py-6 text-lg font-semibold border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                className="px-8 py-6 text-lg font-semibold border-medium-jungle text-medium-jungle hover:bg-sage-green/10 dark:hover:bg-sage-green/20"
                 onClick={() => navigate('/auth')}
               >
                 Sign In
@@ -148,19 +148,19 @@ const LandingPage: React.FC = () => {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto mb-16">
               <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                <div className="text-3xl font-bold text-green-600 mb-1">1000+</div>
+                <div className="text-3xl font-bold text-medium-jungle mb-1">1000+</div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Happy Pets</div>
               </div>
               <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                <div className="text-3xl font-bold text-green-600 mb-1">500+</div>
+                <div className="text-3xl font-bold text-medium-jungle mb-1">500+</div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Trusted Sitters</div>
               </div>
               <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                <div className="text-3xl font-bold text-green-600 mb-1">4.9★</div>
+                <div className="text-3xl font-bold text-medium-jungle mb-1">4.9★</div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Average Rating</div>
               </div>
               <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                <div className="text-3xl font-bold text-green-600 mb-1">24/7</div>
+                <div className="text-3xl font-bold text-medium-jungle mb-1">24/7</div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Support</div>
               </div>
             </div>
@@ -178,9 +178,9 @@ const LandingPage: React.FC = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-all border border-green-100 dark:border-gray-700"
+              className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-all border border-ash-grey dark:border-gray-700"
             >
-              <div className="text-green-500 mb-4">{feature.icon}</div>
+              <div className="text-medium-jungle mb-4">{feature.icon}</div>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                 {feature.title}
               </h4>
@@ -193,7 +193,7 @@ const LandingPage: React.FC = () => {
       </div>
 
       {/* How It Works Section */}
-      <div className="bg-green-50 dark:bg-gray-800/50 py-16">
+      <div className="bg-ash-grey/30 dark:bg-gray-800/50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-800 dark:text-white mb-12">
             How It Works
@@ -208,8 +208,8 @@ const LandingPage: React.FC = () => {
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
               </div>
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-green-600 dark:text-green-400">1</span>
+              <div className="w-16 h-16 bg-sage-green/20 dark:bg-sage-green/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-medium-jungle dark:text-sage-green">1</span>
               </div>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                 Create Your Profile
@@ -227,8 +227,8 @@ const LandingPage: React.FC = () => {
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
               </div>
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-green-600 dark:text-green-400">2</span>
+              <div className="w-16 h-16 bg-sage-green/20 dark:bg-sage-green/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-medium-jungle dark:text-sage-green">2</span>
               </div>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                 Browse & Match
@@ -246,8 +246,8 @@ const LandingPage: React.FC = () => {
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
               </div>
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-green-600 dark:text-green-400">3</span>
+              <div className="w-16 h-16 bg-sage-green/20 dark:bg-sage-green/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-medium-jungle dark:text-sage-green">3</span>
               </div>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                 Book & Enjoy
@@ -270,9 +270,9 @@ const LandingPage: React.FC = () => {
           {platformFeatures.map((feature, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm hover:shadow-md transition-all border border-green-100 dark:border-gray-700"
+              className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm hover:shadow-md transition-all border border-ash-grey dark:border-gray-700"
             >
-              <div className="text-green-500 mb-3 flex items-center gap-2">
+              <div className="text-medium-jungle mb-3 flex items-center gap-2">
                 {feature.icon}
                 <h4 className="text-base font-semibold text-gray-800 dark:text-white">
                   {feature.title}
@@ -293,7 +293,7 @@ const LandingPage: React.FC = () => {
               alt="Pet owner with dog"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-green-600/60 to-transparent flex items-end p-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/60 to-transparent flex items-end p-6">
               <p className="text-white font-semibold text-lg">Find Your Perfect Match</p>
             </div>
           </div>
@@ -303,7 +303,7 @@ const LandingPage: React.FC = () => {
               alt="Cat care"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-green-600/60 to-transparent flex items-end p-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/60 to-transparent flex items-end p-6">
               <p className="text-white font-semibold text-lg">Trusted Care</p>
             </div>
           </div>
@@ -313,7 +313,7 @@ const LandingPage: React.FC = () => {
               alt="Happy dogs and cats"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-green-600/60 to-transparent flex items-end p-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/60 to-transparent flex items-end p-6">
               <p className="text-white font-semibold text-lg">Happy Pets</p>
             </div>
           </div>
@@ -321,7 +321,7 @@ const LandingPage: React.FC = () => {
       </div>
 
       {/* Benefits Section */}
-      <div className="bg-gradient-to-br from-green-50 to-white dark:from-gray-800 dark:to-gray-900 py-16">
+      <div className="bg-gradient-to-br from-ash-grey/20 to-white dark:from-gray-800 dark:to-gray-900 py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -334,7 +334,7 @@ const LandingPage: React.FC = () => {
                     key={index}
                     className="flex items-start gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm"
                   >
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-medium-jungle flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       {benefit}
                     </p>
@@ -350,7 +350,7 @@ const LandingPage: React.FC = () => {
                     alt="Happy dog owner"
                     className="w-full h-48 object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/30 to-transparent"></div>
                 </div>
                 <div className="relative rounded-xl overflow-hidden shadow-lg">
                   <img 
@@ -358,7 +358,7 @@ const LandingPage: React.FC = () => {
                     alt="Happy cat owner"
                     className="w-full h-48 object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/30 to-transparent"></div>
                 </div>
                 <div className="relative rounded-xl overflow-hidden shadow-lg col-span-2">
                   <img 
@@ -366,7 +366,7 @@ const LandingPage: React.FC = () => {
                     alt="Dogs and cats together"
                     className="w-full h-32 object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/30 to-transparent"></div>
                 </div>
               </div>
             </div>
@@ -376,7 +376,7 @@ const LandingPage: React.FC = () => {
 
       {/* For Sitters Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-gradient-to-r from-green-100 to-green-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 md:p-12 border border-green-200 dark:border-gray-600">
+        <div className="bg-gradient-to-r from-sage-green/20 to-muted-olive/20 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 md:p-12 border border-ash-grey dark:border-gray-600">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">
@@ -388,19 +388,19 @@ const LandingPage: React.FC = () => {
               </p>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-medium-jungle flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     Set your own hourly rates
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-medium-jungle flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     Flexible payout options (PayPal or Bank Transfer)
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-medium-jungle flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     Build your reputation with reviews
                   </span>
@@ -408,7 +408,7 @@ const LandingPage: React.FC = () => {
               </ul>
               <Button
                 size="lg"
-                className="bg-green-500 hover:bg-green-600 text-white"
+                className="bg-medium-jungle hover:bg-medium-jungle/90 text-white"
                 onClick={() => navigate('/select-role')}
               >
                 Become a Sitter
@@ -434,9 +434,9 @@ const LandingPage: React.FC = () => {
                   alt="Pet sitter with dogs and cats"
                   className="rounded-xl shadow-2xl w-full h-40 object-cover"
                 />
-                <div className="absolute -bottom-6 -right-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl border border-green-200 dark:border-gray-700">
+                <div className="absolute -bottom-6 -right-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl border border-ash-grey dark:border-gray-700">
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">€15-30</div>
+                    <div className="text-4xl font-bold text-medium-jungle dark:text-sage-green mb-2">€15-30</div>
                     <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                       Average hourly rate
                     </div>
@@ -456,7 +456,7 @@ const LandingPage: React.FC = () => {
 
       {/* Final CTA */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <div className="relative bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-12 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-medium-jungle to-sage-green rounded-2xl p-12 overflow-hidden">
           {/* Background pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
@@ -467,14 +467,14 @@ const LandingPage: React.FC = () => {
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
               Ready to Get Started?
             </h3>
-            <p className="text-green-50 mb-8 max-w-2xl mx-auto text-lg">
+            <p className="text-white/90 mb-8 max-w-2xl mx-auto text-lg">
               Join thousands of pet owners and sitters who trust Petflik for their pet care needs. 
               Start connecting today!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-white hover:bg-gray-100 text-green-600 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="bg-white hover:bg-gray-100 text-medium-jungle px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
                 onClick={() => navigate('/select-role')}
               >
                 Get Started Free

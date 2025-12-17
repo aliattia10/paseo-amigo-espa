@@ -207,15 +207,15 @@ const AdminPayoutsPage: React.FC = () => {
                       </p>
                     </div>
                   ) : (
-                    <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                    <div className="bg-sage-green/10 dark:bg-sage-green/20 p-3 rounded-lg">
                       <p className="text-sm font-medium">Bank Transfer</p>
-                      <p className="text-xs text-green-700 dark:text-green-300">
+                      <p className="text-xs text-medium-jungle dark:text-sage-green">
                         <strong>Account Holder:</strong> {request.sitter?.account_holder_name}
                       </p>
-                      <p className="text-xs text-green-700 dark:text-green-300">
+                      <p className="text-xs text-medium-jungle dark:text-sage-green">
                         <strong>IBAN:</strong> {request.sitter?.iban}
                       </p>
-                      <p className="text-xs text-green-700 dark:text-green-300">
+                      <p className="text-xs text-medium-jungle dark:text-sage-green">
                         <strong>Bank:</strong> {request.sitter?.bank_name}
                       </p>
                     </div>
@@ -224,7 +224,7 @@ const AdminPayoutsPage: React.FC = () => {
                   <Button
                     onClick={() => handleMarkAsProcessed(request.id)}
                     disabled={processing === request.id}
-                    className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
+                    className="w-full mt-4 bg-medium-jungle hover:bg-medium-jungle/90 text-white"
                   >
                     {processing === request.id ? (
                       <>

@@ -59,7 +59,7 @@ export const PayoutSetupBanner: React.FC = () => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl p-4 shadow-lg relative mb-4">
+    <div className="bg-gradient-to-r from-medium-jungle to-sage-green text-white rounded-xl p-4 shadow-lg relative mb-4">
       <button
         onClick={() => setDismissed(true)}
         className="absolute top-2 right-2 p-1 hover:bg-white/20 rounded-full transition-colors"
@@ -82,7 +82,7 @@ export const PayoutSetupBanner: React.FC = () => {
           
           <Button
             onClick={() => navigate('/payout-methods')}
-            className="bg-white text-green-600 hover:bg-white/90 font-semibold"
+            className="bg-white text-medium-jungle hover:bg-white/90 font-semibold"
             size="sm"
           >
             {t('payout.add_payout_method')}

@@ -124,7 +124,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'accepted':
-        return 'bg-green-100 text-green-800';
+        return 'bg-sage-green/20 text-medium-jungle';
       case 'in-progress':
         return 'bg-blue-100 text-blue-800';
       case 'completed':
@@ -235,7 +235,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                       </div>
                     </div>
                     {/* Online indicator */}
-                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-medium-jungle border-2 border-white dark:border-gray-800 rounded-full"></div>
                   </div>
 
                   <div className="flex-1 min-w-0">

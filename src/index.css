@@ -18,35 +18,42 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 9%;
 
-    /* Modern blue primary */
-    --primary: 221 83% 53%;
+    /* New Petflik Color Palette */
+    --ash-grey: 110 11% 79%;
+    --sage-green: 109 31% 56%;
+    --medium-jungle: 110 42% 47%;
+    --white: 0 0% 100%;
+    --muted-olive: 109 28% 63%;
+
+    /* Primary colors - using new palette */
+    --primary: 110 42% 47%; /* medium-jungle */
     --primary-foreground: 0 0% 100%;
 
-    /* Light gray secondary */
-    --secondary: 210 40% 98%;
-    --secondary-foreground: 0 0% 9%;
+    /* Secondary colors - using new palette */
+    --secondary: 109 31% 56%; /* sage-green */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 110 11% 79%; /* ash-grey */
+    --muted-foreground: 110 42% 47%; /* medium-jungle */
 
-    /* Vibrant accent */
-    --accent: 142 76% 36%;
+    /* Vibrant accent - using new palette */
+    --accent: 110 42% 47%; /* medium-jungle */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 221 83% 53%;
+    --border: 110 11% 79%; /* ash-grey */
+    --input: 110 11% 79%; /* ash-grey */
+    --ring: 110 42% 47%; /* medium-jungle */
 
-    /* App-specific minimalistic colors */
-    --primary-blue: 221 83% 53%;
-    --primary-blue-light: 221 83% 63%;
-    --secondary-gray: 0 0% 96%;
-    --secondary-gray-light: 0 0% 98%;
-    --accent-green: 142 76% 36%;
-    --accent-green-light: 142 76% 46%;
+    /* App-specific colors - using new palette */
+    --primary-green: 110 42% 47%; /* medium-jungle */
+    --primary-green-light: 109 31% 56%; /* sage-green */
+    --secondary-gray: 110 11% 79%; /* ash-grey */
+    --secondary-gray-light: 109 28% 63%; /* muted-olive */
+    --accent-green: 110 42% 47%; /* medium-jungle */
+    --accent-green-light: 109 31% 56%; /* sage-green */
     --neutral-bg: 0 0% 100%;
     --neutral-text: 0 0% 9%;
 

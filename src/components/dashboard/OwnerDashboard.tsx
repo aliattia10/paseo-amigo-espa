@@ -228,7 +228,7 @@ const OwnerDashboard: React.FC = () => {
                     {userProfile?.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-stitch-card-light rounded-full"></div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-medium-jungle border-2 border-stitch-card-light rounded-full"></div>
               </div>
               <div>
                 <h1 className="text-xl font-bold font-display text-stitch-text-primary-light">
@@ -336,7 +336,7 @@ const OwnerDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-green-50 to-emerald-100 cursor-pointer group rounded-3xl" onClick={() => setCurrentView('home')}>
             <CardContent className="p-6 text-center">
-              <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-md">
+              <div className="w-16 h-16 bg-medium-jungle rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-md">
                 <span className="material-symbols-outlined text-white text-3xl">favorite</span>
               </div>
               <h3 className="text-lg font-bold text-stitch-text-primary-light mb-2 font-display">{t('dashboard.findCompanion')}</h3>
@@ -420,7 +420,7 @@ const OwnerDashboard: React.FC = () => {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute top-4 right-4">
-                          <Badge className="bg-green-500 text-white border-0 rounded-xl shadow-md">
+                          <Badge className="bg-medium-jungle text-white border-0 rounded-xl shadow-md">
                             <span className="material-symbols-outlined text-sm mr-1">bolt</span>
                             {t('dashboard.active')}
                           </Badge>
@@ -469,10 +469,10 @@ const OwnerDashboard: React.FC = () => {
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-stitch-text-primary-light mb-6 font-display">{t('dashboard.recentActivity')} 📅</h2>
           {recentWalks.length === 0 ? (
-            <Card className="border-2 border-dashed border-stitch-border-light hover:border-green-400 transition-colors rounded-3xl">
+            <Card className="border-2 border-dashed border-stitch-border-light hover:border-sage-green transition-colors rounded-3xl">
               <CardContent className="p-12 text-center">
-                <div className="w-24 h-24 bg-green-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                  <span className="material-symbols-outlined text-5xl text-green-500">favorite</span>
+                <div className="w-24 h-24 bg-sage-green/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <span className="material-symbols-outlined text-5xl text-medium-jungle">favorite</span>
                 </div>
                 <h3 className="text-xl font-bold text-stitch-text-primary-light mb-2 font-display">{t('dashboard.firstAdventure')}</h3>
                 <p className="text-stitch-text-secondary-light mb-6 max-w-md mx-auto">
@@ -546,12 +546,12 @@ const OwnerDashboard: React.FC = () => {
             </CardContent>
           </Card>
           
-          <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100 hover:shadow-lg transition-all duration-300 rounded-3xl">
+          <Card className="border-0 bg-gradient-to-br from-sage-green/20 to-muted-olive/30 hover:shadow-lg transition-all duration-300 rounded-3xl">
             <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
+              <div className="w-12 h-12 bg-medium-jungle rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
                 <span className="material-symbols-outlined text-white text-2xl">check_circle</span>
               </div>
-              <div className="text-3xl font-bold text-green-600 mb-1">
+              <div className="text-3xl font-bold text-medium-jungle mb-1">
                 {recentWalks.filter(w => w.status === 'completed').length}
               </div>
               <div className="text-sm text-stitch-text-secondary-light font-medium">{t('dashboard.completedWalks')}</div>

@@ -273,8 +273,8 @@ const HomePage: React.FC = () => {
       <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden max-w-md mx-auto border-x border-gray-200 dark:border-gray-800 bg-home-background-light dark:bg-home-background-dark">
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
-            <div className="w-20 h-20 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-6">
-              <span className="material-symbols-outlined text-green-500 text-5xl" style={{ fontVariationSettings: '"FILL" 1' }}>check_circle</span>
+            <div className="w-20 h-20 bg-medium-jungle/20 rounded-xl flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-medium-jungle text-5xl" style={{ fontVariationSettings: '"FILL" 1' }}>check_circle</span>
             </div>
             <h2 className="text-2xl font-bold text-[#0e1b13] dark:text-gray-100 mb-4 font-display">
               ¡Has visto todos!

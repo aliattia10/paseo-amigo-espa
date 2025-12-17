@@ -19,6 +19,13 @@ export default {
 		},
 		extend: {
 			colors: {
+				// New Petflik Color Palette
+				'ash-grey': '#C5CFC3',
+				'sage-green': '#78B16B',
+				'medium-jungle': '#56AB46',
+				'white': '#FFFFFF',
+				'muted-olive': '#8FBA85',
+				
 				// Stitch Design System - Exact Colors from HTML Files
 				// Welcome Page Colors
 				'welcome-primary': '#FFC107',
@@ -26,25 +33,25 @@ export default {
 				'welcome-background-dark': '#112117',
 				'welcome-text-light': '#333333',
 				'welcome-text-dark': '#FAF8F1',
-				'welcome-accent-light': '#00796B',
+				'welcome-accent-light': '#56AB46', // Updated to medium-jungle
 				'welcome-accent-dark': '#FFC107',
 				
 				// Role Selection Colors
-				'role-primary': '#50E3C2',
+				'role-primary': '#78B16B', // Updated to sage-green
 				'role-background-light': '#f6f8f7',
 				'role-background-dark': '#112117',
 				'role-text-light': '#4A4A4A',
 				'role-text-dark': '#E0E0E0',
-				'role-button-secondary': '#F5A623',
+				'role-button-secondary': '#56AB46', // Updated to medium-jungle
 				
 				// Home Feed Colors
-				'home-primary': '#20df6c',
+				'home-primary': '#56AB46', // Updated to medium-jungle
 				'home-background-light': '#f6f8f7',
 				'home-background-dark': '#112117',
 				
-				// Profile & Search Colors (Main App Colors)
-				'primary': '#4A90E2',
-				'secondary': '#F5A623',
+				// Profile & Search Colors (Main App Colors) - Updated to new palette
+				'primary': '#56AB46', // medium-jungle
+				'secondary': '#78B16B', // sage-green
 				'background-light': '#F2F2F7',
 				'background-dark': '#1C1C1E',
 				'text-primary-light': '#1C1C1E',
@@ -58,9 +65,9 @@ export default {
 				'primary-bg-light': '#D8E7F9',
 				'primary-bg-dark': 'rgba(74, 144, 226, 0.2)',
 				
-				// Legacy Stitch Colors (for compatibility)
-				'stitch-primary': '#4A90E2',
-				'stitch-secondary': '#F5A623',
+				// Legacy Stitch Colors (for compatibility) - Updated to new palette
+				'stitch-primary': '#56AB46', // medium-jungle
+				'stitch-secondary': '#78B16B', // sage-green
 				'stitch-bg-light': '#F2F2F7',
 				'stitch-bg-dark': '#1C1C1E',
 				'stitch-text-primary-light': '#1C1C1E',
@@ -79,11 +86,11 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: '#4A90E2', // Use Stitch primary as default
+					DEFAULT: '#56AB46', // medium-jungle
 					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
-					DEFAULT: '#F5A623', // Use Stitch secondary as default
+					DEFAULT: '#78B16B', // sage-green
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
 				destructive: {

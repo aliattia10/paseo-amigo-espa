@@ -180,15 +180,15 @@ export const PayoutSetupPage: React.FC = () => {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Card className="p-8 text-center">
-          <CheckCircle2 className="w-16 h-16 mx-auto mb-4 text-green-500" />
+          <CheckCircle2 className="w-16 h-16 mx-auto mb-4 text-medium-jungle" />
           <h1 className="text-2xl font-bold mb-2">{t('payout.account_ready')}</h1>
           <p className="text-gray-600 mb-6">
             {t('payout.ready_description')}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <Shield className="w-8 h-8 mx-auto mb-2 text-green-600" />
+            <div className="bg-sage-green/10 p-4 rounded-lg">
+              <Shield className="w-8 h-8 mx-auto mb-2 text-medium-jungle" />
               <p className="text-sm font-semibold">{t('payout.verified')}</p>
               <p className="text-xs text-gray-600">{t('payout.identity_confirmed')}</p>
             </div>
@@ -260,11 +260,11 @@ export const PayoutSetupPage: React.FC = () => {
         </p>
 
         <div className="space-y-4 mb-6">
-          <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
-            <Shield className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+          <div className="flex items-start gap-3 p-4 bg-sage-green/10 rounded-lg">
+            <Shield className="w-6 h-6 text-medium-jungle flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-green-900">{t('payout.secure')}</h3>
-              <p className="text-sm text-green-700">
+              <h3 className="font-semibold text-medium-jungle">{t('payout.secure')}</h3>
+              <p className="text-sm text-medium-jungle">
                 {t('payout.secure_description')}
               </p>
             </div>

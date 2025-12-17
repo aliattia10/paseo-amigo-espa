@@ -703,7 +703,7 @@ const NewProfilePage: React.FC = () => {
                   </div>
                   <div className="flex flex-col items-end flex-shrink-0">
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                      booking.status === 'completed' ? 'text-green-500 bg-green-500/10' :
+                      booking.status === 'completed' ? 'text-medium-jungle bg-medium-jungle/10' :
                       booking.status === 'accepted' ? 'text-blue-500 bg-blue-500/10' :
                       booking.status === 'pending' ? 'text-yellow-500 bg-yellow-500/10' :
                       'text-gray-500 bg-gray-500/10'

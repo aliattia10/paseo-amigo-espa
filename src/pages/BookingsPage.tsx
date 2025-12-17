@@ -307,7 +307,7 @@ const BookingsPage: React.FC = () => {
       case 'requested': return 'bg-yellow-500/10 text-yellow-600';
       case 'confirmed': return 'bg-blue-500/10 text-blue-600';
       case 'in-progress': return 'bg-purple-500/10 text-purple-600';
-      case 'completed': return 'bg-green-500/10 text-green-600';
+      case 'completed': return 'bg-medium-jungle/10 text-medium-jungle';
       case 'cancelled': return 'bg-red-500/10 text-red-600';
       default: return 'bg-gray-500/10 text-gray-600';
     }
@@ -422,14 +422,14 @@ const BookingsPage: React.FC = () => {
               {/* Show waiting message when confirmed and paid */}
               {(booking.status as string) === 'confirmed' && booking.payment_status === 'held' && (
                 <div>
-                  <div className="text-sm text-center text-green-600 dark:text-green-400 mb-2">
+                  <div className="text-sm text-center text-medium-jungle dark:text-sage-green mb-2">
                     ✓ Payment secured - Waiting for service
                   </div>
                   {/* SITTER: Show "Mark as Complete" button */}
                   {currentUser?.id === booking.sitter_id && (
                     <Button 
                       onClick={() => handleMarkComplete(booking.id)} 
-                      className="w-full bg-green-600 text-white hover:bg-green-700"
+                      className="w-full bg-medium-jungle text-white hover:bg-medium-jungle/90"
                     >
                       ✅ Mark Service Complete
                     </Button>
@@ -493,7 +493,7 @@ const BookingsPage: React.FC = () => {
               
               {/* Payment released to balance */}
               {booking.payment_status === 'released' && booking.balance_released_at && (
-                <div className="text-sm text-center text-green-600 dark:text-green-400 font-medium">
+                <div className="text-sm text-center text-medium-jungle dark:text-sage-green font-medium">
                   💵 Payment Released - Added to sitter's balance
                 </div>
               )}

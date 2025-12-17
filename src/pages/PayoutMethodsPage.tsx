@@ -617,12 +617,12 @@ const PayoutMethodsPage: React.FC = () => {
         </div>
 
         {/* Security Note */}
-        <div className="rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4">
+        <div className="rounded-xl bg-sage-green/10 dark:bg-sage-green/20 border border-ash-grey dark:border-sage-green/30 p-4">
           <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-green-600 dark:text-green-400">
+            <span className="material-symbols-outlined text-medium-jungle dark:text-sage-green">
               shield
             </span>
-            <div className="text-sm text-green-800 dark:text-green-200">
+            <div className="text-sm text-medium-jungle dark:text-sage-green">
               <p className="font-medium mb-1">{t('payout.secureStorage')}</p>
               <p className="text-xs opacity-90">{t('payout.securityNote')}</p>
             </div>

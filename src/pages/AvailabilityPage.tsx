@@ -169,7 +169,7 @@ const AvailabilityPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available':
-        return 'bg-green-500/10 text-green-600 border-green-500/20';
+        return 'bg-medium-jungle/10 text-medium-jungle border-medium-jungle/20';
       case 'booked':
         return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
       case 'unavailable':

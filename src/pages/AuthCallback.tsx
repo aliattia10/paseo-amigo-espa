@@ -196,8 +196,8 @@ const AuthCallback: React.FC = () => {
       case 'success':
         return (
           <div className="flex flex-col items-center space-y-4">
-            <CheckCircle className="h-12 w-12 text-green-500" />
-            <p className="text-lg font-medium text-green-700">{message}</p>
+            <CheckCircle className="h-12 w-12 text-medium-jungle" />
+            <p className="text-lg font-medium text-medium-jungle">{message}</p>
             <p className="text-sm text-muted-foreground">{t('auth.redirectingHome')}</p>
           </div>
         );

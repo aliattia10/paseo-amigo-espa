@@ -921,7 +921,7 @@ const NewHomePage: React.FC = () => {
               
               {/* Swipe indicators */}
               {dragOffset.x > 50 && (
-                <div className="absolute top-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform rotate-12 shadow-lg z-20">
+                <div className="absolute top-8 right-8 bg-medium-jungle text-white px-6 py-3 rounded-lg font-bold text-xl transform rotate-12 shadow-lg z-20">
                   {t('home.like')}
                 </div>
               )}
