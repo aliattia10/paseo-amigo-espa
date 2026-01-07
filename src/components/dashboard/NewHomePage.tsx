@@ -28,6 +28,7 @@ interface Profile {
 const NewHomePage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id;
   const { location, locationEnabled, isGlobalMode, requestLocation, toggleGlobalMode } = useLocation();
   const { toast } = useToast();
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
@@ -107,7 +108,7 @@ const NewHomePage: React.FC = () => {
     };
     
     loadUserInteractions();
-  }, [currentUser?.id, userRole]);
+  }, [currentUserId, userRole]);
 
   // Load real profiles from Supabase
   React.useEffect(() => {
@@ -268,11 +269,6 @@ const NewHomePage: React.FC = () => {
       })
       .subscribe();
 
-    return () => {
-      petsSubscription.unsubscribe();
-    };
-  }, [currentUser?.id, userRole, location, locationEnabled, isGlobalMode]);
-
     const usersSubscription = supabase
       .channel('users-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
@@ -288,7 +284,7 @@ const NewHomePage: React.FC = () => {
       petsSubscription.unsubscribe();
       usersSubscription.unsubscribe();
     };
-  }, [currentUser?.id, userRole, location, locationEnabled, isGlobalMode]);
+  }, [currentUserId, userRole, location, locationEnabled, isGlobalMode]);
   
   // No mock data - only show real profiles from database
 
@@ -316,7 +312,7 @@ const NewHomePage: React.FC = () => {
     if (!locationEnabled && !isGlobalMode) {
       setShowLocationPrompt(true);
     }
-  }, [currentUser?.id]);
+  }, [currentUserId]);
   
   // Show location prompt after a delay if not enabled
   React.useEffect(() => {
