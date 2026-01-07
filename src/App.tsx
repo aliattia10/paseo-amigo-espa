@@ -41,6 +41,8 @@ import PaymentPage from "./pages/PaymentPage";
 import PayoutMethodsPage from "./pages/PayoutMethodsPage";
 import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import LandingPage from "./pages/LandingPage";
+import ContactPage from "./pages/ContactPage";
+import UserAgreementPage from "./pages/UserAgreementPage";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
@@ -678,6 +680,8 @@ const App = () => (
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
                 <Route path="/home" element={<LandingPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/user-agreement" element={<UserAgreementPage />} />
                 <Route path="/welcome" element={<WelcomeScreen />} />
                 <Route path="/select-role" element={<RoleSelectionPage />} />
                 <Route path="/auth" element={<AuthNew />} />
