@@ -190,3 +190,16 @@ export interface NearbyWalker extends User {
   distanceEstimate: number;
   walkerProfile: WalkerProfile;
 }
+
+export interface Blog {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  authorId: string;
+  coverImage?: string;
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}

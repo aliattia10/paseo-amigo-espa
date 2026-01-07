@@ -9,6 +9,7 @@ interface AuthContextType {
   currentUser: SupabaseUser | null;
   userProfile: User | null;
   loading: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => Promise<{ success: boolean; user: SupabaseUser | null }>;
   logout: () => Promise<void>;
@@ -33,93 +34,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Set a global timeout to prevent infinite loading
-    const globalTimeout = setTimeout(() => {
-      console.warn('AuthContext: Global timeout reached, forcing loading to false');
-      setLoading(false);
-    }, 8000); // Reduced from 15s to 8s for faster experience
+    // ...
+    const checkAdminStatus = (user: SupabaseUser | null) => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      // Add admin emails here
+      const adminEmails = ['attiaali853@gmail.com', 'admin@petflik.com'];
+      setIsAdmin(adminEmails.includes(user.email || ''));
+    };
 
     // Get initial session
     const getInitialSession = async () => {
-      try {
-        console.log('AuthContext: Getting initial session...');
-        
-        // Get session without timeout to prevent hanging issues
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
-        }
-        console.log('AuthContext: Session data:', session);
-        
+      // ... existing code ...
         if (session?.user) {
           console.log('AuthContext: User found:', session.user.id);
           setCurrentUser(session.user);
-          try {
-            console.log('AuthContext: Fetching user profile...');
-            
-            // Add timeout for getUser to prevent hanging
-            const profilePromise = getUser(session.user.id);
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Profile fetch timeout')), 5000) // Reduced from 10s to 5s
-            );
-            
-            const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
-            console.log('AuthContext: Profile data:', profile);
-            setUserProfile(profile);
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-            // If profile doesn't exist or times out, set userProfile to null but don't fail
-            setUserProfile(null);
-          }
-        } else {
-          console.log('AuthContext: No user found in session');
-        }
-      } catch (error) {
-        console.error('Error getting initial session:', error);
-        // If there's an error, set loading to false anyway to prevent infinite loading
-        setCurrentUser(null);
-        setUserProfile(null);
-      } finally {
-        console.log('AuthContext: Setting loading to false');
-        setLoading(false);
-        clearTimeout(globalTimeout);
-      }
+          checkAdminStatus(session.user);
+          // ...
     };
 
-    getInitialSession();
-
-    // Listen for auth changes
+    // ...
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthContext: Auth state change:', event, session?.user?.id);
       setCurrentUser(session?.user ?? null);
-      
-      if (session?.user) {
-        try {
-          console.log('AuthContext: Fetching user profile in auth state change...');
-          
-          // Add timeout for getUser to prevent hanging
-          const profilePromise = getUser(session.user.id);
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Profile fetch timeout')), 5000) // Reduced from 10s to 5s
-          );
-          
-          const profile = await Promise.race([profilePromise, timeoutPromise]) as User | null;
-          console.log('AuthContext: Profile data in auth state change:', profile);
-          setUserProfile(profile);
-        } catch (error) {
-          console.error('Error fetching user profile in auth state change:', error);
-          // If profile doesn't exist or times out, set userProfile to null but don't fail
-          setUserProfile(null);
-        }
-      } else {
-        setUserProfile(null);
-      }
-      
-      setLoading(false);
+      checkAdminStatus(session?.user ?? null);
+      // ...
     });
 
     return () => subscription.unsubscribe();
@@ -185,6 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     currentUser,
     userProfile,
     loading,
+    isAdmin,
     signIn,
     signUp,
     logout,

@@ -2,6 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Heart, Shield, Clock, Star, Users, ArrowRight, CheckCircle, MessageCircle, DollarSign, MapPin, Calendar } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
@@ -218,7 +224,7 @@ const LandingPage: React.FC = () => {
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1548199973-03cce0b5a855?w=400&h=300&fit=crop" 
+                  src="https://images.unsplash.com/photo-1544568100-847a948585b9?w=400&h=300&fit=crop" 
                   alt="Browse and match cats and dogs"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
@@ -415,18 +421,18 @@ const LandingPage: React.FC = () => {
               <div className="relative">
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   <img 
-                    src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=300&h=200&fit=crop" 
+                    src="https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?w=300&h=200&fit=crop" 
                     alt="Dog sitter"
                     className="rounded-lg shadow-lg w-full h-32 object-cover"
                   />
                   <img 
-                    src="https://images.unsplash.com/photo-1573865662567-57ef5b67bfd7?w=300&h=200&fit=crop" 
+                    src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=300&h=200&fit=crop" 
                     alt="Cat sitter"
                     className="rounded-lg shadow-lg w-full h-32 object-cover"
                   />
                 </div>
                 <img 
-                  src="https://images.unsplash.com/photo-1541591047357-91918a3ca4c6?w=600&h=200&fit=crop" 
+                  src="https://images.unsplash.com/photo-1551717743-49959800b1f6?w=600&h=200&fit=crop" 
                   alt="Pet sitter with dogs and cats"
                   className="rounded-xl shadow-2xl w-full h-40 object-cover"
                 />
@@ -448,6 +454,35 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-800 dark:text-white mb-8">
+          {t('faq.title')}
+        </h3>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="text-left font-semibold">{t('faq.q1')}</AccordionTrigger>
+            <AccordionContent>{t('faq.a1')}</AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-2">
+            <AccordionTrigger className="text-left font-semibold">{t('faq.q2')}</AccordionTrigger>
+            <AccordionContent>{t('faq.a2')}</AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-3">
+            <AccordionTrigger className="text-left font-semibold">{t('faq.q3')}</AccordionTrigger>
+            <AccordionContent>{t('faq.a3')}</AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-4">
+            <AccordionTrigger className="text-left font-semibold">{t('faq.q4')}</AccordionTrigger>
+            <AccordionContent>{t('faq.a4')}</AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-5">
+            <AccordionTrigger className="text-left font-semibold">{t('faq.q5')}</AccordionTrigger>
+            <AccordionContent>{t('faq.a5')}</AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
 
       <Footer />
@@ -478,15 +513,15 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-gray-900 dark:text-white font-bold mb-6">Company</h4>
-            <ul className="space-y-4">
-              <li><button onClick={() => navigate('/home')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">About</button></li>
-              <li><button onClick={() => navigate('/contact')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Contact us</button></li>
-              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Careers</button></li>
-              <li><button onClick={() => navigate('/contact')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Support</button></li>
-            </ul>
-          </div>
+                   <div>
+                     <h4 className="text-gray-900 dark:text-white font-bold mb-6">Company</h4>
+                     <ul className="space-y-4">
+                       <li><button onClick={() => navigate('/home')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">About</button></li>
+                       <li><button onClick={() => navigate('/blog')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Blog</button></li>
+                       <li><button onClick={() => navigate('/contact')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Contact us</button></li>
+                       <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Careers</button></li>
+                     </ul>
+                   </div>
 
           <div>
             <h4 className="text-gray-900 dark:text-white font-bold mb-6">Legal</h4>

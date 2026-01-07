@@ -43,6 +43,10 @@ import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import LandingPage from "./pages/LandingPage";
 import ContactPage from "./pages/ContactPage";
 import UserAgreementPage from "./pages/UserAgreementPage";
+import BlogListPage from "./pages/BlogListPage";
+import BlogPostPage from "./pages/BlogPostPage";
+import AdminPage from "./pages/AdminPage";
+import AdminBlogPage from "./pages/AdminBlogPage";
 import SEO from "./components/SEO";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
@@ -684,6 +688,8 @@ const App = () => (
                 <Route path="/home" element={<LandingPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/user-agreement" element={<UserAgreementPage />} />
+                <Route path="/blog" element={<BlogListPage />} />
+                <Route path="/blog/:slug" element={<BlogPostPage />} />
                 <Route path="/welcome" element={<WelcomeScreen />} />
                 <Route path="/select-role" element={<RoleSelectionPage />} />
                 <Route path="/auth" element={<AuthNew />} />
@@ -691,6 +697,11 @@ const App = () => (
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/blog/new" element={<AdminBlogPage />} />
+                <Route path="/admin/blog/edit/:id" element={<AdminBlogPage />} />
                 
                 {/* Protected Routes */}
                 <Route 

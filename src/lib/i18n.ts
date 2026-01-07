@@ -9,6 +9,19 @@ const resources = {
       'seo.title': 'Petflik - Trusted Pet Sitters & Dog Walkers',
       'seo.description': 'Spain\'s trusted marketplace for pet care. Connect with verified dog walkers and pet sitters near you. Secure, reliable care for your dogs and cats.',
       
+      // FAQ
+      'faq.title': 'People also ask about Petflik',
+      'faq.q1': 'What is Petflik?',
+      'faq.a1': 'Petflik is Spain\'s leading platform connecting pet owners with trusted, professional sitters and walkers for dogs and cats.',
+      'faq.q2': 'Is Petflik free to use?',
+      'faq.a2': 'Creating an account and browsing profiles is free. We only charge a small service fee when you successfully book a sitter.',
+      'faq.q3': 'How do I find a dog sitter on Petflik?',
+      'faq.a3': 'Simply sign up as an owner, search by your location, and browse through verified sitter profiles. You can chat with them before booking!',
+      'faq.q4': 'Are the sitters on Petflik verified?',
+      'faq.a4': 'Yes, we verify all sitter profiles and encourage our community to leave honest reviews and ratings after every service.',
+      'faq.q5': 'Can I earn money with Petflik?',
+      'faq.a5': 'Absolutely! You can sign up as a sitter, set your own rates and availability, and earn money doing what you love.',
+      
       // Navigation
       'nav.home': 'Home',
       'nav.findWalker': 'Find Walker',
@@ -525,6 +538,19 @@ const resources = {
     translation: {
       'seo.title': 'Petflik - Garde d\'animaux et promeneurs de chiens de confiance',
       'seo.description': 'La place de marché de confiance en Espagne pour les soins aux animaux. Connectez-vous avec des promeneurs de chiens et des gardiens d\'animaux vérifiés près de chez vous.',
+      
+      // FAQ
+      'faq.title': 'Questions fréquentes sur Petflik',
+      'faq.q1': 'Qu\'est-ce que Petflik ?',
+      'faq.a1': 'Petflik est la principale plateforme en Espagne reliant les propriétaires d\'animaux à des gardiens et promeneurs professionnels de confiance pour chiens et chats.',
+      'faq.q2': 'Petflik est-il gratuit ?',
+      'faq.a2': 'La création d\'un compte et la consultation des profils sont gratuites. Nous ne facturons que de petits frais de service lorsque vous réservez avec succès un gardien.',
+      'faq.q3': 'Comment trouver un gardien de chien sur Petflik ?',
+      'faq.a3': 'Inscrivez-vous simplement en tant que propriétaire, recherchez par emplacement et parcourez les profils vérifiés. Vous pouvez discuter avec eux avant de réserver !',
+      'faq.q4': 'Les gardiens sur Petflik sont-ils vérifiés ?',
+      'faq.a4': 'Oui, nous vérifions tous les profils de gardiens et encourageons notre communauté à laisser des avis et des évaluations honnêtes après chaque service.',
+      'faq.q5': 'Puis-je gagner de l\'argent avec Petflik ?',
+      'faq.a5': 'Absolument ! Vous pouvez vous inscrire en tant que gardien, fixer vos propres tarifs et disponibilités, et gagner de l\'argent en faisant ce que vous aimez.',
       
       // Navigation
       'nav.home': 'Accueil',
@@ -1135,6 +1161,19 @@ const resources = {
     translation: {
       'seo.title': 'Petflik - Cuidadores de mascotas y paseadores de perros de confianza',
       'seo.description': 'El mercado de confianza de España para el cuidado de mascotas. Conéctate con paseadores de perros y cuidadores de mascotas verificados cerca de ti.',
+      
+      // FAQ
+      'faq.title': 'Preguntas frecuentes sobre Petflik',
+      'faq.q1': '¿Qué es Petflik?',
+      'faq.a1': 'Petflik es la plataforma líder en España que conecta a dueños de mascotas con cuidadores y paseadores profesionales de confianza para perros y gatos.',
+      'faq.q2': '¿Es Petflik gratuito?',
+      'faq.a2': 'Crear una cuenta y buscar perfiles es gratis. Solo cobramos una pequeña comisión de servicio cuando reservas con éxito a un cuidador.',
+      'faq.q3': '¿Cómo encuentro un cuidador de perros en Petflik?',
+      'faq.a3': 'Simplemente regístrate como dueño, busca por tu ubicación y explora los perfiles verificados. ¡Puedes chatear con ellos antes de reservar!',
+      'faq.q4': '¿Están verificados los cuidadores en Petflik?',
+      'faq.a4': 'Sí, verificamos todos los perfiles de cuidadores y animamos a nuestra comunidad a dejar reseñas y calificaciones honestas después de cada servicio.',
+      'faq.q5': '¿Puedo ganar dinero con Petflik?',
+      'faq.a5': '¡Absolutamente! Puedes registrarte como cuidador, establecer tus propias tarifas y disponibilidad, y ganar dinero haciendo lo que amas.',
       
       // Navigation
       'nav.home': 'Inicio',
@@ -2328,6 +2367,19 @@ const resources = {
     translation: {
       'seo.title': 'Petflik - Vertrauenswürdige Tiersitter & Dogwalker',
       'seo.description': 'Spaniens vertrauenswürdiger Marktplatz für Tierpflege. Verbinden Sie sich mit verifizierten Dogwalkern und Tiersittern in Ihrer Nähe.',
+      
+      // FAQ
+      'faq.title': 'Häufig gestellte Fragen zu Petflik',
+      'faq.q1': 'Was ist Petflik?',
+      'faq.a1': 'Petflik ist Spaniens führende Plattform, die Tierbesitzer mit vertrauenswürdigen, professionellen Sittern und Walkern für Hunde und Katzen verbindet.',
+      'faq.q2': 'Ist Petflik kostenlos?',
+      'faq.a2': 'Das Erstellen eines Kontos und das Durchsuchen von Profilen ist kostenlos. Wir erheben nur eine kleine Servicegebühr, wenn Sie erfolgreich einen Sitter buchen.',
+      'faq.q3': 'Wie finde ich einen Hundesitter auf Petflik?',
+      'faq.a3': 'Registrieren Sie sich einfach als Besitzer, suchen Sie nach Ihrem Standort und durchsuchen Sie verifizierte Sitter-Profile. Sie können vor der Buchung mit ihnen chatten!',
+      'faq.q4': 'Sind die Sitter auf Petflik verifiziert?',
+      'faq.a4': 'Ja, wir verifizieren alle Sitter-Profile und ermutigen unsere Community, nach jedem Service ehrliche Bewertungen und Ratings zu hinterlassen.',
+      'faq.q5': 'Kann ich mit Petflik Geld verdienen?',
+      'faq.a5': 'Absolut! Sie können sich als Sitter anmelden, Ihre eigenen Preise und Verfügbarkeiten festlegen und Geld mit dem verdienen, was Sie lieben.',
       
       // Navigation
       'nav.home': 'Home',
