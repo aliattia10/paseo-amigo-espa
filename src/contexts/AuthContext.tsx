@@ -37,7 +37,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // ...
     const checkAdminStatus = (user: SupabaseUser | null) => {
       if (!user) {
         setIsAdmin(false);
@@ -48,22 +47,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAdmin(adminEmails.includes(user.email || ''));
     };
 
+    const fetchUserProfile = async (userId: string) => {
+      try {
+        const profile = await getUser(userId);
+        setUserProfile(profile);
+      } catch (error) {
+        console.error('AuthContext: Error fetching user profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     // Get initial session
     const getInitialSession = async () => {
-      // ... existing code ...
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           console.log('AuthContext: User found:', session.user.id);
           setCurrentUser(session.user);
           checkAdminStatus(session.user);
-          // ...
+          await fetchUserProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('AuthContext: Error getting initial session:', error);
+        setLoading(false);
+      }
     };
 
-    // ...
+    getInitialSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthContext: Auth state change:', event, session?.user?.id);
       setCurrentUser(session?.user ?? null);
       checkAdminStatus(session?.user ?? null);
-      // ...
+      
+      if (session?.user) {
+        await fetchUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
