@@ -104,7 +104,7 @@ const LandingPage: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                   <img 
-                    src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop" 
+                    src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&h=400&fit=crop" 
                     alt="Happy dog with sitter"
                     className="w-full h-64 md:h-80 object-cover"
                   />
@@ -199,7 +199,7 @@ const LandingPage: React.FC = () => {
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=400&h=300&fit=crop" 
+                  src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&h=300&fit=crop" 
                   alt="Create profile with dog and cat"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
@@ -218,7 +218,7 @@ const LandingPage: React.FC = () => {
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop" 
+                  src="https://images.unsplash.com/photo-1548199973-03cce0b5a855?w=400&h=300&fit=crop" 
                   alt="Browse and match cats and dogs"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
@@ -237,7 +237,7 @@ const LandingPage: React.FC = () => {
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop" 
+                  src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400&h=300&fit=crop" 
                   alt="Book and enjoy with pets"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
@@ -295,7 +295,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&h=400&fit=crop" 
+              src="https://images.unsplash.com/photo-1513245543132-31f507417b26?w=600&h=400&fit=crop" 
               alt="Cat care"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -305,7 +305,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&h=400&fit=crop" 
+              src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=600&h=400&fit=crop" 
               alt="Happy dogs and cats"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -342,7 +342,7 @@ const LandingPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="relative rounded-xl overflow-hidden shadow-lg">
                   <img 
-                    src="https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=300&fit=crop" 
+                    src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop" 
                     alt="Happy dog owner"
                     className="w-full h-48 object-cover"
                   />
@@ -350,7 +350,7 @@ const LandingPage: React.FC = () => {
                 </div>
                 <div className="relative rounded-xl overflow-hidden shadow-lg">
                   <img 
-                    src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop" 
+                    src="https://images.unsplash.com/photo-1511044568932-338cba0ad803?w=400&h=300&fit=crop" 
                     alt="Happy cat owner"
                     className="w-full h-48 object-cover"
                   />
@@ -358,7 +358,7 @@ const LandingPage: React.FC = () => {
                 </div>
                 <div className="relative rounded-xl overflow-hidden shadow-lg col-span-2">
                   <img 
-                    src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800&h=300&fit=crop" 
+                    src="https://images.unsplash.com/photo-1522276498395-f4f68f7f8454?w=800&h=300&fit=crop" 
                     alt="Dogs and cats together"
                     className="w-full h-32 object-cover"
                   />
@@ -420,13 +420,13 @@ const LandingPage: React.FC = () => {
                     className="rounded-lg shadow-lg w-full h-32 object-cover"
                   />
                   <img 
-                    src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=200&fit=crop" 
+                    src="https://images.unsplash.com/photo-1573865662567-57ef5b67bfd7?w=300&h=200&fit=crop" 
                     alt="Cat sitter"
                     className="rounded-lg shadow-lg w-full h-32 object-cover"
                   />
                 </div>
                 <img 
-                  src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&h=200&fit=crop" 
+                  src="https://images.unsplash.com/photo-1541591047357-91918a3ca4c6?w=600&h=200&fit=crop" 
                   alt="Pet sitter with dogs and cats"
                   className="rounded-xl shadow-2xl w-full h-40 object-cover"
                 />
