@@ -198,7 +198,8 @@ const OwnerDashboard: React.FC = () => {
       <>
         <NearbyWalkers onMatch={(walkerId) => {
           console.log('Matched with walker:', walkerId);
-          // TODO: Create match in database
+          // Auto redirect to messages on match
+          setCurrentView('messages');
         }} />
         <MainNavigation 
           activeTab="nearby" 

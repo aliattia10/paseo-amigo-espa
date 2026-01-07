@@ -14,8 +14,12 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface Match {
   id: string;
-  user1_id: string;
-  user2_id: string;
+  user1_id?: string;
+  user2_id?: string;
+  user_id?: string;
+  matched_user_id?: string;
+  is_mutual?: boolean;
+  match_type?: string;
   created_at: string;
   otherUser?: {
     id: string;
@@ -42,21 +46,37 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       if (!userProfile || !currentUser) return;
 
       try {
-        // Load matches
+        // Load matches from both possible column structures
+        // We use a query that covers both possible column names
         const { data: matchesData, error: matchesError } = await supabase
           .from('matches')
           .select('*')
-          .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id}`)
-          .order('created_at', { ascending: false });
+          .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id},user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`);
 
         if (matchesError) {
           console.error('Error loading matches:', matchesError);
         } else if (matchesData) {
+          // Filter for mutual matches only (if the structure supports it)
+          const mutualMatches = matchesData.filter(m => {
+            // If it uses System A (is_mutual flag), check it
+            if (m.is_mutual !== undefined) return m.is_mutual === true;
+            // If it uses System B (matches only created when mutual), it's mutual by existence
+            return true;
+          });
+
           // Load other user details for each match
           const matchesWithUsers = await Promise.all(
-            matchesData.map(async (match) => {
-              const otherUserId = match.user1_id === currentUser.id ? match.user2_id : match.user1_id;
+            mutualMatches.map(async (match) => {
+              // Determine other user ID based on available columns
+              let otherUserId = '';
+              if (match.user1_id) {
+                otherUserId = match.user1_id === currentUser.id ? match.user2_id : match.user1_id;
+              } else if (match.user_id) {
+                otherUserId = match.user_id === currentUser.id ? match.matched_user_id : match.user_id;
+              }
               
+              if (!otherUserId) return match;
+
               const { data: userData, error: userError } = await supabase
                 .from('users')
                 .select('id, name, profile_image, user_type')
@@ -77,7 +97,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               return match;
             })
           );
-          setMatches(matchesWithUsers);
+          setMatches(matchesWithUsers.filter(m => m.otherUser));
         }
 
         // Also load walk requests for existing bookings
