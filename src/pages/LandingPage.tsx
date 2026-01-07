@@ -101,7 +101,7 @@ const LandingPage: React.FC = () => {
               Book services instantly, get real-time updates, and ensure your furry friends get the best care.
             </p>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              The trusted platform connecting pet owners with verified sitters across Spain. 
+              The trusted platform connecting pet owners with verified sitters across Europe. 
               Secure payments, verified reviews, and peace of mind for you and your pets.
             </p>
 
@@ -224,7 +224,7 @@ const LandingPage: React.FC = () => {
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&q=80&w=400" 
+                  src="https://images.unsplash.com/photo-1548199973-03cce0b5a855?w=400&h=300&fit=crop" 
                   alt="Browse and match cats and dogs"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
@@ -243,7 +243,7 @@ const LandingPage: React.FC = () => {
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400&h=300&fit=crop" 
+                  src="https://images.unsplash.com/photo-1544568100-847a948585b9?w=400&h=300&fit=crop" 
                   alt="Book and enjoy with pets"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
@@ -291,7 +291,7 @@ const LandingPage: React.FC = () => {
         <div className="grid md:grid-cols-3 gap-6 mt-12">
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=600" 
+              src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600&h=400&fit=crop" 
               alt="Pet owner with dog"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -301,7 +301,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=600" 
+              src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&h=400&fit=crop" 
               alt="Cat care"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -311,7 +311,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&q=80&w=600" 
+              src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=600&h=400&fit=crop" 
               alt="Happy dogs and cats"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -432,7 +432,7 @@ const LandingPage: React.FC = () => {
                   />
                 </div>
                 <img 
-                  src="https://images.unsplash.com/photo-1541591047357-91918a3ca4c6?auto=format&fit=crop&q=80&w=600" 
+                  src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=600" 
                   alt="Pet sitter with dogs and cats"
                   className="rounded-xl shadow-2xl w-full h-40 object-cover"
                 />
@@ -501,7 +501,7 @@ const Footer: React.FC = () => {
               <img src="/app-logo.png?v=2" alt="Petflik" className="h-12 w-auto" />
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs">
-              Trusted Sitters for Happy Pets. The leading platform for pet care services in Spain.
+              Trusted Sitters for Happy Pets. The leading platform for pet care services in Europe.
             </p>
           </div>
           

@@ -19,7 +19,7 @@ const AboutUsPage: React.FC = () => {
         <div className="text-center mb-16">
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">About Petflik</h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Connecting pet lovers and providing trusted care for every furry friend in Spain and across Europe.
+            Connecting pet lovers and providing trusted care for every furry friend across Europe.
           </p>
         </div>
 
@@ -62,7 +62,7 @@ const AboutUsPage: React.FC = () => {
             Petflik provides the platform to connect with local, verified sitters.
           </p>
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            Based in Madrid, Spain, we are expanding our reach to serve pet owners and sitters all over Europe, 
+            We are dedicated to serving pet owners and sitters all over Europe, 
             bringing our high standards of pet safety and community trust to every neighborhood.
           </p>
         </div>

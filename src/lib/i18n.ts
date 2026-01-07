@@ -7,12 +7,12 @@ const resources = {
   en: {
     translation: {
       'seo.title': 'Petflik - Trusted Pet Sitters & Dog Walkers',
-      'seo.description': 'Spain\'s trusted marketplace for pet care. Connect with verified dog walkers and pet sitters near you. Secure, reliable care for your dogs and cats.',
+      'seo.description': 'Europe\'s trusted marketplace for pet care. Connect with verified dog walkers and pet sitters near you. Secure, reliable care for your dogs and cats.',
       
       // FAQ
       'faq.title': 'People also ask about Petflik',
       'faq.q1': 'What is Petflik?',
-      'faq.a1': 'Petflik is Spain\'s leading platform connecting pet owners with trusted, professional sitters and walkers for dogs and cats.',
+      'faq.a1': 'Petflik is Europe\'s leading platform connecting pet owners with trusted, professional sitters and walkers for dogs and cats.',
       'faq.q2': 'Is Petflik free to use?',
       'faq.a2': 'Creating an account and browsing profiles is free. We only charge a small service fee when you successfully book a sitter.',
       'faq.q3': 'How do I find a dog sitter on Petflik?',
@@ -537,12 +537,12 @@ const resources = {
   fr: {
     translation: {
       'seo.title': 'Petflik - Garde d\'animaux et promeneurs de chiens de confiance',
-      'seo.description': 'La place de marché de confiance en Espagne pour les soins aux animaux. Connectez-vous avec des promeneurs de chiens et des gardiens d\'animaux vérifiés près de chez vous.',
+      'seo.description': 'La place de marché de confiance en Europe pour les soins aux animaux. Connectez-vous avec des promeneurs de chiens et des gardiens d\'animaux vérifiés près de chez vous.',
       
       // FAQ
       'faq.title': 'Questions fréquentes sur Petflik',
       'faq.q1': 'Qu\'est-ce que Petflik ?',
-      'faq.a1': 'Petflik est la principale plateforme en Espagne reliant les propriétaires d\'animaux à des gardiens et promeneurs professionnels de confiance pour chiens et chats.',
+      'faq.a1': 'Petflik est la principale plateforme en Europe reliant les propriétaires d\'animaux à des gardiens et promeneurs professionnels de confiance pour chiens et chats.',
       'faq.q2': 'Petflik est-il gratuit ?',
       'faq.a2': 'La création d\'un compte et la consultation des profils sont gratuites. Nous ne facturons que de petits frais de service lorsque vous réservez avec succès un gardien.',
       'faq.q3': 'Comment trouver un gardien de chien sur Petflik ?',
@@ -1160,12 +1160,12 @@ const resources = {
   es: {
     translation: {
       'seo.title': 'Petflik - Cuidadores de mascotas y paseadores de perros de confianza',
-      'seo.description': 'El mercado de confianza de España para el cuidado de mascotas. Conéctate con paseadores de perros y cuidadores de mascotas verificados cerca de ti.',
+      'seo.description': 'El mercado de confianza de Europa para el cuidado de mascotas. Conéctate con paseadores de perros y cuidadores de mascotas verificados cerca de ti.',
       
       // FAQ
       'faq.title': 'Preguntas frecuentes sobre Petflik',
       'faq.q1': '¿Qué es Petflik?',
-      'faq.a1': 'Petflik es la plataforma líder en España que conecta a dueños de mascotas con cuidadores y paseadores profesionales de confianza para perros y gatos.',
+      'faq.a1': 'Petflik es la plataforma líder en Europa que conecta a dueños de mascotas con cuidadores y paseadores profesionales de confianza para perros y gatos.',
       'faq.q2': '¿Es Petflik gratuito?',
       'faq.a2': 'Crear una cuenta y buscar perfiles es gratis. Solo cobramos una pequeña comisión de servicio cuando reservas con éxito a un cuidador.',
       'faq.q3': '¿Cómo encuentro un cuidador de perros en Petflik?',
@@ -2366,12 +2366,12 @@ const resources = {
   de: {
     translation: {
       'seo.title': 'Petflik - Vertrauenswürdige Tiersitter & Dogwalker',
-      'seo.description': 'Spaniens vertrauenswürdiger Marktplatz für Tierpflege. Verbinden Sie sich mit verifizierten Dogwalkern und Tiersittern in Ihrer Nähe.',
+      'seo.description': 'Europas vertrauenswürdiger Marktplatz für Tierpflege. Verbinden Sie sich mit verifizierten Dogwalkern und Tiersittern in Ihrer Nähe.',
       
       // FAQ
       'faq.title': 'Häufig gestellte Fragen zu Petflik',
       'faq.q1': 'Was ist Petflik?',
-      'faq.a1': 'Petflik ist Spaniens führende Plattform, die Tierbesitzer mit vertrauenswürdigen, professionellen Sittern und Walkern für Hunde und Katzen verbindet.',
+      'faq.a1': 'Petflik ist Europas führende Plattform, die Tierbesitzer mit vertrauenswürdigen, professionellen Sittern und Walkern für Hunde und Katzen verbindet.',
       'faq.q2': 'Ist Petflik kostenlos?',
       'faq.a2': 'Das Erstellen eines Kontos und das Durchsuchen von Profilen ist kostenlos. Wir erheben nur eine kleine Servicegebühr, wenn Sie erfolgreich einen Sitter buchen.',
       'faq.q3': 'Wie finde ich einen Hundesitter auf Petflik?',

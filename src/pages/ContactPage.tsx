@@ -67,7 +67,7 @@ const ContactPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 dark:text-white">Office</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Madrid, Spain</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Europe</p>
               </div>
             </div>
           </div>
