@@ -47,7 +47,7 @@ const ContactPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 dark:text-white">Email</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">support@petflik.com</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">info@petflik.com</p>
               </div>
             </div>
 

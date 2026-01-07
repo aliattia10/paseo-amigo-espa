@@ -41,8 +41,13 @@ import PaymentPage from "./pages/PaymentPage";
 import PayoutMethodsPage from "./pages/PayoutMethodsPage";
 import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import LandingPage from "./pages/LandingPage";
+import AboutUsPage from "./pages/AboutUsPage";
 import ContactPage from "./pages/ContactPage";
 import UserAgreementPage from "./pages/UserAgreementPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import RefundPolicyPage from "./pages/RefundPolicyPage";
+import CodeOfConductPage from "./pages/CodeOfConductPage";
 import BlogListPage from "./pages/BlogListPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import AdminPage from "./pages/AdminPage";
@@ -686,8 +691,13 @@ const App = () => (
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
                 <Route path="/home" element={<LandingPage />} />
+                <Route path="/about" element={<AboutUsPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/user-agreement" element={<UserAgreementPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/refund-policy" element={<RefundPolicyPage />} />
+                <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
                 <Route path="/blog" element={<BlogListPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
                 <Route path="/welcome" element={<WelcomeScreen />} />

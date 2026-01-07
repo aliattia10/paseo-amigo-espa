@@ -224,7 +224,7 @@ const LandingPage: React.FC = () => {
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1544568100-847a948585b9?w=400&h=300&fit=crop" 
+                  src="https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&q=80&w=400" 
                   alt="Browse and match cats and dogs"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
@@ -291,7 +291,7 @@ const LandingPage: React.FC = () => {
         <div className="grid md:grid-cols-3 gap-6 mt-12">
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1551717743-49959800b1f6?w=600&h=400&fit=crop" 
+              src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=600" 
               alt="Pet owner with dog"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -301,7 +301,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1513245543132-31f507417b26?w=600&h=400&fit=crop" 
+              src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=600" 
               alt="Cat care"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -311,7 +311,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
             <img 
-              src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=600&h=400&fit=crop" 
+              src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&q=80&w=600" 
               alt="Happy dogs and cats"
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -421,18 +421,18 @@ const LandingPage: React.FC = () => {
               <div className="relative">
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   <img 
-                    src="https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?w=300&h=200&fit=crop" 
+                    src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=300" 
                     alt="Dog sitter"
                     className="rounded-lg shadow-lg w-full h-32 object-cover"
                   />
                   <img 
-                    src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=300&h=200&fit=crop" 
+                    src="https://images.unsplash.com/photo-1573865662567-57ef5b67bfd7?auto=format&fit=crop&q=80&w=300" 
                     alt="Cat sitter"
                     className="rounded-lg shadow-lg w-full h-32 object-cover"
                   />
                 </div>
                 <img 
-                  src="https://images.unsplash.com/photo-1551717743-49959800b1f6?w=600&h=200&fit=crop" 
+                  src="https://images.unsplash.com/photo-1551717743-49959800b1f6?auto=format&fit=crop&q=80&w=600" 
                   alt="Pet sitter with dogs and cats"
                   className="rounded-xl shadow-2xl w-full h-40 object-cover"
                 />
@@ -516,7 +516,7 @@ const Footer: React.FC = () => {
                    <div>
                      <h4 className="text-gray-900 dark:text-white font-bold mb-6">Company</h4>
                      <ul className="space-y-4">
-                       <li><button onClick={() => navigate('/home')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">About</button></li>
+                       <li><button onClick={() => navigate('/about')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">About</button></li>
                        <li><button onClick={() => navigate('/blog')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Blog</button></li>
                        <li><button onClick={() => navigate('/contact')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Contact us</button></li>
                        <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Careers</button></li>
@@ -526,10 +526,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-gray-900 dark:text-white font-bold mb-6">Legal</h4>
             <ul className="space-y-4">
-              <li><button onClick={() => navigate('/user-agreement')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Terms and conditions</button></li>
-              <li><button onClick={() => navigate('/user-agreement')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Privacy policy</button></li>
-              <li><button onClick={() => navigate('/user-agreement')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Refund policy</button></li>
-              <li><button onClick={() => navigate('/user-agreement')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Code of Conduct</button></li>
+              <li><button onClick={() => navigate('/terms')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Terms and conditions</button></li>
+              <li><button onClick={() => navigate('/privacy')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Privacy policy</button></li>
+              <li><button onClick={() => navigate('/refund-policy')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Refund policy</button></li>
+              <li><button onClick={() => navigate('/code-of-conduct')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Code of Conduct</button></li>
             </ul>
           </div>
         </div>
