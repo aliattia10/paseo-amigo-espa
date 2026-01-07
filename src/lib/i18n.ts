@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
+      'seo.title': 'Petflik - Trusted Pet Sitters & Dog Walkers',
+      'seo.description': 'Spain\'s trusted marketplace for pet care. Connect with verified dog walkers and pet sitters near you. Secure, reliable care for your dogs and cats.',
+      
       // Navigation
       'nav.home': 'Home',
       'nav.findWalker': 'Find Walker',
@@ -520,6 +523,9 @@ const resources = {
   },
   fr: {
     translation: {
+      'seo.title': 'Petflik - Garde d\'animaux et promeneurs de chiens de confiance',
+      'seo.description': 'La place de marché de confiance en Espagne pour les soins aux animaux. Connectez-vous avec des promeneurs de chiens et des gardiens d\'animaux vérifiés près de chez vous.',
+      
       // Navigation
       'nav.home': 'Accueil',
       'nav.findWalker': 'Trouver un Promeneur',
@@ -1127,6 +1133,9 @@ const resources = {
   },
   es: {
     translation: {
+      'seo.title': 'Petflik - Cuidadores de mascotas y paseadores de perros de confianza',
+      'seo.description': 'El mercado de confianza de España para el cuidado de mascotas. Conéctate con paseadores de perros y cuidadores de mascotas verificados cerca de ti.',
+      
       // Navigation
       'nav.home': 'Inicio',
       'nav.findWalker': 'Encontrar Paseador',
@@ -2314,6 +2323,74 @@ const resources = {
       'app.description': 'Połącz się z zaufanymi opiekunami psów w Twojej okolicy',
       'app.tagline': 'Twój pies zasługuje na najlepszą opiekę',
     }
+  },
+  de: {
+    translation: {
+      'seo.title': 'Petflik - Vertrauenswürdige Tiersitter & Dogwalker',
+      'seo.description': 'Spaniens vertrauenswürdiger Marktplatz für Tierpflege. Verbinden Sie sich mit verifizierten Dogwalkern und Tiersittern in Ihrer Nähe.',
+      
+      // Navigation
+      'nav.home': 'Home',
+      'nav.findWalker': 'Betreuer finden',
+      'nav.messages': 'Nachrichten',
+      'nav.profile': 'Profil',
+      'nav.subscription': 'Abonnement',
+      'nav.discover': 'Entdecken',
+      'nav.nearby': 'In der Nähe',
+      'nav.feed': 'Feed',
+      
+      // Auth
+      'auth.login': 'Anmelden',
+      'auth.signup': 'Registrieren',
+      'auth.logout': 'Abmelden',
+      'auth.email': 'E-Mail',
+      'auth.password': 'Passwort',
+      'auth.confirmPassword': 'Passwort bestätigen',
+      'auth.name': 'Name',
+      'auth.phone': 'Telefon',
+      'auth.city': 'Stadt',
+      'auth.postalCode': 'Postleitzahl',
+      'auth.userType': 'Benutzertyp',
+      'auth.dogOwner': 'Ich bin Hundebesitzer',
+      'auth.wantToWalk': 'Ich möchte Hunde ausführen',
+      'auth.createAccount': 'Konto erstellen',
+      'auth.alreadyHaveAccount': 'Haben Sie bereits ein Konto? Hier anmelden',
+      'auth.welcome': 'Willkommen!',
+      'auth.loginSuccess': 'Sie haben sich erfolgreich angemeldet.',
+      'auth.accountCreated': 'Konto erstellt!',
+      'auth.accountCreatedSuccess': 'Ihr Konto wurde erfolgreich erstellt.',
+      'auth.loginError': 'Anmeldefehler',
+      'auth.signupError': 'Fehler beim Erstellen des Kontos',
+      'auth.passwordsDontMatch': 'Passwörter stimmen nicht überein.',
+      'auth.tryAgain': 'Bitte versuchen Sie es erneut.',
+      'auth.rateLimitTitle': 'Limit erreicht',
+      'auth.rateLimitMessage': 'Bitte warten Sie einen Moment.',
+      'auth.emailExistsTitle': 'E-Mail bereits registriert',
+      'auth.emailExistsMessage': 'Diese E-Mail ist bereits registriert. Bitte melden Sie sich an.',
+      'auth.joinPetflik': 'Petflik beitreten. Sind Sie ein...',
+      'auth.petOwner': 'Tierbesitzer',
+      'auth.petOwnerDesc': 'Finden Sie vertrauenswürdige Betreuer für Ihre pelzigen Freunde.',
+      'auth.sitter': 'Betreuer',
+      'auth.sitterDesc': 'Verdienen Sie Geld mit dem, was Sie lieben.',
+      'auth.signIn': 'Anmelden',
+      
+      // Dashboard
+      'dashboard.welcome': 'Willkommen bei Paseo',
+      'dashboard.findPerfectWalker': 'Finden Sie den perfekten Betreuer für Ihren Hund',
+      'dashboard.findCompanion': 'Begleiter finden',
+      'dashboard.connectWith Verified': 'Verbinden Sie sich mit verifizierten Betreuern',
+      'dashboard.messages': 'Nachrichten',
+      'dashboard.connectCommunity': 'Verbinden Sie sich mit Ihrer Community',
+      'dashboard.myCompanions': 'Meine Begleiter',
+      'dashboard.myDogs': 'Meine Hunde',
+      'dashboard.addDog': 'Hund hinzufügen',
+      'dashboard.upcomingWalks': 'Anstehende Spaziergänge',
+      'dashboard.recentWalks': 'Letzte Spaziergänge',
+      'dashboard.findWalkers': 'Betreuer finden',
+      'dashboard.availableWalkers': 'Verfügbare Betreuer',
+      'dashboard.bookWalk': 'Spaziergang buchen',
+      'dashboard.viewProfile': 'Profil anzeigen',
+    }
   }
 };
 
@@ -2410,7 +2487,7 @@ i18n
       lookupLocalStorage: 'i18nextLng',
     },
     
-    supportedLngs: ['en', 'es', 'fr'], // English, Spanish, and French
+    supportedLngs: ['en', 'es', 'fr', 'de'], // English, Spanish, French, and German
     
     interpolation: {
       escapeValue: false,

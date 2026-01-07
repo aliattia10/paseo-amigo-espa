@@ -43,6 +43,7 @@ import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import LandingPage from "./pages/LandingPage";
 import ContactPage from "./pages/ContactPage";
 import UserAgreementPage from "./pages/UserAgreementPage";
+import SEO from "./components/SEO";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
@@ -676,6 +677,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+              <SEO />
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
