@@ -540,7 +540,7 @@ const resources = {
       'seo.description': 'La place de marché de confiance en Europe pour les soins aux animaux. Connectez-vous avec des promeneurs de chiens et des gardiens d\'animaux vérifiés près de chez vous.',
       
       // FAQ
-      'faq.title': 'Questions fréquentes sur Petflik',
+      'faq.title': 'Les gens posent aussi des questions sur Petflik',
       'faq.q1': 'Qu\'est-ce que Petflik ?',
       'faq.a1': 'Petflik est la principale plateforme en Europe reliant les propriétaires d\'animaux à des gardiens et promeneurs professionnels de confiance pour chiens et chats.',
       'faq.q2': 'Petflik est-il gratuit ?',
@@ -1163,7 +1163,7 @@ const resources = {
       'seo.description': 'El mercado de confianza de Europa para el cuidado de mascotas. Conéctate con paseadores de perros y cuidadores de mascotas verificados cerca de ti.',
       
       // FAQ
-      'faq.title': 'Preguntas frecuentes sobre Petflik',
+      'faq.title': 'La gente también pregunta sobre Petflik',
       'faq.q1': '¿Qué es Petflik?',
       'faq.a1': 'Petflik es la plataforma líder en Europa que conecta a dueños de mascotas con cuidadores y paseadores profesionales de confianza para perros y gatos.',
       'faq.q2': '¿Es Petflik gratuito?',
@@ -2369,7 +2369,7 @@ const resources = {
       'seo.description': 'Europas vertrauenswürdiger Marktplatz für Tierpflege. Verbinden Sie sich mit verifizierten Dogwalkern und Tiersittern in Ihrer Nähe.',
       
       // FAQ
-      'faq.title': 'Häufig gestellte Fragen zu Petflik',
+      'faq.title': 'Leute fragen auch nach Petflik',
       'faq.q1': 'Was ist Petflik?',
       'faq.a1': 'Petflik ist Europas führende Plattform, die Tierbesitzer mit vertrauenswürdigen, professionellen Sittern und Walkern für Hunde und Katzen verbindet.',
       'faq.q2': 'Ist Petflik kostenlos?',
