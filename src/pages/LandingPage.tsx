@@ -224,7 +224,7 @@ const LandingPage: React.FC = () => {
             <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="mb-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1548199973-03cce0b5a855?w=400&h=300&fit=crop" 
+                  src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&q=80&w=400" 
                   alt="Browse and match cats and dogs"
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
@@ -432,7 +432,7 @@ const LandingPage: React.FC = () => {
                   />
                 </div>
                 <img 
-                  src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=600" 
+                  src="https://images.unsplash.com/photo-1551717743-49959800b1f6?auto=format&fit=crop&q=80&w=600" 
                   alt="Pet sitter with dogs and cats"
                   className="rounded-xl shadow-2xl w-full h-40 object-cover"
                 />
