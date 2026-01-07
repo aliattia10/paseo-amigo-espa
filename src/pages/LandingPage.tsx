@@ -83,9 +83,6 @@ const LandingPage: React.FC = () => {
                 alt="Petflik Logo" 
                 className="w-24 h-24 md:w-32 md:h-32"
               />
-              <h1 className="text-5xl md:text-6xl font-extrabold text-medium-jungle">
-                PETFLIK
-              </h1>
             </div>
 
             {/* Main Headline */}

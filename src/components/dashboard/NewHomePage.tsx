@@ -712,9 +712,7 @@ const NewHomePage: React.FC = () => {
           <div className="flex size-12 shrink-0 items-center justify-start">
             <img src="/app-logo.png" alt="Petflik Logo" className="w-10 h-10" />
           </div>
-          <h1 className="text-[#0e1b13] dark:text-gray-100 text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
-            Petflik
-          </h1>
+          <div className="flex-1" />
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
