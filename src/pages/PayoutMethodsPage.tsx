@@ -338,7 +338,7 @@ const PayoutMethodsPage: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-20 p-4 space-y-4">
         {/* Balance Card */}
-        <div className="rounded-xl bg-gradient-to-br from-primary to-secondary p-6 shadow-lg text-white">
+        <div className="rounded-xl bg-gradient-to-br from-medium-jungle to-sage-green p-6 shadow-lg text-white">
           <p className="text-sm opacity-90 mb-1">{t('payout.availableBalance')}</p>
           <p className="text-4xl font-bold mb-2">€{balance.toFixed(2)}</p>
           

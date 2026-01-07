@@ -28,6 +28,18 @@ const AuthNew = () => {
   const [phone, setPhone] = useState('');
   const [agreed, setAgreed] = useState(false);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && mode === 'login') {
+        console.log('User already logged in, redirecting to dashboard');
+        navigate('/dashboard');
+      }
+    };
+    checkUser();
+  }, [mode, navigate]);
+
   // Handle email confirmation redirect
   useEffect(() => {
     const checkConfirmation = async () => {
@@ -208,7 +220,7 @@ const AuthNew = () => {
       {/* Top App Bar */}
       <div className="sticky top-0 z-10 flex items-center bg-role-background-light/80 dark:bg-role-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
         <div className="flex size-12 shrink-0 items-center justify-start">
-          <button onClick={() => mode === 'signup' && step === 'form' ? setStep('role') : navigate('/')}>
+          <button onClick={() => mode === 'signup' && step === 'form' ? setStep('role') : navigate('/home')}>
             <span className="material-symbols-outlined text-role-text-light dark:text-role-text-dark text-2xl">arrow_back</span>
           </button>
         </div>

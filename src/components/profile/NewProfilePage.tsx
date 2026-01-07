@@ -396,7 +396,7 @@ const NewProfilePage: React.FC = () => {
                 );
               } catch {
                 return (
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center border-4 border-primary/20 dark:border-primary/30 shadow-xl">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-medium-jungle to-sage-green flex items-center justify-center border-4 border-medium-jungle/20 dark:border-medium-jungle/30 shadow-xl">
                     <span className="material-symbols-outlined text-6xl text-white">
                       person
                     </span>

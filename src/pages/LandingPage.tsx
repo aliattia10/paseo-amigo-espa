@@ -426,13 +426,13 @@ const LandingPage: React.FC = () => {
                     className="rounded-lg shadow-lg w-full h-32 object-cover"
                   />
                   <img 
-                    src="https://images.unsplash.com/photo-1573865662567-57ef5b67bfd7?auto=format&fit=crop&q=80&w=300" 
+                    src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400" 
                     alt="Cat sitter"
                     className="rounded-lg shadow-lg w-full h-32 object-cover"
                   />
                 </div>
                 <img 
-                  src="https://images.unsplash.com/photo-1551717743-49959800b1f6?auto=format&fit=crop&q=80&w=600" 
+                  src="https://images.unsplash.com/photo-1541591047357-91918a3ca4c6?auto=format&fit=crop&q=80&w=600" 
                   alt="Pet sitter with dogs and cats"
                   className="rounded-xl shadow-2xl w-full h-40 object-cover"
                 />

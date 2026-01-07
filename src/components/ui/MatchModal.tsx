@@ -78,7 +78,7 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, p
         {/* Match Message */}
         <div className="bg-white rounded-2xl p-6 shadow-2xl mb-6">
           <p className="text-center text-gray-800 text-lg font-medium mb-2">
-            You and <span className="font-bold text-primary">{matchedUser.name}</span> liked each other!
+            You and <span className="font-bold text-medium-jungle">{matchedUser.name}</span> liked each other!
           </p>
           <p className="text-center text-gray-600 text-sm">
             Start a conversation and plan your first walk together.
@@ -89,7 +89,7 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, p
         <div className="flex flex-col gap-3">
           <button
             onClick={handleSendMessage}
-            className="w-full bg-gradient-to-r from-primary to-secondary text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            className="w-full bg-gradient-to-r from-medium-jungle to-sage-green text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
             <span className="flex items-center justify-center gap-2">
               <span className="material-symbols-outlined">chat_bubble</span>

@@ -72,7 +72,7 @@ const TinderProfileView: React.FC<TinderProfileViewProps> = ({
     return (
       <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl overflow-hidden border-2 border-dashed border-primary/30">
         <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-4">
+          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-medium-jungle to-sage-green flex items-center justify-center mb-4">
             <span className="material-symbols-outlined text-6xl text-white">
               person
             </span>
