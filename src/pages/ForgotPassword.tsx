@@ -113,9 +113,7 @@ const ForgotPassword: React.FC = () => {
           
           {/* Logo and Branding */}
           <div className="flex flex-col items-center space-y-3">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="material-symbols-outlined text-white text-4xl">pets</span>
-            </div>
+            <img src="/app-logo.png?v=2" alt="Petflik Logo" className="w-16 h-16" />
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Petflik</h1>
           </div>
           

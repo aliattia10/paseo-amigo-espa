@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart, MapPin, Dog, User, LogOut, Plus } from 'lucide-react';
-import appLogo from '@/assets/app-logo.png';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 interface Profile {
@@ -75,7 +74,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, session, onSignOut }) => {
     return (
       <div className="min-h-screen bg-warm-bg flex items-center justify-center">
         <div className="text-center">
-          <img src={appLogo} alt="Loading" className="w-16 h-16 mx-auto mb-4 animate-pulse" />
+          <img src="/app-logo.png?v=2" alt="Loading" className="w-16 h-16 mx-auto mb-4 animate-pulse" />
           <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>
@@ -105,7 +104,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, session, onSignOut }) => {
       <header className="bg-white shadow-sm border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={appLogo} alt="Logo" className="w-8 h-8" />
+            <img src="/app-logo.png?v=2" alt="Logo" className="w-8 h-8" />
             <h1 className="text-lg font-semibold text-warm-text">¿Damos un Paseo?</h1>
           </div>
           <Button variant="ghost" size="icon" onClick={handleSignOut}>
@@ -185,7 +184,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, session, onSignOut }) => {
       <header className="bg-white shadow-sm border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={appLogo} alt="Logo" className="w-8 h-8" />
+            <img src="/app-logo.png?v=2" alt="Logo" className="w-8 h-8" />
             <h1 className="text-lg font-semibold text-warm-text">¿Damos un Paseo?</h1>
           </div>
           <Button variant="ghost" size="icon" onClick={handleSignOut}>

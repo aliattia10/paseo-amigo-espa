@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MapPin, Clock, CheckCircle, Camera, ArrowLeft, Send, User, Dog, Home, Star } from 'lucide-react';
-import appLogo from '@/assets/app-logo.png';
 import lucasDog from '@/assets/lucas-dog.jpg';
 import luciaProfile from '@/assets/lucia-profile.jpg';
 import manuelProfile from '@/assets/manuel-profile.jpg';
@@ -56,7 +55,7 @@ const DemoApp: React.FC = () => {
           <ArrowLeft />
         </Button>
       )}
-      <img src={appLogo} alt="Logo" className="w-8 h-8" />
+      <img src="/app-logo.png?v=2" alt="Logo" className="w-8 h-8" />
       <h1 className="text-lg font-semibold text-warm-text">{title}</h1>
     </div>
   );
@@ -66,7 +65,7 @@ const DemoApp: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-sunny-light to-warm-bg flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="text-center mb-12">
-          <img src={appLogo} alt="¿Damos un Paseo?" className="w-24 h-24 mx-auto mb-6" />
+          <img src="/app-logo.png?v=2" alt="¿Damos un Paseo?" className="w-24 h-24 mx-auto mb-6" />
           <h1 className="text-3xl font-bold text-warm-text mb-2">¿Damos un Paseo?</h1>
           <p className="text-lg text-muted-foreground">Conectando dueños y compañeros en toda España</p>
         </div>

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Heart, Shield, Clock, Star, Users, ArrowRight, CheckCircle, MessageCircle, DollarSign, MapPin, Calendar } from 'lucide-react';
-import appLogo from '@/assets/app-logo.png';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -80,7 +79,7 @@ const LandingPage: React.FC = () => {
             {/* Logo */}
             <div className="flex flex-col items-center justify-center gap-4 mb-6">
               <img 
-                src={appLogo} 
+                src="/app-logo.png?v=2" 
                 alt="Petflik Logo" 
                 className="w-24 h-24 md:w-32 md:h-32"
               />

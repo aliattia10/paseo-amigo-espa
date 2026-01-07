@@ -20,12 +20,11 @@ const WelcomeScreen: React.FC = () => {
       <div className={`flex flex-col items-center justify-center flex-grow text-center transition-all duration-1000 ${fadeIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2.5'}`}>
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-4">
-          <span 
-            className="material-symbols-outlined text-5xl text-welcome-accent-light dark:text-welcome-accent-dark" 
-            style={{ fontVariationSettings: '"FILL" 1, "wght" 600, "GRAD" 0, "opsz" 48' }}
-          >
-            pets
-          </span>
+          <img 
+            src="/app-logo.png?v=2" 
+            alt="Petflik Logo" 
+            className="w-16 h-16 md:w-20 md:h-20"
+          />
           <h1 className="text-welcome-text-light dark:text-welcome-text-dark tracking-tight text-6xl font-extrabold leading-tight">
             Petflik
           </h1>

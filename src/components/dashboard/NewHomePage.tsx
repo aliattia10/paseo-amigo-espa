@@ -714,7 +714,7 @@ const NewHomePage: React.FC = () => {
       <header className="flex flex-col bg-home-background-light dark:bg-home-background-dark shrink-0 max-w-md mx-auto w-full">
         <div className="flex items-center p-4 pb-2 justify-between">
           <div className="flex size-12 shrink-0 items-center justify-start">
-            <span className="material-symbols-outlined text-3xl text-home-primary">pets</span>
+            <img src="/app-logo.png" alt="Petflik Logo" className="w-10 h-10" />
           </div>
           <h1 className="text-[#0e1b13] dark:text-gray-100 text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
             Petflik

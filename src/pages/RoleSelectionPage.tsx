@@ -82,9 +82,7 @@ const RoleSelectionPage: React.FC = () => {
       {/* Footer with Logo */}
       <footer className="mt-auto px-4 py-6 flex justify-center items-center">
         <div className="flex items-center gap-2 text-role-text-light dark:text-role-text-dark">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="material-symbols-outlined text-white text-xl">pets</span>
-          </div>
+          <img src="/app-logo.png?v=2" alt="Petflik Logo" className="w-8 h-8" />
           <span className="font-bold text-lg">Petflik</span>
         </div>
       </footer>
