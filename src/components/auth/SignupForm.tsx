@@ -26,7 +26,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
     phone: '',
     city: '',
     postalCode: '',
-    userType: 'owner' as 'owner' | 'walker'
+    userType: 'owner' as 'owner' | 'walker',
+    agreed: false
   });
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
@@ -36,6 +37,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.agreed) {
+      toast({
+        title: t('common.error'),
+        description: "Please agree to the terms and privacy policy to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: t('common.error'),
@@ -211,11 +221,32 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
               required
             />
           </div>
+
+          <div className="flex items-start gap-2 py-2">
+            <input
+              type="checkbox"
+              id="agreed"
+              checked={formData.agreed}
+              onChange={(e) => handleInputChange('agreed', e.target.checked as any)}
+              required
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-terracotta focus:ring-terracotta"
+            />
+            <label htmlFor="agreed" className="text-xs text-muted-foreground leading-normal">
+              I agree to the{' '}
+              <a href="/user-agreement" target="_blank" rel="noopener noreferrer" className="font-bold underline text-terracotta hover:text-terracotta/80">
+                Terms of Service
+              </a>
+              {' '}and{' '}
+              <a href="/user-agreement" target="_blank" rel="noopener noreferrer" className="font-bold underline text-terracotta hover:text-terracotta/80">
+                Privacy Policy
+              </a>
+            </label>
+          </div>
           
           <Button
             type="submit"
             className="w-full"
-            disabled={loading || retryLoading}
+            disabled={loading || retryLoading || !formData.agreed}
           >
             {(loading || retryLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('auth.createAccount')}

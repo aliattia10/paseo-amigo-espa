@@ -26,6 +26,7 @@ const AuthNew = () => {
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [phone, setPhone] = useState('');
+  const [agreed, setAgreed] = useState(false);
 
   // Handle email confirmation redirect
   useEffect(() => {
@@ -79,6 +80,16 @@ const AuthNew = () => {
     setLoading(true);
 
     try {
+      if (mode === 'signup' && !agreed) {
+        toast({
+          title: "Agreement Required",
+          description: "Please agree to the terms and privacy policy to continue.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       if (mode === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
@@ -308,10 +319,41 @@ const AuthNew = () => {
               </div>
             </div>
 
+            {mode === 'signup' && (
+              <div className="flex items-start gap-3 px-1 mt-4">
+                <input
+                  type="checkbox"
+                  id="agreed"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  required
+                  className="mt-1 h-4 w-4 rounded border-border-light text-role-primary focus:ring-role-primary"
+                />
+                <label htmlFor="agreed" className="text-sm text-role-text-light/80 dark:text-role-text-dark/80 leading-snug">
+                  I agree to the{' '}
+                  <button 
+                    type="button" 
+                    onClick={() => navigate('/user-agreement')}
+                    className="font-bold underline text-role-primary hover:text-role-primary/80"
+                  >
+                    Terms of Service
+                  </button>
+                  {' '}and{' '}
+                  <button 
+                    type="button" 
+                    onClick={() => navigate('/user-agreement')}
+                    className="font-bold underline text-role-primary hover:text-role-primary/80"
+                  >
+                    Privacy Policy
+                  </button>
+                </label>
+              </div>
+            )}
+
             <button
               type="submit"
-              disabled={loading}
-              className="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-role-primary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] mt-6"
+              disabled={loading || (mode === 'signup' && !agreed)}
+              className="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-role-primary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? t('common.loading') : mode === 'login' ? t('auth.login') : t('auth.createAccount')}
             </button>
