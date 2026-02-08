@@ -14,8 +14,15 @@ const RoleSelectionPage: React.FC = () => {
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-role-background-light dark:bg-role-background-dark group/design-root overflow-x-hidden font-display">
-      {/* Language Switcher */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Top Bar: Back button + Language Switcher */}
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
+        <button
+          onClick={() => navigate('/home')}
+          className="flex items-center justify-center p-2 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
+          aria-label="Back to home"
+        >
+          <span className="material-symbols-outlined text-role-text-light dark:text-role-text-dark text-2xl">arrow_back</span>
+        </button>
         <LanguageSwitcher />
       </div>
 

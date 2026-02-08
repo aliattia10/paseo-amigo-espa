@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Accordion,
   AccordionContent,
@@ -13,6 +14,7 @@ import { Heart, Shield, Clock, Star, Users, ArrowRight, CheckCircle, MessageCirc
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { changeLanguage, currentLanguage } = useLanguage();
 
   const features = [
     {
@@ -71,6 +73,32 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Language Switcher - Top Right */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <button
+          onClick={() => changeLanguage('es')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            currentLanguage === 'es'
+              ? 'bg-medium-jungle text-white shadow-md'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
+          }`}
+          title="Español"
+        >
+          🇪🇸 ES
+        </button>
+        <button
+          onClick={() => changeLanguage('fr')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            currentLanguage === 'fr'
+              ? 'bg-medium-jungle text-white shadow-md'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
+          }`}
+          title="Français"
+        >
+          🇫🇷 FR
+        </button>
+      </div>
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background decorative elements */}

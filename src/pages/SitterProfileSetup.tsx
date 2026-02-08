@@ -155,8 +155,8 @@ const SitterProfileSetup: React.FC = () => {
         description: 'Sitter profile created! You can update your details anytime.',
       });
 
-      // Redirect to profile edit page
-      navigate('/profile/edit');
+      // Redirect to dashboard
+      navigate('/dashboard');
     } catch (error: any) {
       toast({
         title: t('common.error'),
@@ -173,7 +173,7 @@ const SitterProfileSetup: React.FC = () => {
       {/* Top App Bar */}
       <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
         <div className="flex size-12 shrink-0 items-center justify-start">
-          <button onClick={() => navigate('/')}>
+          <button onClick={() => navigate('/home')}>
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
               close
             </span>

@@ -201,9 +201,9 @@ const DogOwnerProfileSetup: React.FC = () => {
         console.log('Created pet:', insertedPet);
         toast({
           title: t('common.success'),
-          description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
+          description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
         });
-        navigate(`/pet/${insertedPet.id}/edit`);
+        navigate('/dashboard');
       } else {
         // Fallback: try to fetch the created pet
         const { data: createdPet, error: fetchError } = await supabase
@@ -230,9 +230,9 @@ const DogOwnerProfileSetup: React.FC = () => {
           if (createdDog) {
             toast({
               title: t('common.success'),
-              description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
+              description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
             });
-            navigate(`/pet/${createdDog.id}/edit`);
+            navigate('/dashboard');
             return;
           }
         }
@@ -240,9 +240,9 @@ const DogOwnerProfileSetup: React.FC = () => {
         if (createdPet) {
           toast({
             title: t('common.success'),
-            description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created! You can add more photos and details.`,
+            description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
           });
-          navigate(`/pet/${createdPet.id}/edit`);
+          navigate('/dashboard');
         } else {
           // Fallback to dashboard if we can't get the ID
           toast({
@@ -269,7 +269,7 @@ const DogOwnerProfileSetup: React.FC = () => {
       {/* Top App Bar */}
       <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
         <div className="flex size-12 shrink-0 items-center justify-start">
-          <button onClick={() => navigate('/')}>
+          <button onClick={() => navigate('/home')}>
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
               close
             </span>

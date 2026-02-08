@@ -195,7 +195,7 @@ const AuthNew = () => {
         } else if (selectedRole === 'walker') {
           navigate('/sitter-profile-setup');
         } else {
-          navigate('/');
+          navigate('/dashboard');
         }
       }
     } catch (error: any) {
@@ -209,9 +209,26 @@ const AuthNew = () => {
     }
   };
 
-  // Show role selection for signup
+  // Show role selection for signup (with header so back button works)
   if (step === 'role' && mode === 'signup') {
-    return <RoleSelection onSelectRole={handleRoleSelect} />;
+    return (
+      <div className="relative flex h-auto min-h-screen w-full flex-col bg-role-background-light dark:bg-role-background-dark group/design-root overflow-x-hidden font-display">
+        <div className="sticky top-0 z-10 flex items-center bg-role-background-light/80 dark:bg-role-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
+          <div className="flex size-12 shrink-0 items-center justify-start">
+            <button onClick={() => navigate('/home')}>
+              <span className="material-symbols-outlined text-role-text-light dark:text-role-text-dark text-2xl">arrow_back</span>
+            </button>
+          </div>
+          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-role-text-light dark:text-role-text-dark">
+            {t('auth.createAccount')}
+          </h2>
+          <div className="flex w-12 items-center justify-end">
+            <LanguageSwitcher />
+          </div>
+        </div>
+        <RoleSelection onSelectRole={handleRoleSelect} />
+      </div>
+    );
   }
 
   // Show login/signup form
@@ -220,7 +237,7 @@ const AuthNew = () => {
       {/* Top App Bar */}
       <div className="sticky top-0 z-10 flex items-center bg-role-background-light/80 dark:bg-role-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
         <div className="flex size-12 shrink-0 items-center justify-start">
-          <button onClick={() => mode === 'signup' && step === 'form' ? setStep('role') : navigate('/home')}>
+          <button onClick={() => navigate('/home')}>
             <span className="material-symbols-outlined text-role-text-light dark:text-role-text-dark text-2xl">arrow_back</span>
           </button>
         </div>

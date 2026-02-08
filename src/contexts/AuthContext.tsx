@@ -78,6 +78,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     getInitialSession();
 
+    // Safety timeout: prevent infinite loading if auth/profile fetch hangs
+    const timeoutId = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          console.warn('AuthContext: Loading timeout - forcing loading to false');
+          return false;
+        }
+        return prev;
+      });
+    }, 10000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthContext: Auth state change:', event, session?.user?.id);
       setCurrentUser(session?.user ?? null);
@@ -91,7 +102,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

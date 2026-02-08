@@ -75,7 +75,7 @@ const MainApp: React.FC<MainAppProps> = ({ user, session, onSignOut }) => {
       <div className="min-h-screen bg-warm-bg flex items-center justify-center">
         <div className="text-center">
           <img src="/app-logo.png?v=2" alt="Loading" className="w-16 h-16 mx-auto mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Cargando...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
