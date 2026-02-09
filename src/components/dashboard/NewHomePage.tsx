@@ -113,6 +113,10 @@ const NewHomePage: React.FC = () => {
   // Load real profiles from Supabase
   React.useEffect(() => {
     const loadProfiles = async () => {
+      if (!currentUser?.id) {
+        setLoadingProfiles(false);
+        return;
+      }
       try {
         // Get current user's location for distance calculation
         let userLat: number | null = null;
@@ -259,6 +263,10 @@ const NewHomePage: React.FC = () => {
       }
     };
 
+    const timeoutId = setTimeout(() => {
+      setLoadingProfiles(false);
+    }, 8000);
+
     loadProfiles();
 
     // Subscribe to real-time updates for new profiles
@@ -279,8 +287,9 @@ const NewHomePage: React.FC = () => {
       })
       .subscribe();
 
-    // Cleanup subscriptions on unmount
+    // Cleanup subscriptions and timeout on unmount
     return () => {
+      clearTimeout(timeoutId);
       petsSubscription.unsubscribe();
       usersSubscription.unsubscribe();
     };
