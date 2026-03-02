@@ -43,63 +43,99 @@ const BookingsPage: React.FC = () => {
 
   useEffect(() => {
     fetchBookings();
-  }, [currentUser]);
+  }, [currentUser?.id]);
 
   const fetchBookings = async () => {
-    if (!currentUser) {
+    if (!currentUser?.id) {
       setLoading(false);
+      setBookings([]);
       return;
     }
-    
+
+    const { supabase } = await import('@/integrations/supabase/client');
+    const userId = currentUser.id;
+
+    const formatBooking = (booking: any) => ({
+      id: booking.id,
+      walker_name: booking.sitter?.name ?? booking.walker_name ?? 'Unknown',
+      owner_name: booking.owner?.name ?? booking.owner_name ?? 'Unknown',
+      dog_name: booking.dog?.name ?? 'Dog',
+      booking_date: booking.start_time ? new Date(booking.start_time).toISOString().split('T')[0] : '',
+      start_time: booking.start_time ? new Date(booking.start_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
+      duration_hours: booking.start_time && booking.end_time
+        ? Math.round((new Date(booking.end_time).getTime() - new Date(booking.start_time).getTime()) / (1000 * 60 * 60))
+        : 0,
+      total_amount: booking.total_price ?? 0,
+      status: booking.status,
+      notes: booking.notes,
+      payment_status: booking.payment_status,
+      owner_id: booking.owner_id,
+      sitter_id: booking.sitter_id,
+      completed_at: booking.completed_at,
+      completion_confirmed_at: booking.completion_confirmed_at,
+      eligible_for_release_at: booking.eligible_for_release_at,
+      payment_released_at: booking.payment_released_at,
+      balance_released_at: booking.balance_released_at,
+      review_submitted_at: booking.review_submitted_at
+    });
+
+    const applyData = (data: any[] | null) => {
+      const formatted = (data ?? []).map((b: any) => formatBooking(b));
+      setBookings(formatted);
+    };
+
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data, error } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          sitter:users!bookings_sitter_id_fkey(name),
-          owner:users!bookings_owner_id_fkey(name),
-          dog:dogs(name)
-        `)
-        .or(`owner_id.eq.${currentUser?.id},sitter_id.eq.${currentUser?.id}`)
-        .order('created_at', { ascending: false });
-      
+      // Timeout so we never stay in loading forever
+      const timeoutMs = 8000;
+      const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
+        setTimeout(() => resolve({ data: null, error: { message: 'Request timed out' } }), timeoutMs)
+      );
+
+      const queryPromise = (async () => {
+        const r = await supabase
+          .from('bookings')
+          .select(`
+            *,
+            sitter:users!bookings_sitter_id_fkey(name),
+            owner:users!bookings_owner_id_fkey(name),
+            dog:dogs(name)
+          `)
+          .or(`owner_id.eq.${userId},sitter_id.eq.${userId}`)
+          .order('created_at', { ascending: false });
+        return r;
+      })();
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
       if (error) {
-        // If table doesn't exist, show empty state instead of error
-        if (error.message.includes('does not exist') || error.message.includes('not find')) {
-          console.warn('Bookings table not found. Please run database migrations.');
+        if (error.message === 'Request timed out') {
           setBookings([]);
-          setLoading(false);
+          toast({ title: t('common.error'), description: 'Could not load bookings. Please try again.', variant: 'destructive' });
           return;
         }
-        throw error;
+        if (error.message.includes('does not exist') || error.message.includes('not find') || error.message.includes('foreign key') || error.message.includes('relation')) {
+          console.warn('Bookings query fallback: trying without joins.', error.message);
+          const { data: simpleData, error: simpleError } = await supabase
+            .from('bookings')
+            .select('*')
+            .or(`owner_id.eq.${userId},sitter_id.eq.${userId}`)
+            .order('created_at', { ascending: false });
+          if (!simpleError && simpleData) {
+            applyData(simpleData);
+          } else {
+            setBookings([]);
+          }
+        } else {
+          setBookings([]);
+          toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
+        }
+        return;
       }
-      
-      const formattedBookings = data?.map((booking: any) => ({
-        id: booking.id,
-        walker_name: booking.sitter?.name || 'Unknown',
-        owner_name: booking.owner?.name || 'Unknown',
-        dog_name: booking.dog?.name || 'Dog',
-        booking_date: new Date(booking.start_time).toISOString().split('T')[0],
-        start_time: new Date(booking.start_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        duration_hours: Math.round((new Date(booking.end_time).getTime() - new Date(booking.start_time).getTime()) / (1000 * 60 * 60)),
-        total_amount: booking.total_price || 0,
-        status: booking.status,
-        notes: booking.notes,
-        payment_status: booking.payment_status,
-        owner_id: booking.owner_id,
-        sitter_id: booking.sitter_id,
-        completed_at: booking.completed_at,
-        completion_confirmed_at: booking.completion_confirmed_at,
-        eligible_for_release_at: booking.eligible_for_release_at,
-        payment_released_at: booking.payment_released_at,
-        balance_released_at: booking.balance_released_at,
-        review_submitted_at: booking.review_submitted_at
-      })) || [];
-      
-      setBookings(formattedBookings);
+
+      applyData(data ?? []);
     } catch (error: any) {
-      toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
+      setBookings([]);
+      toast({ title: t('common.error'), description: error?.message ?? 'Failed to load bookings', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
