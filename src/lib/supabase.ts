@@ -1,33 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+// Use single Supabase client to avoid "Multiple GoTrueClient instances" warning
+export { supabase } from '@/integrations/supabase/client';
 
-// Supabase configuration from environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://zxbfygofxxmfivddwdqt.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4YmZ5Z29meHhtZml2ZGR3ZHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNjkyNTAsImV4cCI6MjA3MzY0NTI1MH0.6V11hebajJyNKKEeI0MqcoG8n2Hc0Rli8SoUpstm-C4';
-
-console.log('Supabase Config:', {
-  url: supabaseUrl,
-  hasEnvUrl: !!import.meta.env.VITE_SUPABASE_URL,
-  hasEnvKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
-  keyLength: supabaseAnonKey.length
-});
-
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce'
-  }
-});
-
-// Test Supabase connection
-supabase.from('users').select('count').limit(1).then(
-  (result) => console.log('Supabase connection test successful:', result),
-  (error) => console.error('Supabase connection test failed:', error)
-);
-
-// Database types
+// Database types (for consumers that import from this file)
 export interface Database {
   public: {
     Tables: {
