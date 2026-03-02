@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Get initial session
+    // Get initial session – stop loading as soon as we have session; fetch profile in background
     const getInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -66,7 +66,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('AuthContext: User found:', session.user.id);
           setCurrentUser(session.user);
           checkAdminStatus(session.user);
-          await fetchUserProfile(session.user.id);
+          setLoading(false);
+          fetchUserProfile(session.user.id); // don't await – profile loads in background
         } else {
           setLoading(false);
         }
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     getInitialSession();
 
-    // Safety timeout: prevent infinite loading if auth/profile fetch hangs
+    // Safety timeout: if getSession() hangs (e.g. network), force loading off after 12s
     const timeoutId = setTimeout(() => {
       setLoading((prev) => {
         if (prev) {
@@ -87,7 +88,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
         return prev;
       });
-    }, 5000);
+    }, 12000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthContext: Auth state change:', event, session?.user?.id);

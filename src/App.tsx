@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -56,8 +56,19 @@ import SEO from "./components/SEO";
 import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
+import { checkSupabaseConnectivity, logConnectivityResult } from "@/lib/supabase-connectivity";
 
 const queryClient = new QueryClient();
+
+// Run Supabase connectivity check once on app load (log result to console)
+const SupabaseConnectivityCheck = () => {
+  useEffect(() => {
+    checkSupabaseConnectivity().then((result) => {
+      logConnectivityResult(result);
+    });
+  }, []);
+  return null;
+};
 
 // Onboarding Flow Component
 const OnboardingFlow = () => {
@@ -686,6 +697,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+              <SupabaseConnectivityCheck />
               <SEO />
               <Routes>
                 {/* Public Routes */}
