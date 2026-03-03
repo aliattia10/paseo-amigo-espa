@@ -110,15 +110,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-    } catch (error) {
-      throw error;
-    }
+    const SIGNIN_TIMEOUT_MS = 10000;
+    const authPromise = supabase.auth.signInWithPassword({ email, password });
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Connection timed out. Please check your connection and try again.')), SIGNIN_TIMEOUT_MS)
+    );
+    const { error } = await Promise.race([authPromise, timeoutPromise]);
+    if (error) throw error;
   };
 
   const signUp = async (email: string, password: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {

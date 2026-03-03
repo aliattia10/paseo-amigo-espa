@@ -18,6 +18,7 @@ const AuthNew = () => {
   const [step, setStep] = useState<'role' | 'form'>('role');
   const [selectedRole, setSelectedRole] = useState<'owner' | 'walker' | 'both' | null>(null);
   const [loading, setLoading] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
 
   // Form state
   const [email, setEmail] = useState('');
@@ -28,13 +29,21 @@ const AuthNew = () => {
   const [phone, setPhone] = useState('');
   const [agreed, setAgreed] = useState(false);
 
-  // Redirect if already logged in
+  // Redirect if already logged in (with timeout so form shows if Supabase is slow)
   useEffect(() => {
+    const SESSION_TIMEOUT_MS = 5000;
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user && mode === 'login') {
-        console.log('User already logged in, redirecting to dashboard');
-        navigate('/dashboard');
+      try {
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+          setTimeout(() => resolve({ data: { session: null } }), SESSION_TIMEOUT_MS)
+        );
+        const { data } = await Promise.race([sessionPromise, timeoutPromise]);
+        if (data?.session?.user && mode === 'login') {
+          navigate('/dashboard');
+        }
+      } catch {
+        // Ignore; show login form
       }
     };
     checkUser();
@@ -90,6 +99,7 @@ const AuthNew = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setConnectionError(false);
 
     try {
       if (mode === 'signup' && !agreed) {
@@ -103,26 +113,25 @@ const AuthNew = () => {
       }
 
       if (mode === 'login') {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const LOGIN_TIMEOUT_MS = 10000;
+        const timeoutMsg = (typeof t === 'function' ? t('auth.connectionTimeout') : null) || 'Connection timed out. Check your connection and try again.';
+        const loginPromise = supabase.auth.signInWithPassword({ email, password });
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(timeoutMsg)), LOGIN_TIMEOUT_MS)
+        );
+        const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
         if (error) throw error;
-        
+
         console.log('Login successful, user:', data.user?.id);
-        
-        // Show success message
+
         toast({
           title: "Success!",
           description: "Logged in successfully!",
         });
-        
-        // Small delay to ensure auth state is updated
+
         await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Force hard redirect to dashboard to ensure clean state
         window.location.href = '/dashboard';
-        return; // Prevent any further execution
+        return;
       } else {
         // Signup
         const { data, error } = await supabase.auth.signUp({
@@ -199,9 +208,12 @@ const AuthNew = () => {
         }
       }
     } catch (error: any) {
+      const msg = error?.message || '';
+      const isConnection = /timed out|timeout|network|fetch|failed to fetch|connection/i.test(msg);
+      if (isConnection) setConnectionError(true);
       toast({
         title: "Error",
-        description: error.message || 'An error occurred',
+        description: msg || 'An error occurred',
         variant: "destructive",
       });
     } finally {
@@ -386,6 +398,21 @@ const AuthNew = () => {
             >
               {loading ? t('common.loading') : mode === 'login' ? t('auth.login') : t('auth.createAccount')}
             </button>
+
+            {mode === 'login' && connectionError && (
+              <div className="mt-4 p-3 rounded-xl bg-amber-500/15 dark:bg-amber-600/15 border border-amber-500/30 dark:border-amber-600/30">
+                <p className="text-sm text-amber-800 dark:text-amber-200 mb-2">
+                  {typeof t === 'function' ? t('auth.connectionHint') : "Can't reach server. Try Wi‑Fi or another network, then tap Retry."}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setConnectionError(false)}
+                  className="text-sm font-semibold text-amber-800 dark:text-amber-200 underline"
+                >
+                  {t('common.retry')}
+                </button>
+              </div>
+            )}
 
             <div className="space-y-2 mt-4">
               <p className="text-role-text-light/70 dark:text-role-text-dark/70 text-sm text-center">
