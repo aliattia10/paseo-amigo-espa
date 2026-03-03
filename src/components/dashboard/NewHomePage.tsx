@@ -11,6 +11,7 @@ import FiltersModal, { FilterOptions } from '@/components/ui/FiltersModal';
 import { playMatchSound, playLikeSound } from '@/lib/sounds';
 import { supabase } from '@/integrations/supabase/client';
 import i18n from '@/lib/i18n';
+import { Button } from '@/components/ui/button';
 import { calculateDistance } from '@/lib/distance';
 
 interface Profile {
@@ -28,7 +29,7 @@ interface Profile {
 
 const NewHomePage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   const currentUserId = currentUser?.id;
   const { location, locationEnabled, isGlobalMode, requestLocation, toggleGlobalMode } = useLocation();
   const { toast } = useToast();
@@ -717,6 +718,22 @@ const NewHomePage: React.FC = () => {
 
   return (
     <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden bg-home-background-light dark:bg-home-background-dark">
+      {/* Verify identity banner */}
+      {userProfile && userProfile.verified === false && (
+        <div className="shrink-0 bg-amber-500/90 dark:bg-amber-600/90 text-gray-900 dark:text-gray-100 px-4 py-2 flex items-center justify-between gap-2 max-w-md mx-auto w-full">
+          <span className="text-sm font-medium truncate">
+            {t('verifyIdentity.banner', 'Verify your identity to build trust')}
+          </span>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="shrink-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={() => navigate('/verify-identity')}
+          >
+            {t('verifyIdentity.verify', 'Verify')}
+          </Button>
+        </div>
+      )}
       {/* Top App Bar */}
       <header className="flex flex-col bg-home-background-light dark:bg-home-background-dark shrink-0 max-w-md mx-auto w-full">
         <div className="flex items-center p-4 pb-2 justify-between">

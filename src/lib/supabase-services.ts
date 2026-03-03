@@ -48,6 +48,7 @@ export const getUser = async (userId: string): Promise<User | null> => {
       hourlyRate: data.hourly_rate || undefined,
       latitude: data.latitude || undefined,
       longitude: data.longitude || undefined,
+      verified: data.verified ?? false,
       createdAt: new Date(data.created_at || new Date()),
       updatedAt: new Date(data.updated_at || new Date()),
     };

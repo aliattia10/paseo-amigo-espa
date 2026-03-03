@@ -237,6 +237,19 @@ const resources = {
       'common.next': 'Next',
       'common.previous': 'Previous',
       
+      // Verify identity (Didit)
+      'verifyIdentity.title': 'Verify your identity',
+      'verifyIdentity.description': 'To keep our community safe, we ask you to verify your identity with a quick ID check. This only takes a minute.',
+      'verifyIdentity.start': 'Start verification',
+      'verifyIdentity.starting': 'Starting...',
+      'verifyIdentity.skip': 'Skip for now',
+      'verifyIdentity.successTitle': 'Verification submitted',
+      'verifyIdentity.successDesc': "Your identity is being verified. You'll be updated when it's approved.",
+      'verifyIdentity.cancelled': 'Verification cancelled',
+      'verifyIdentity.failed': 'Verification failed',
+      'verifyIdentity.banner': 'Verify your identity to build trust',
+      'verifyIdentity.verify': 'Verify',
+      
       // Messages & Chat
       'messages.writeMessage': 'Write a message...',
       'messages.conversations': 'Conversations',
@@ -758,7 +771,20 @@ const resources = {
       'common.back': 'Retour',
       'common.next': 'Suivant',
       'common.previous': 'Précédent',
-      
+
+      // Verify identity (Didit)
+      'verifyIdentity.title': 'Vérifiez votre identité',
+      'verifyIdentity.description': 'Pour garder notre communauté sûre, nous vous demandons de vérifier votre identité avec une vérification d\'identité rapide. Cela ne prend qu\'une minute.',
+      'verifyIdentity.start': 'Commencer la vérification',
+      'verifyIdentity.starting': 'Démarrage...',
+      'verifyIdentity.skip': 'Passer pour l\'instant',
+      'verifyIdentity.successTitle': 'Vérification envoyée',
+      'verifyIdentity.successDesc': 'Votre identité est en cours de vérification. Vous serez notifié lorsqu\'elle sera approuvée.',
+      'verifyIdentity.cancelled': 'Vérification annulée',
+      'verifyIdentity.failed': 'Échec de la vérification',
+      'verifyIdentity.banner': 'Vérifiez votre identité pour inspirer confiance',
+      'verifyIdentity.verify': 'Vérifier',
+
       // Messages & Chat
       'messages.writeMessage': 'Écrire un message...',
       'messages.conversations': 'Conversations',
@@ -1531,6 +1557,19 @@ const resources = {
       'common.back': 'Atrás',
       'common.next': 'Siguiente',
       'common.previous': 'Anterior',
+      
+      // Verify identity (Didit)
+      'verifyIdentity.title': 'Verifica tu identidad',
+      'verifyIdentity.description': 'Para mantener la comunidad segura, te pedimos que verifiques tu identidad con una comprobación rápida de ID. Solo toma un minuto.',
+      'verifyIdentity.start': 'Iniciar verificación',
+      'verifyIdentity.starting': 'Iniciando...',
+      'verifyIdentity.skip': 'Omitir por ahora',
+      'verifyIdentity.successTitle': 'Verificación enviada',
+      'verifyIdentity.successDesc': 'Tu identidad está siendo verificada. Te avisaremos cuando sea aprobada.',
+      'verifyIdentity.cancelled': 'Verificación cancelada',
+      'verifyIdentity.failed': 'Error en la verificación',
+      'verifyIdentity.banner': 'Verifica tu identidad para generar confianza',
+      'verifyIdentity.verify': 'Verificar',
       
       // Messages & Chat
       'messages.writeMessage': 'Escribe un mensaje...',
