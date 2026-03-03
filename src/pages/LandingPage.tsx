@@ -17,59 +17,20 @@ const LandingPage: React.FC = () => {
   const { changeLanguage, currentLanguage } = useLanguage();
 
   const features = [
-    {
-      icon: <Heart className="w-6 h-6" />,
-      title: 'Trusted Sitters',
-      description: 'Connect with verified, experienced pet sitters in your area',
-    },
-    {
-      icon: <Shield className="w-6 h-6" />,
-      title: 'Secure Payments',
-      description: 'Safe escrow system ensures your money is protected until service is complete',
-    },
-    {
-      icon: <Clock className="w-6 h-6" />,
-      title: 'Flexible Scheduling',
-      description: 'Book walks and services that fit your schedule',
-    },
-    {
-      icon: <Star className="w-6 h-6" />,
-      title: 'Verified Reviews',
-      description: 'Read real reviews from pet owners and sitters',
-    },
+    { icon: <Heart className="w-6 h-6" />, titleKey: 'landing.trustedSittersTitle', descKey: 'landing.trustedSittersDesc' },
+    { icon: <Shield className="w-6 h-6" />, titleKey: 'landing.securePayments', descKey: 'landing.securePaymentsDesc' },
+    { icon: <Clock className="w-6 h-6" />, titleKey: 'landing.flexibleScheduling', descKey: 'landing.flexibleSchedulingDesc' },
+    { icon: <Star className="w-6 h-6" />, titleKey: 'landing.verifiedReviews', descKey: 'landing.verifiedReviewsDesc' },
   ];
 
   const platformFeatures = [
-    {
-      icon: <MessageCircle className="w-5 h-5" />,
-      title: 'Instant Messaging',
-      description: 'Chat with your matches in real-time to coordinate services',
-    },
-    {
-      icon: <MapPin className="w-5 h-5" />,
-      title: 'Location-Based Matching',
-      description: 'Find sitters and pet owners near you',
-    },
-    {
-      icon: <Calendar className="w-5 h-5" />,
-      title: 'Easy Booking',
-      description: 'Schedule services with just a few taps',
-    },
-    {
-      icon: <DollarSign className="w-5 h-5" />,
-      title: 'Fair Pricing',
-      description: 'Transparent pricing with secure payment processing',
-    },
+    { icon: <MessageCircle className="w-5 h-5" />, titleKey: 'landing.instantMessaging', descKey: 'landing.instantMessagingDesc' },
+    { icon: <MapPin className="w-5 h-5" />, titleKey: 'landing.locationMatching', descKey: 'landing.locationMatchingDesc' },
+    { icon: <Calendar className="w-5 h-5" />, titleKey: 'landing.easyBooking', descKey: 'landing.easyBookingDesc' },
+    { icon: <DollarSign className="w-5 h-5" />, titleKey: 'landing.fairPricing', descKey: 'landing.fairPricingDesc' },
   ];
 
-  const benefits = [
-    'Verified sitter profiles with reviews and ratings',
-    'Secure payment system with escrow protection',
-    'Real-time chat and booking coordination',
-    'Flexible scheduling to fit your needs',
-    'Support for both dogs and cats',
-    '24/7 customer support',
-  ];
+  const benefits = ['landing.benefit1', 'landing.benefit2', 'landing.benefit3', 'landing.benefit4', 'landing.benefit5', 'landing.benefit6'];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -121,16 +82,14 @@ const LandingPage: React.FC = () => {
 
             {/* Main Headline */}
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4">
-              Trusted Sitters for Happy Pets 🐾
+              {t('landing.heroTitle')}
             </h2>
             
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-4 max-w-2xl mx-auto">
-              Connect with experienced pet sitters and walkers in your neighborhood. 
-              Book services instantly, get real-time updates, and ensure your furry friends get the best care.
+              {t('landing.heroSubtitle')}
             </p>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              The trusted platform connecting pet owners with verified sitters across Europe. 
-              Secure payments, verified reviews, and peace of mind for you and your pets.
+              {t('landing.heroSubtitle2')}
             </p>
 
             {/* Hero Image - Dogs and Cats */}
@@ -162,7 +121,7 @@ const LandingPage: React.FC = () => {
                 className="bg-medium-jungle hover:bg-medium-jungle/90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
                 onClick={() => navigate('/select-role')}
               >
-                Get Started
+                {t('landing.getStarted')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Button
@@ -171,7 +130,7 @@ const LandingPage: React.FC = () => {
                 className="px-8 py-6 text-lg font-semibold border-medium-jungle text-medium-jungle hover:bg-sage-green/10 dark:hover:bg-sage-green/20"
                 onClick={() => navigate('/auth')}
               >
-                Sign In
+                {t('landing.signIn')}
               </Button>
             </div>
 
@@ -179,19 +138,19 @@ const LandingPage: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto mb-16">
               <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
                 <div className="text-3xl font-bold text-medium-jungle mb-1">1000+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Happy Pets</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">{t('landing.happyPets')}</div>
               </div>
               <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
                 <div className="text-3xl font-bold text-medium-jungle mb-1">500+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Trusted Sitters</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">{t('landing.trustedSitters')}</div>
               </div>
               <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
                 <div className="text-3xl font-bold text-medium-jungle mb-1">4.9★</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Average Rating</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">{t('landing.averageRating')}</div>
               </div>
               <div className="text-center bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
                 <div className="text-3xl font-bold text-medium-jungle mb-1">24/7</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Support</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">{t('landing.support')}</div>
               </div>
             </div>
           </div>
@@ -201,7 +160,7 @@ const LandingPage: React.FC = () => {
       {/* Features Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-800 dark:text-white mb-12">
-          Why Choose Petflik?
+          {t('landing.whyChoose')}
         </h3>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -212,10 +171,10 @@ const LandingPage: React.FC = () => {
             >
               <div className="text-medium-jungle mb-4">{feature.icon}</div>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                {feature.title}
+                {t(feature.titleKey)}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                {feature.description}
+                {t(feature.descKey)}
               </p>
             </div>
           ))}
@@ -226,7 +185,7 @@ const LandingPage: React.FC = () => {
       <div className="bg-ash-grey/30 dark:bg-gray-800/50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-800 dark:text-white mb-12">
-            How It Works
+            {t('landing.howItWorks')}
           </h3>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -242,10 +201,10 @@ const LandingPage: React.FC = () => {
                 <span className="text-2xl font-bold text-medium-jungle dark:text-sage-green">1</span>
               </div>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                Create Your Profile
+                {t('landing.createProfile')}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                Sign up as a pet owner or sitter. Add your pet's details (dogs or cats) or your service information.
+                {t('landing.createProfileDesc')}
               </p>
             </div>
             
@@ -261,10 +220,10 @@ const LandingPage: React.FC = () => {
                 <span className="text-2xl font-bold text-medium-jungle dark:text-sage-green">2</span>
               </div>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                Browse & Match
+                {t('landing.browseMatch')}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                Discover sitters in your area or find pet owners looking for services. Swipe and match!
+                {t('landing.browseMatchDesc')}
               </p>
             </div>
             
@@ -280,10 +239,10 @@ const LandingPage: React.FC = () => {
                 <span className="text-2xl font-bold text-medium-jungle dark:text-sage-green">3</span>
               </div>
               <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                Book & Enjoy
+                {t('landing.bookEnjoy')}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                Book a service, chat with your match, and enjoy peace of mind knowing your pet is in good hands.
+                {t('landing.bookEnjoyDesc')}
               </p>
             </div>
           </div>
@@ -293,7 +252,7 @@ const LandingPage: React.FC = () => {
       {/* Platform Features Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-800 dark:text-white mb-12">
-          Platform Features
+          {t('landing.platformFeatures')}
         </h3>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
@@ -305,11 +264,11 @@ const LandingPage: React.FC = () => {
               <div className="text-medium-jungle mb-3 flex items-center gap-2">
                 {feature.icon}
                 <h4 className="text-base font-semibold text-gray-800 dark:text-white">
-                  {feature.title}
+                  {t(feature.titleKey)}
                 </h4>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                {feature.description}
+                {t(feature.descKey)}
               </p>
             </div>
           ))}
@@ -324,7 +283,7 @@ const LandingPage: React.FC = () => {
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/60 to-transparent flex items-end p-6">
-              <p className="text-white font-semibold text-lg">Find Your Perfect Match</p>
+              <p className="text-white font-semibold text-lg">{t('landing.findPerfectMatch')}</p>
             </div>
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
@@ -334,7 +293,7 @@ const LandingPage: React.FC = () => {
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/60 to-transparent flex items-end p-6">
-              <p className="text-white font-semibold text-lg">Trusted Care</p>
+              <p className="text-white font-semibold text-lg">{t('landing.trustedCare')}</p>
             </div>
           </div>
           <div className="relative rounded-xl overflow-hidden shadow-lg group">
@@ -344,7 +303,7 @@ const LandingPage: React.FC = () => {
               className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-medium-jungle/60 to-transparent flex items-end p-6">
-              <p className="text-white font-semibold text-lg">Happy Pets</p>
+              <p className="text-white font-semibold text-lg">{t('landing.happyPetsTitle')}</p>
             </div>
           </div>
         </div>
@@ -356,17 +315,17 @@ const LandingPage: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-6">
-                Why Pet Owners & Sitters Love Petflik
+                {t('landing.whyLove')}
               </h3>
               <div className="space-y-4">
-                {benefits.map((benefit, index) => (
+                {benefits.map((key, index) => (
                   <div
                     key={index}
                     className="flex items-start gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm"
                   >
                     <CheckCircle className="w-5 h-5 text-medium-jungle flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-700 dark:text-gray-300">
-                      {benefit}
+                      {t(key)}
                     </p>
                   </div>
                 ))}
@@ -410,30 +369,23 @@ const LandingPage: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">
-                Earn Money as a Pet Sitter
+                {t('landing.earnMoney')}
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Join our community of trusted pet sitters and start earning. Set your own rates, 
-                choose your availability, and get paid securely through our platform.
+                {t('landing.earnMoneyDesc')}
               </p>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-medium-jungle flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Set your own hourly rates
-                  </span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('landing.setRates')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-medium-jungle flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Flexible payout options (PayPal or Bank Transfer)
-                  </span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('landing.flexiblePayout')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-medium-jungle flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Build your reputation with reviews
-                  </span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('landing.buildReputation')}</span>
                 </li>
               </ul>
               <Button
@@ -441,7 +393,7 @@ const LandingPage: React.FC = () => {
                 className="bg-medium-jungle hover:bg-medium-jungle/90 text-white"
                 onClick={() => navigate('/select-role')}
               >
-                Become a Sitter
+                {t('landing.becomeSitter')}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </div>
@@ -468,13 +420,13 @@ const LandingPage: React.FC = () => {
                   <div className="text-center">
                     <div className="text-4xl font-bold text-medium-jungle dark:text-sage-green mb-2">€15-30</div>
                     <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                      Average hourly rate
+                      {t('landing.avgHourlyRate')}
                     </div>
                     <div className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-                      80% Commission
+                      80% {t('landing.commission')}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-300">
-                      You keep 80% of every booking
+                      {t('landing.commissionDesc')}
                     </div>
                   </div>
                 </div>
@@ -520,6 +472,7 @@ const LandingPage: React.FC = () => {
 
 const Footer: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -529,35 +482,35 @@ const Footer: React.FC = () => {
               <img src="/app-logo.png?v=2" alt="Petflik" className="h-12 w-auto" />
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs">
-              Trusted Sitters for Happy Pets. The leading platform for pet care services in Europe.
+              {t('landing.footerTagline')}
             </p>
           </div>
           
           <div>
-            <h4 className="text-gray-900 dark:text-white font-bold mb-6">Our apps</h4>
+            <h4 className="text-gray-900 dark:text-white font-bold mb-6">{t('landing.footerOurApps')}</h4>
             <ul className="space-y-4">
-              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Petflik for Owners</button></li>
-              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Petflik for Sitters</button></li>
+              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerForOwners')}</button></li>
+              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerForSitters')}</button></li>
             </ul>
           </div>
 
-                   <div>
-                     <h4 className="text-gray-900 dark:text-white font-bold mb-6">Company</h4>
-                     <ul className="space-y-4">
-                       <li><button onClick={() => navigate('/about')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">About</button></li>
-                       <li><button onClick={() => navigate('/blog')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Blog</button></li>
-                       <li><button onClick={() => navigate('/contact')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Contact us</button></li>
-                       <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Careers</button></li>
-                     </ul>
-                   </div>
+          <div>
+            <h4 className="text-gray-900 dark:text-white font-bold mb-6">{t('landing.footerCompany')}</h4>
+            <ul className="space-y-4">
+              <li><button onClick={() => navigate('/about')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerAbout')}</button></li>
+              <li><button onClick={() => navigate('/blog')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerBlog')}</button></li>
+              <li><button onClick={() => navigate('/contact')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerContact')}</button></li>
+              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerCareers')}</button></li>
+            </ul>
+          </div>
 
           <div>
-            <h4 className="text-gray-900 dark:text-white font-bold mb-6">Legal</h4>
+            <h4 className="text-gray-900 dark:text-white font-bold mb-6">{t('landing.footerLegal')}</h4>
             <ul className="space-y-4">
-              <li><button onClick={() => navigate('/terms')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Terms and conditions</button></li>
-              <li><button onClick={() => navigate('/privacy')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Privacy policy</button></li>
-              <li><button onClick={() => navigate('/refund-policy')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Refund policy</button></li>
-              <li><button onClick={() => navigate('/code-of-conduct')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">Code of Conduct</button></li>
+              <li><button onClick={() => navigate('/terms')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerTerms')}</button></li>
+              <li><button onClick={() => navigate('/privacy')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerPrivacy')}</button></li>
+              <li><button onClick={() => navigate('/refund-policy')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerRefund')}</button></li>
+              <li><button onClick={() => navigate('/code-of-conduct')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerCode')}</button></li>
             </ul>
           </div>
         </div>
@@ -578,11 +531,11 @@ const Footer: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-400">
               <span className="material-symbols-outlined text-base">language</span>
-              <span>English (International)</span>
+              <span>{t('landing.footerLanguage')}</span>
               <span className="material-symbols-outlined text-base">expand_more</span>
             </div>
             <div className="text-gray-400 text-xs">
-              © {new Date().getFullYear()} Petflik. All rights reserved.
+              © {new Date().getFullYear()} Petflik. {t('landing.footerRights')}
             </div>
           </div>
         </div>

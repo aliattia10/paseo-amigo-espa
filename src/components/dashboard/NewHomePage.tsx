@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from '@/contexts/LocationContext';
 import { useToast } from '@/hooks/use-toast';
+import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import MatchModal from '@/components/ui/MatchModal';
 import FiltersModal, { FilterOptions } from '@/components/ui/FiltersModal';
@@ -31,6 +32,7 @@ const NewHomePage: React.FC = () => {
   const currentUserId = currentUser?.id;
   const { location, locationEnabled, isGlobalMode, requestLocation, toggleGlobalMode } = useLocation();
   const { toast } = useToast();
+  const unreadNotifications = useUnreadNotificationCount();
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [realPetProfiles, setRealPetProfiles] = useState<any[]>([]);
   const [realSitterProfiles, setRealSitterProfiles] = useState<any[]>([]);
@@ -1032,7 +1034,7 @@ const NewHomePage: React.FC = () => {
       </div>
 
       {/* Bottom Navigation Bar */}
-      <BottomNavigation />
+      <BottomNavigation unreadNotifications={unreadNotifications} />
       
       {/* Filters Modal */}
       <FiltersModal

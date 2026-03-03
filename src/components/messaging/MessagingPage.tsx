@@ -9,10 +9,12 @@ import ChatWindow from './ChatWindow';
 import type { WalkRequest } from '@/types';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import BottomNavigation from '@/components/ui/BottomNavigation';
+import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 
 const MessagingPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const unreadNotifications = useUnreadNotificationCount();
   const [selectedChat, setSelectedChat] = useState<{
     walkRequest: WalkRequest | null;
     otherUser: { id: string; name: string; profileImage?: string; role?: string };
@@ -79,7 +81,7 @@ const MessagingPage: React.FC = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <BottomNavigation />
+      <BottomNavigation unreadNotifications={unreadNotifications} />
     </div>
   );
 };

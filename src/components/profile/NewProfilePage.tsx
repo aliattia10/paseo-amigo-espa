@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 import i18n from '@/lib/i18n';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 
@@ -31,6 +32,7 @@ const NewProfilePage: React.FC = () => {
   const { currentUser, userProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const unreadNotifications = useUnreadNotificationCount();
   // Initialize activeRole based on user's profile type, defaulting to 'owner' if they have pets
   const [activeRole, setActiveRole] = useState<'sitter' | 'owner'>(() => {
     // If user is a sitter/walker, default to sitter tab
@@ -797,7 +799,7 @@ const NewProfilePage: React.FC = () => {
       </main>
 
       {/* Bottom Navigation */}
-      <BottomNavigation />
+      <BottomNavigation unreadNotifications={unreadNotifications} />
     </div>
   );
 };

@@ -42,12 +42,12 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadChats = async () => {
+    const loadChats = async (showLoading = true) => {
       if (!userProfile || !currentUser) return;
 
       try {
+        if (showLoading) setLoading(true);
         // Load matches from both possible column structures
-        // We use a query that covers both possible column names
         const { data: matchesData, error: matchesError } = await supabase
           .from('matches')
           .select('*')
@@ -56,25 +56,19 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         if (matchesError) {
           console.error('Error loading matches:', matchesError);
         } else if (matchesData) {
-          // Filter for mutual matches only (if the structure supports it)
           const mutualMatches = matchesData.filter(m => {
-            // If it uses System A (is_mutual flag), check it
             if (m.is_mutual !== undefined) return m.is_mutual === true;
-            // If it uses System B (matches only created when mutual), it's mutual by existence
             return true;
           });
 
-          // Load other user details for each match
           const matchesWithUsers = await Promise.all(
             mutualMatches.map(async (match) => {
-              // Determine other user ID based on available columns
               let otherUserId = '';
               if (match.user1_id) {
                 otherUserId = match.user1_id === currentUser.id ? match.user2_id : match.user1_id;
               } else if (match.user_id) {
                 otherUserId = match.user_id === currentUser.id ? match.matched_user_id : match.user_id;
               }
-              
               if (!otherUserId) return match;
 
               const { data: userData, error: userError } = await supabase
@@ -100,15 +94,12 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
           setMatches(matchesWithUsers.filter(m => m.otherUser));
         }
 
-        // Also load walk requests for existing bookings
-        const requests = userProfile.userType === 'owner' 
+        const requests = userProfile.userType === 'owner'
           ? await getWalkRequestsByOwner(userProfile.id)
           : await getWalkRequestsByWalker(userProfile.id);
-        
         const activeRequests = requests.filter(
           request => ['pending', 'accepted', 'in-progress'].includes(request.status)
         );
-        
         setWalkRequests(activeRequests);
       } catch (error) {
         console.error('Error loading chats:', error);
@@ -123,7 +114,28 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     };
 
     loadChats();
-  }, [userProfile, currentUser, toast]);
+
+    // Realtime: refetch when a new match is inserted for this user
+    if (!currentUser?.id) return;
+    const channel = supabase
+      .channel('chat-list-matches')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'matches' },
+        (payload) => {
+          const row = payload.new as Record<string, unknown>;
+          const uid = currentUser.id;
+          const involvesUser =
+            row?.user1_id === uid || row?.user2_id === uid || row?.user_id === uid || row?.matched_user_id === uid;
+          if (involvesUser) loadChats(false);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userProfile, currentUser, toast, t]);
 
   const formatDate = (date: Date) => {
     const now = new Date();

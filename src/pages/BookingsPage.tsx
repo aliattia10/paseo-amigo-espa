@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import ReviewModal from '@/components/bookings/ReviewModal';
 import i18n from '@/lib/i18n';
@@ -35,6 +36,7 @@ const BookingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const unreadNotifications = useUnreadNotificationCount();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'completed'>('all');
@@ -545,7 +547,7 @@ const BookingsPage: React.FC = () => {
         )}
         </div>
       </main>
-      <BottomNavigation />
+      <BottomNavigation unreadNotifications={unreadNotifications} />
       
       {/* Review Modal */}
       {selectedBooking && (

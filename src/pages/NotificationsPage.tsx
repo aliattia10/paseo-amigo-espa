@@ -72,7 +72,7 @@ const NotificationsPage: React.FC = () => {
         title: notif.title,
         description: notif.message,
         time: new Date(notif.created_at).toLocaleDateString(),
-        isRead: notif.is_read || false,
+        isRead: notif.read === true || notif.is_read === true,
         icon: getIconForType(notif.type),
         iconColor: getIconColorForType(notif.type)
       })) || [];
