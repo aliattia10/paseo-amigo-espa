@@ -38,6 +38,8 @@ const NewHomePage: React.FC = () => {
   const [realPetProfiles, setRealPetProfiles] = useState<any[]>([]);
   const [realSitterProfiles, setRealSitterProfiles] = useState<any[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
+  const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
+  const [profileRetryKey, setProfileRetryKey] = useState(0);
   const [likedProfileIds, setLikedProfileIds] = useState<Set<string>>(new Set());
   const [passedProfileIds, setPassedProfileIds] = useState<Set<string>>(new Set());
   const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
@@ -118,8 +120,10 @@ const NewHomePage: React.FC = () => {
     const loadProfiles = async () => {
       if (!currentUser?.id) {
         setLoadingProfiles(false);
+        setProfileLoadError(null);
         return;
       }
+      setProfileLoadError(null);
       try {
         // Get current user's location for distance calculation
         let userLat: number | null = null;
@@ -162,6 +166,13 @@ const NewHomePage: React.FC = () => {
           .neq('owner_id', currentUser?.id || '')
           .order('created_at', { ascending: false });
 
+        const isBlockedOrNetwork = (err: { message?: string } | null) => {
+          const msg = err?.message ?? '';
+          return /failed to fetch|network|blocked|load failed/i.test(msg);
+        };
+        if (petsError && isBlockedOrNetwork(petsError)) {
+          setProfileLoadError('fetch');
+        }
         if (!petsError && pets) {
           const petProfiles: Profile[] = pets.map(pet => {
             let imageUrls: string[] = [];
@@ -210,6 +221,9 @@ const NewHomePage: React.FC = () => {
           .neq('id', currentUser?.id || '')
           .order('created_at', { ascending: false });
         
+        if (sittersError && isBlockedOrNetwork(sittersError)) {
+          setProfileLoadError('fetch');
+        }
         if (!sittersError && sitters && sitters.length > 0) {
           // Filter out test/bot profiles (those with @example.com emails or default names)
           const realSitters = sitters.filter(sitter => {
@@ -261,6 +275,10 @@ const NewHomePage: React.FC = () => {
         }
       } catch (error) {
         console.error('Error loading profiles:', error);
+        const msg = error instanceof Error ? error.message : String(error);
+        if (/failed to fetch|network|blocked|load failed/i.test(msg)) {
+          setProfileLoadError('fetch');
+        }
       } finally {
         setLoadingProfiles(false);
       }
@@ -296,7 +314,12 @@ const NewHomePage: React.FC = () => {
       petsSubscription.unsubscribe();
       usersSubscription.unsubscribe();
     };
-  }, [currentUserId, userRole, location, locationEnabled, isGlobalMode]);
+  }, [currentUserId, userRole, location, locationEnabled, isGlobalMode, profileRetryKey]);
+
+  const handleRetryProfiles = () => {
+    setProfileLoadError(null);
+    setProfileRetryKey((k) => k + 1);
+  };
   
   // No mock data - only show real profiles from database
 
@@ -718,6 +741,15 @@ const NewHomePage: React.FC = () => {
 
   return (
     <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden bg-home-background-light dark:bg-home-background-dark">
+      {/* Network blocked / load failed hint (e.g. ad blocker on laptop) */}
+      {profileLoadError === 'fetch' && (
+        <div className="shrink-0 bg-amber-500/95 dark:bg-amber-600/95 text-gray-900 dark:text-gray-100 px-4 py-3 max-w-md mx-auto w-full">
+          <p className="text-sm mb-2">{t('common.networkBlockedHint')}</p>
+          <Button size="sm" variant="secondary" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" onClick={handleRetryProfiles}>
+            {t('common.retry')}
+          </Button>
+        </div>
+      )}
       {/* Verify identity banner */}
       {userProfile && userProfile.verified === false && (
         <div className="shrink-0 bg-amber-500/90 dark:bg-amber-600/90 text-gray-900 dark:text-gray-100 px-4 py-2 flex items-center justify-between gap-2 max-w-md mx-auto w-full">

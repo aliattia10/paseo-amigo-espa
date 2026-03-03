@@ -112,7 +112,23 @@ const BookingsPage: React.FC = () => {
       if (error) {
         if (error.message === 'Request timed out') {
           setBookings([]);
-          toast({ title: t('common.error'), description: 'Could not load bookings. Please try again.', variant: 'destructive' });
+          const hint = t('common.networkBlockedHint');
+          toast({
+            title: t('common.error'),
+            description: hint ? `Could not load bookings. ${hint}` : 'Could not load bookings. Please try again.',
+            variant: 'destructive',
+            duration: 10000,
+          });
+          return;
+        }
+        if (error.message && /failed to fetch|network|blocked|load failed/i.test(error.message)) {
+          setBookings([]);
+          toast({
+            title: t('common.error'),
+            description: `${t('common.networkBlockedHint')}`,
+            variant: 'destructive',
+            duration: 10000,
+          });
           return;
         }
         if (error.message.includes('does not exist') || error.message.includes('not find') || error.message.includes('foreign key') || error.message.includes('relation')) {
@@ -137,7 +153,14 @@ const BookingsPage: React.FC = () => {
       applyData(data ?? []);
     } catch (error: any) {
       setBookings([]);
-      toast({ title: t('common.error'), description: error?.message ?? 'Failed to load bookings', variant: 'destructive' });
+      const msg = error?.message ?? '';
+      const isBlocked = /failed to fetch|network|blocked|load failed/i.test(msg);
+      toast({
+        title: t('common.error'),
+        description: isBlocked ? t('common.networkBlockedHint') : (msg || 'Failed to load bookings'),
+        variant: 'destructive',
+        duration: isBlocked ? 10000 : 5000,
+      });
     } finally {
       setLoading(false);
     }
