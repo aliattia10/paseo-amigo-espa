@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,6 +40,7 @@ const NewHomePage: React.FC = () => {
   const [loadingProfiles, setLoadingProfiles] = useState(true);
   const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
   const [profileRetryKey, setProfileRetryKey] = useState(0);
+  const loadingProfilesRef = useRef(false);
   const [likedProfileIds, setLikedProfileIds] = useState<Set<string>>(new Set());
   const [passedProfileIds, setPassedProfileIds] = useState<Set<string>>(new Set());
   const [userRole, setUserRole] = useState<'owner' | 'sitter'>('owner');
@@ -123,9 +124,11 @@ const NewHomePage: React.FC = () => {
       if (!currentUser?.id) {
         setLoadingProfiles(false);
         setProfileLoadError(null);
+        loadingProfilesRef.current = false;
         return;
       }
       setProfileLoadError(null);
+      loadingProfilesRef.current = true;
       try {
         // Get current user's location for distance calculation (optional - don't block rest if this hangs)
         let userLat: number | null = null;
@@ -295,12 +298,16 @@ const NewHomePage: React.FC = () => {
           setProfileLoadError('fetch');
         }
       } finally {
+        loadingProfilesRef.current = false;
         setLoadingProfiles(false);
       }
     };
 
     const timeoutId = setTimeout(() => {
       setLoadingProfiles(false);
+      if (loadingProfilesRef.current) {
+        setProfileLoadError('fetch');
+      }
     }, 15000);
 
     loadProfiles();
@@ -766,7 +773,7 @@ const NewHomePage: React.FC = () => {
         </div>
       )}
       {/* Verify identity banner */}
-      {userProfile && userProfile.verified === false && (
+      {userProfile && userProfile.verified !== true && (
         <div className="shrink-0 bg-amber-500/90 dark:bg-amber-600/90 text-gray-900 dark:text-gray-100 px-4 py-2 flex items-center justify-between gap-2 max-w-md mx-auto w-full">
           <span className="text-sm font-medium truncate">
             {t('verifyIdentity.banner', 'Verify your identity to build trust')}

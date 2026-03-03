@@ -29,7 +29,7 @@ interface Review {
 
 const NewProfilePage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, userProfile, refreshUserProfile } = useAuth();
+  const { currentUser, userProfile, refreshUserProfile, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const unreadNotifications = useUnreadNotificationCount();
@@ -59,9 +59,11 @@ const NewProfilePage: React.FC = () => {
   }, [currentUser]);
 
   const handleLogout = async () => {
-    const { supabase } = await import('@/integrations/supabase/client');
-    await supabase.auth.signOut();
-    navigate('/auth?mode=login');
+    try {
+      await logout();
+    } catch (e) {
+      toast({ title: t('common.error'), description: t('dashboard.logoutError'), variant: 'destructive' });
+    }
   };
 
   const handleImageUpload = async (file: File) => {

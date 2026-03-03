@@ -117,6 +117,22 @@ VITE_SUPABASE_URL=your-supabase-project-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
+### Netlify (deployed app)
+
+Set these in **Netlify → Site → Site configuration → Environment variables** so the deployed build uses your Supabase project:
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Supabase project URL (e.g. `https://xxxx.supabase.co`) |
+| `VITE_SUPABASE_ANON_KEY` | Supabase **anon** (public) key from Settings → API |
+
+Optional (if you use them):
+
+- `VITE_STRIPE_PUBLISHABLE_KEY` – Stripe publishable key
+- `VITE_GOOGLE_MAPS_API_KEY` – Google Maps API key
+
+After adding or changing variables, trigger a **new deploy** so the build picks them up. The app uses these only at **build time**; the browser still talks to Supabase directly. If loading fails only on some networks (e.g. firewall blocking Supabase), env vars on Netlify will not fix that—only the correct keys and a reachable Supabase URL.
+
 ## 🚀 Deployment
 
 ### Netlify (Recommended)
