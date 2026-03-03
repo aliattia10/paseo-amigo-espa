@@ -117,6 +117,8 @@ const NewHomePage: React.FC = () => {
 
   // Load real profiles from Supabase
   React.useEffect(() => {
+    const REQUEST_TIMEOUT_MS = 12000;
+
     const loadProfiles = async () => {
       if (!currentUser?.id) {
         setLoadingProfiles(false);
@@ -125,50 +127,58 @@ const NewHomePage: React.FC = () => {
       }
       setProfileLoadError(null);
       try {
-        // Get current user's location for distance calculation
+        // Get current user's location for distance calculation (optional - don't block rest if this hangs)
         let userLat: number | null = null;
         let userLon: number | null = null;
-        
-        if (location && locationEnabled && !isGlobalMode) {
-          userLat = location.latitude;
-          userLon = location.longitude;
-        } else if (currentUser?.id) {
-          // Try to get user's location from database
-          const { data: userData } = await supabase
-            .from('users')
-            .select('latitude, longitude')
-            .eq('id', currentUser.id)
-            .single();
-          
-          if (userData?.latitude && userData?.longitude) {
-            userLat = Number(userData.latitude);
-            userLon = Number(userData.longitude);
+        try {
+          if (location && locationEnabled && !isGlobalMode) {
+            userLat = location.latitude;
+            userLon = location.longitude;
+          } else if (currentUser?.id) {
+            const userLocRes = await Promise.race([
+              supabase.from('users').select('latitude, longitude').eq('id', currentUser.id).single(),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('User location timed out')), REQUEST_TIMEOUT_MS)
+              ),
+            ]);
+            const userData = userLocRes?.data;
+            if (userData?.latitude != null && userData?.longitude != null) {
+              userLat = Number(userData.latitude);
+              userLon = Number(userData.longitude);
+            }
           }
+        } catch (locErr) {
+          console.warn('User location fetch failed or timed out, continuing without distance:', locErr);
         }
 
-        // Load pet profiles (for sitters to browse)
-        // Exclude pets owned by the current user
-        // Also fetch owner's location for distance calculation
-        const { data: pets, error: petsError } = await supabase
-          .from('pets')
-          .select(`
-            id, 
-            name, 
-            age, 
-            image_url, 
-            owner_id, 
-            pet_type,
-            users!pets_owner_id_fkey (
-              latitude,
-              longitude
-            )
-          `)
-          .neq('owner_id', currentUser?.id || '')
-          .order('created_at', { ascending: false });
+        // Load pet profiles (for sitters to browse) with timeout so one hanging request doesn't block the UI
+        const petsRes = await Promise.race([
+          supabase
+            .from('pets')
+            .select(`
+              id, 
+              name, 
+              age, 
+              image_url, 
+              owner_id, 
+              pet_type,
+              users!pets_owner_id_fkey (
+                latitude,
+                longitude
+              )
+            `)
+            .neq('owner_id', currentUser?.id || '')
+            .order('created_at', { ascending: false }),
+          new Promise<{ data: null; error: { message: string } }>((resolve) =>
+            setTimeout(() => resolve({ data: null, error: { message: 'Pets timed out' } }), REQUEST_TIMEOUT_MS)
+          ),
+        ]);
+        const pets = petsRes?.data ?? null;
+        const petsError = petsRes?.error ?? null;
 
         const isBlockedOrNetwork = (err: { message?: string } | null) => {
           const msg = err?.message ?? '';
-          return /failed to fetch|network|blocked|load failed/i.test(msg);
+          return /failed to fetch|network|blocked|load failed|timed out/i.test(msg);
         };
         if (petsError && isBlockedOrNetwork(petsError)) {
           setProfileLoadError('fetch');
@@ -211,16 +221,21 @@ const NewHomePage: React.FC = () => {
           setRealPetProfiles(petProfiles);
         }
 
-        // Load sitter profiles (for pet owners to browse)
-        // Exclude current user and filter out test/bot profiles
-        // Also fetch latitude and longitude for distance calculation
-        const { data: sitters, error: sittersError } = await supabase
-          .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude')
-          .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
-          .neq('id', currentUser?.id || '')
-          .order('created_at', { ascending: false });
-        
+        // Load sitter profiles (for pet owners to browse) with timeout
+        const sittersRes = await Promise.race([
+          supabase
+            .from('users')
+            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude')
+            .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
+            .neq('id', currentUser?.id || '')
+            .order('created_at', { ascending: false }),
+          new Promise<{ data: null; error: { message: string } }>((resolve) =>
+            setTimeout(() => resolve({ data: null, error: { message: 'Sitters timed out' } }), REQUEST_TIMEOUT_MS)
+          ),
+        ]);
+        const sitters = sittersRes?.data ?? null;
+        const sittersError = sittersRes?.error ?? null;
+
         if (sittersError && isBlockedOrNetwork(sittersError)) {
           setProfileLoadError('fetch');
         }
@@ -276,7 +291,7 @@ const NewHomePage: React.FC = () => {
       } catch (error) {
         console.error('Error loading profiles:', error);
         const msg = error instanceof Error ? error.message : String(error);
-        if (/failed to fetch|network|blocked|load failed/i.test(msg)) {
+        if (/failed to fetch|network|blocked|load failed|timed out/i.test(msg)) {
           setProfileLoadError('fetch');
         }
       } finally {
@@ -286,7 +301,7 @@ const NewHomePage: React.FC = () => {
 
     const timeoutId = setTimeout(() => {
       setLoadingProfiles(false);
-    }, 8000);
+    }, 15000);
 
     loadProfiles();
 
