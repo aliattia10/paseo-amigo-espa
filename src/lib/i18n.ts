@@ -624,7 +624,7 @@ const resources = {
   },
   fr: {
     translation: {
-      'seo.title': 'Petflik - Garde d\'animaux et promeneurs de chiens de confiance',
+      'seo.title': 'Petflik - Garde d\u2019animaux et promeneurs de chiens de confiance',
       'seo.description': 'La place de marché de confiance en Europe pour les soins aux animaux. Connectez-vous avec des promeneurs de chiens et des gardiens d\'animaux vérifiés près de chez vous.',
       
       // FAQ

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 import RoleSelection from '@/components/auth/RoleSelection';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { playNotificationSound } from '@/lib/sounds';
@@ -13,6 +14,7 @@ const AuthNew = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const mode = searchParams.get('mode') || 'login';
 
   const [step, setStep] = useState<'role' | 'form'>('role');
@@ -29,7 +31,7 @@ const AuthNew = () => {
   const [phone, setPhone] = useState('');
   const [agreed, setAgreed] = useState(false);
 
-  // Redirect if already logged in (with timeout so form shows if Supabase is slow)
+  // Redirect if already logged in (initial session check with timeout)
   useEffect(() => {
     const SESSION_TIMEOUT_MS = 5000;
     const checkUser = async () => {
@@ -48,6 +50,13 @@ const AuthNew = () => {
     };
     checkUser();
   }, [mode, navigate]);
+
+  // When auth state arrives late (e.g. after loading timeout), redirect to dashboard if on login
+  useEffect(() => {
+    if (currentUser && mode === 'login') {
+      navigate('/dashboard');
+    }
+  }, [currentUser, mode, navigate]);
 
   // Handle email confirmation redirect
   useEffect(() => {
@@ -101,8 +110,15 @@ const AuthNew = () => {
     setLoading(true);
     setConnectionError(false);
 
+    // Safety: always clear loading after 12s so button never stays stuck
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+      setConnectionError(true);
+    }, 12000);
+
     try {
       if (mode === 'signup' && !agreed) {
+        clearTimeout(safetyTimer);
         toast({
           title: "Agreement Required",
           description: "Please agree to the terms and privacy policy to continue.",
@@ -113,7 +129,7 @@ const AuthNew = () => {
       }
 
       if (mode === 'login') {
-        const LOGIN_TIMEOUT_MS = 10000;
+        const LOGIN_TIMEOUT_MS = 8000;
         const timeoutMsg = (typeof t === 'function' ? t('auth.connectionTimeout') : null) || 'Connection timed out. Check your connection and try again.';
         const loginPromise = supabase.auth.signInWithPassword({ email, password });
         const timeoutPromise = new Promise<never>((_, reject) =>
@@ -217,6 +233,7 @@ const AuthNew = () => {
         variant: "destructive",
       });
     } finally {
+      clearTimeout(safetyTimer);
       setLoading(false);
     }
   };
