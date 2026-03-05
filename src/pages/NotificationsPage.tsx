@@ -45,6 +45,17 @@ const NotificationsPage: React.FC = () => {
     }
   }, [notifications]);
 
+  const relativeDay = (dateStr: string): string => {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterdayStart = new Date(todayStart.getTime() - 86400000);
+    if (d >= todayStart) return 'Today';
+    if (d >= yesterdayStart) return 'Yesterday';
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
   const fetchNotifications = async () => {
     if (!currentUser) {
       setLoading(false);
@@ -56,37 +67,37 @@ const NotificationsPage: React.FC = () => {
     
     try {
       const { supabase } = await import('@/integrations/supabase/client');
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
+      const res = await Promise.race([
+        supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+      ]);
+
+      if (!res) { setNotifications([]); return; } // timed out
+
+      const { data, error } = res as any;
 
       if (error) {
-        // If table doesn't exist, show empty state
-        if (error.message.includes('does not exist')) {
-          setNotifications([]);
-          setLoading(false);
-          return;
-        }
-        throw error;
+        setNotifications([]);
+        return;
       }
 
-      const formattedNotifications = data?.map((notif: any) => ({
+      const formattedNotifications = (data || []).map((notif: any) => ({
         id: notif.id,
         type: notif.type,
         title: notif.title,
         description: notif.message,
-        time: new Date(notif.created_at).toLocaleDateString(),
+        time: relativeDay(notif.created_at),
         isRead: notif.read === true || notif.is_read === true,
         icon: getIconForType(notif.type),
-        iconColor: getIconColorForType(notif.type)
-      })) || [];
+        iconColor: getIconColorForType(notif.type),
+      }));
 
       setNotifications(formattedNotifications);
-    } catch (error: any) {
-      console.error('Error fetching notifications:', error);
-      // Don't show sample notifications for new users, show empty state instead
+    } catch {
       setNotifications([]);
     } finally {
       clearTimeout(safetyId);
@@ -161,12 +172,49 @@ const NotificationsPage: React.FC = () => {
   const filteredNotifications = notifications.filter(notif => {
     if (filter === 'all') return true;
     if (filter === 'messages') return notif.type === 'message';
-    if (filter === 'bookings') return notif.type === 'booking';
+    if (filter === 'bookings') return (
+      notif.type === 'booking' ||
+      notif.type === 'booking_request' ||
+      notif.type === 'booking_status_update' ||
+      notif.type === 'booking_confirmed' ||
+      notif.type === 'payment'
+    );
     return true;
   });
 
   const todayNotifications = filteredNotifications.filter(n => n.time === 'Today');
   const yesterdayNotifications = filteredNotifications.filter(n => n.time === 'Yesterday');
+  const earlierNotifications = filteredNotifications.filter(n => n.time !== 'Today' && n.time !== 'Yesterday');
+
+  const NotifRow = ({ notif }: { notif: Notification }) => (
+    <div
+      className={`flex cursor-pointer items-center gap-4 px-4 py-3 min-h-[72px] justify-between ${
+        notif.isRead ? 'bg-card-light dark:bg-card-dark' : 'bg-primary/10 dark:bg-primary/20'
+      }`}
+    >
+      <div className="flex items-center gap-4">
+        <div className={`${notif.iconColor} flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+          notif.isRead ? 'bg-background-light dark:bg-background-dark' : 'bg-card-light dark:bg-card-dark'
+        }`}>
+          <span className="material-symbols-outlined">{notif.icon}</span>
+        </div>
+        <div className="flex flex-col justify-center">
+          <p className="text-text-primary-light dark:text-text-primary-dark text-base font-medium leading-normal line-clamp-1">
+            {notif.title}
+          </p>
+          <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-normal line-clamp-2">
+            {notif.description}
+          </p>
+          <p className="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-0.5">{notif.time}</p>
+        </div>
+      </div>
+      {!notif.isRead && (
+        <div className="shrink-0 flex h-7 w-7 items-center justify-center">
+          <div className="h-2.5 w-2.5 rounded-full bg-red-500"></div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="relative mx-auto flex h-screen max-w-md flex-col bg-background-light dark:bg-background-dark overflow-y-auto">
@@ -278,37 +326,7 @@ const NotificationsPage: React.FC = () => {
             </h3>
             <div className="flex flex-col gap-2">
               {todayNotifications.map((notif) => (
-                <div 
-                  key={notif.id}
-                  className={`flex cursor-pointer items-center gap-4 px-4 py-3 min-h-[72px] justify-between ${
-                    notif.isRead 
-                      ? 'bg-card-light dark:bg-card-dark' 
-                      : 'bg-primary/10 dark:bg-primary/20'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`${notif.iconColor} flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
-                      notif.isRead ? 'bg-background-light dark:bg-background-dark' : 'bg-card-light dark:bg-card-dark'
-                    }`}>
-                      <span className="material-symbols-outlined">{notif.icon}</span>
-                    </div>
-                    <div className="flex flex-col justify-center">
-                      <p className="text-text-primary-light dark:text-text-primary-dark text-base font-medium leading-normal line-clamp-1">
-                        {notif.title}
-                      </p>
-                      <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-normal line-clamp-2">
-                        {notif.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="shrink-0">
-                    {!notif.isRead && (
-                      <div className="flex h-7 w-7 items-center justify-center">
-                        <div className="h-2.5 w-2.5 rounded-full bg-red-500"></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <NotifRow key={notif.id} notif={notif} />
               ))}
             </div>
           </>
@@ -322,29 +340,21 @@ const NotificationsPage: React.FC = () => {
             </h3>
             <div className="flex flex-col gap-2">
               {yesterdayNotifications.map((notif) => (
-                <div 
-                  key={notif.id}
-                  className="flex cursor-pointer items-center gap-4 bg-card-light dark:bg-card-dark px-4 py-3 min-h-[72px] justify-between"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`${notif.iconColor} flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-background-light dark:bg-background-dark`}>
-                      <span className="material-symbols-outlined">{notif.icon}</span>
-                    </div>
-                    <div className="flex flex-col justify-center">
-                      <p className="text-text-primary-light dark:text-text-primary-dark text-base font-medium leading-normal line-clamp-1">
-                        {notif.title}
-                      </p>
-                      <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-normal line-clamp-2">
-                        {notif.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="shrink-0">
-                    <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-normal">
-                      {notif.time}
-                    </p>
-                  </div>
-                </div>
+                <NotifRow key={notif.id} notif={notif} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Earlier Section */}
+        {earlierNotifications.length > 0 && (
+          <>
+            <h3 className="text-text-primary-light dark:text-text-primary-dark px-4 pb-1 pt-2 text-base font-bold leading-tight tracking-[-0.015em]">
+              Earlier
+            </h3>
+            <div className="flex flex-col gap-2">
+              {earlierNotifications.map((notif) => (
+                <NotifRow key={notif.id} notif={notif} />
               ))}
             </div>
           </>

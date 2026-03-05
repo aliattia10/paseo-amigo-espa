@@ -59,11 +59,17 @@ const VerifyIdentityPage: React.FC = () => {
       await DiditSdk.shared.startVerification({ url });
     } catch (err: unknown) {
       setStarting(false);
-      const message = err instanceof Error ? err.message : 'Failed to start verification';
+      const raw = err instanceof Error ? err.message : String(err);
+      // Translate cryptic edge-function / Didit API errors into user-friendly messages
+      const isConfigError = /non-2xx|400|500|server configuration|workflow|api key/i.test(raw);
+      const displayMsg = isConfigError
+        ? t('verifyIdentity.configError', 'ID verification is temporarily unavailable. Please try again later or skip for now.')
+        : raw || t('verifyIdentity.failed', 'Failed to start verification');
       toast({
         title: t('common.error', 'Error'),
-        description: message,
+        description: displayMsg,
         variant: 'destructive',
+        duration: 8000,
       });
     }
   };

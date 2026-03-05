@@ -252,6 +252,7 @@ const resources = {
       'verifyIdentity.successDesc': "Your identity is being verified. You'll be updated when it's approved.",
       'verifyIdentity.cancelled': 'Verification cancelled',
       'verifyIdentity.failed': 'Verification failed',
+      'verifyIdentity.configError': 'ID verification is temporarily unavailable. Please try again later or skip for now.',
       'verifyIdentity.banner': 'Verify your identity to build trust',
       'verifyIdentity.verify': 'Verify',
       
@@ -791,6 +792,7 @@ const resources = {
       'verifyIdentity.successDesc': 'Votre identité est en cours de vérification. Vous serez notifié lorsqu\'elle sera approuvée.',
       'verifyIdentity.cancelled': 'Vérification annulée',
       'verifyIdentity.failed': 'Échec de la vérification',
+      'verifyIdentity.configError': 'La vérification d\'identité est temporairement indisponible. Réessayez plus tard ou ignorez pour l\'instant.',
       'verifyIdentity.banner': 'Vérifiez votre identité pour inspirer confiance',
       'verifyIdentity.verify': 'Vérifier',
 
@@ -1581,6 +1583,7 @@ const resources = {
       'verifyIdentity.successDesc': 'Tu identidad está siendo verificada. Te avisaremos cuando sea aprobada.',
       'verifyIdentity.cancelled': 'Verificación cancelada',
       'verifyIdentity.failed': 'Error en la verificación',
+      'verifyIdentity.configError': 'La verificación de identidad no está disponible temporalmente. Inténtalo más tarde o omítelo por ahora.',
       'verifyIdentity.banner': 'Verifica tu identidad para generar confianza',
       'verifyIdentity.verify': 'Verificar',
       
