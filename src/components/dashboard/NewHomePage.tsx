@@ -63,9 +63,9 @@ const NewHomePage: React.FC = () => {
   });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
-  // One-time safety: stop loading after 15s so UI never sticks on spinner
+  // One-time safety: stop loading after 8s so UI never sticks on spinner
   React.useEffect(() => {
-    const SAFETY_MS = 15000;
+    const SAFETY_MS = 8000;
     const id = setTimeout(() => {
       setLoadingProfiles((prev) => {
         if (prev) {
@@ -133,7 +133,8 @@ const NewHomePage: React.FC = () => {
 
   // Load real profiles from Supabase
   React.useEffect(() => {
-    const REQUEST_TIMEOUT_MS = 12000;
+    // Aggressive timeouts: fail fast when Supabase is offline/paused
+    const REQUEST_TIMEOUT_MS = 5000;
 
     const loadProfiles = async () => {
       if (!currentUser?.id) {
@@ -145,109 +146,31 @@ const NewHomePage: React.FC = () => {
       setProfileLoadError(null);
       loadingProfilesRef.current = true;
       try {
-        // Get current user's location for distance calculation (optional - don't block rest if this hangs)
+        // Fetch user location AND both profile sets in parallel so total wait = max(each)
         let userLat: number | null = null;
         let userLon: number | null = null;
-        try {
-          if (location && locationEnabled && !isGlobalMode) {
-            userLat = location.latitude;
-            userLon = location.longitude;
-          } else if (currentUser?.id) {
-            const USER_LOC_TIMEOUT_MS = 5000;
-            const userLocRes = await Promise.race([
+
+        const locPromise: Promise<{ data: any; error: any } | null> = (location && locationEnabled && !isGlobalMode)
+          ? Promise.resolve(null) // already have coords from browser
+          : Promise.race([
               supabase.from('users').select('latitude, longitude').eq('id', currentUser.id).single(),
               new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('User location timed out')), USER_LOC_TIMEOUT_MS)
+                setTimeout(() => reject(new Error('User location timed out')), 2000)
               ),
-            ]);
-            const userData = userLocRes?.data;
-            if (userData?.latitude != null && userData?.longitude != null) {
-              userLat = Number(userData.latitude);
-              userLon = Number(userData.longitude);
-            }
-          }
-        } catch (locErr) {
-          if (import.meta.env.DEV) {
-            console.warn('User location fetch failed or timed out, continuing without distance:', locErr);
-          }
-        }
+            ]).catch(() => null); // never throw — location is optional
 
-        // Load pet profiles (for sitters to browse) with timeout so one hanging request doesn't block the UI
-        const petsRes = await Promise.race([
+        const petsPromise = Promise.race([
           supabase
             .from('pets')
-            .select(`
-              id, 
-              name, 
-              age, 
-              image_url, 
-              owner_id, 
-              pet_type,
-              users!pets_owner_id_fkey (
-                latitude,
-                longitude
-              )
-            `)
+            .select(`id, name, age, image_url, owner_id, pet_type, users!pets_owner_id_fkey (latitude, longitude)`)
             .neq('owner_id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
           new Promise<{ data: null; error: { message: string } }>((resolve) =>
             setTimeout(() => resolve({ data: null, error: { message: 'Pets timed out' } }), REQUEST_TIMEOUT_MS)
           ),
         ]);
-        const pets = petsRes?.data ?? null;
-        const petsError = petsRes?.error ?? null;
 
-        const isBlockedOrNetwork = (err: { message?: string } | null) => {
-          const msg = err?.message ?? '';
-          return /failed to fetch|network|blocked|load failed|timed out|permission|policy|row-level security/i.test(msg);
-        };
-        if (petsError) {
-          if (import.meta.env.DEV) {
-            console.warn('[NewHomePage] Pets fetch failed:', petsError.message, petsError);
-          }
-          if (isBlockedOrNetwork(petsError)) setProfileLoadError('fetch');
-          else setProfileLoadError('fetch'); // show retry on any error (e.g. RLS)
-        }
-        if (!petsError && pets) {
-          const petProfiles: Profile[] = pets.map(pet => {
-            let imageUrls: string[] = [];
-            try {
-              imageUrls = JSON.parse(pet.image_url || '[]');
-              if (!Array.isArray(imageUrls)) imageUrls = [pet.image_url];
-            } catch {
-              imageUrls = pet.image_url ? [pet.image_url] : [];
-            }
-
-            // Calculate real distance if we have coordinates
-            let distance = Infinity;
-            if (userLat && userLon && pet.users) {
-              const owner = Array.isArray(pet.users) ? pet.users[0] : pet.users;
-              if (owner?.latitude && owner?.longitude) {
-                distance = calculateDistance(
-                  userLat,
-                  userLon,
-                  Number(owner.latitude),
-                  Number(owner.longitude)
-                );
-              }
-            }
-
-            return {
-              id: pet.id,
-              name: pet.name,
-              age: pet.age ? parseInt(pet.age) : undefined,
-              distance: distance,
-              rating: 5.0, // Default good rating for new profiles
-              imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
-              type: 'dog' as const,
-              petType: (pet.pet_type as 'dog' | 'cat') || 'dog', // Include pet type
-            };
-          });
-          setRealPetProfiles(petProfiles);
-        }
-
-        // Load sitter profiles (for pet owners to browse) with timeout
-        const sittersRes = await Promise.race([
+        const sittersPromise = Promise.race([
           supabase
             .from('users')
             .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude')
@@ -258,26 +181,74 @@ const NewHomePage: React.FC = () => {
             setTimeout(() => resolve({ data: null, error: { message: 'Sitters timed out' } }), REQUEST_TIMEOUT_MS)
           ),
         ]);
+
+        // All three run simultaneously — total wait = slowest single fetch, not sum of all
+        const [locRes, petsRes, sittersRes] = await Promise.all([locPromise, petsPromise, sittersPromise]);
+
+        // Resolve user location
+        if (location && locationEnabled && !isGlobalMode) {
+          userLat = location.latitude;
+          userLon = location.longitude;
+        } else if (locRes?.data?.latitude != null) {
+          userLat = Number(locRes.data.latitude);
+          userLon = Number(locRes.data.longitude);
+        }
+
+        const pets = petsRes?.data ?? null;
+        const petsError = petsRes?.error ?? null;
         const sitters = sittersRes?.data ?? null;
         const sittersError = sittersRes?.error ?? null;
 
+        const isOffline = (err: { message?: string } | null) => {
+          const msg = err?.message ?? '';
+          return /failed to fetch|network|blocked|load failed|timed out|service unavailable|503/i.test(msg);
+        };
+
+        if (petsError) {
+          if (import.meta.env.DEV) console.warn('[NewHomePage] Pets fetch failed:', petsError.message);
+          setProfileLoadError('fetch');
+        }
+        if (!petsError && pets) {
+          const petProfiles: Profile[] = pets.map((pet: any) => {
+            let imageUrls: string[] = [];
+            try {
+              imageUrls = JSON.parse(pet.image_url || '[]');
+              if (!Array.isArray(imageUrls)) imageUrls = [pet.image_url];
+            } catch {
+              imageUrls = pet.image_url ? [pet.image_url] : [];
+            }
+            let distance = Infinity;
+            if (userLat && userLon && pet.users) {
+              const owner = Array.isArray(pet.users) ? pet.users[0] : pet.users;
+              if (owner?.latitude && owner?.longitude) {
+                distance = calculateDistance(userLat, userLon, Number(owner.latitude), Number(owner.longitude));
+              }
+            }
+            return {
+              id: pet.id,
+              name: pet.name,
+              age: pet.age ? parseInt(pet.age) : undefined,
+              distance,
+              rating: 5.0,
+              imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
+              type: 'dog' as const,
+              petType: (pet.pet_type as 'dog' | 'cat') || 'dog',
+            };
+          });
+          setRealPetProfiles(petProfiles);
+        }
+
         if (sittersError) {
-          if (import.meta.env.DEV) {
-            console.warn('[NewHomePage] Sitters (users) fetch failed:', sittersError.message, sittersError);
-          }
-          if (isBlockedOrNetwork(sittersError)) setProfileLoadError('fetch');
-          else setProfileLoadError('fetch');
+          if (import.meta.env.DEV) console.warn('[NewHomePage] Sitters fetch failed:', sittersError.message);
+          setProfileLoadError('fetch');
         }
         if (!sittersError && sitters && sitters.length > 0) {
-          // Filter out test/bot profiles (those with @example.com emails or default names)
-          const realSitters = sitters.filter(sitter => {
+          const realSitters = sitters.filter((sitter: any) => {
             const isTestEmail = sitter.email?.includes('@example.com');
             const isDefaultName = ['María García', 'Carlos López', 'Ana Rodríguez', 'David Martín'].includes(sitter.name);
             return !isTestEmail && !isDefaultName;
           });
-          
-          const sitterProfiles: Profile[] = realSitters.map(sitter => {
-            // Parse profile_image - it might be a JSON array or a single URL
+          const sitterProfiles: Profile[] = realSitters.map((sitter: any) => {
             let imageUrls: string[] = [];
             try {
               if (sitter.profile_image) {
@@ -287,29 +258,17 @@ const NewHomePage: React.FC = () => {
             } catch {
               imageUrls = sitter.profile_image ? [sitter.profile_image] : [];
             }
-            
-            // If no images, use a default
-            if (imageUrls.length === 0) {
-              imageUrls = ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800'];
-            }
-
-            // Calculate real distance if we have coordinates
+            if (imageUrls.length === 0) imageUrls = ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800'];
             let distance = Infinity;
             if (userLat && userLon && sitter.latitude && sitter.longitude) {
-              distance = calculateDistance(
-                userLat,
-                userLon,
-                Number(sitter.latitude),
-                Number(sitter.longitude)
-              );
+              distance = calculateDistance(userLat, userLon, Number(sitter.latitude), Number(sitter.longitude));
             }
-
             return {
               id: sitter.id,
               name: sitter.name || 'Pet Sitter',
-              distance: distance,
-              rating: 5.0, // Default good rating for new profiles
-              imageUrls: imageUrls,
+              distance,
+              rating: 5.0,
+              imageUrls,
               bio: sitter.bio || undefined,
               hourlyRate: sitter.hourly_rate || 15,
               type: 'walker' as const,
@@ -317,16 +276,14 @@ const NewHomePage: React.FC = () => {
           });
           setRealSitterProfiles(sitterProfiles);
         }
+
+        // If BOTH failed with network/offline errors, mark isOffline for cleaner UI
+        if (petsError && sittersError && isOffline(petsError) && isOffline(sittersError)) {
+          setProfileLoadError('fetch');
+        }
       } catch (error) {
-        if (import.meta.env.DEV) {
-          console.error('[NewHomePage] Error loading profiles:', error);
-        }
-        const msg = error instanceof Error ? error.message : String(error);
-        if (/failed to fetch|network|blocked|load failed|timed out/i.test(msg)) {
-          setProfileLoadError('fetch');
-        } else {
-          setProfileLoadError('fetch');
-        }
+        if (import.meta.env.DEV) console.error('[NewHomePage] Error loading profiles:', error);
+        setProfileLoadError('fetch');
       } finally {
         loadingProfilesRef.current = false;
         setLoadingProfiles(false);

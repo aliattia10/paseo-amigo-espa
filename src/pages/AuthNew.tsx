@@ -225,11 +225,16 @@ const AuthNew = () => {
       }
     } catch (error: any) {
       const msg = error?.message || '';
-      const isConnection = /timed out|timeout|network|fetch|failed to fetch|connection/i.test(msg);
+      const isOffline = /failed to fetch|network error|load failed|503|service unavailable/i.test(msg);
+      const isTimeout = /timed out|timeout/i.test(msg) && !isOffline;
+      const isConnection = isOffline || isTimeout || /connection/i.test(msg);
       if (isConnection) setConnectionError(true);
+      const displayMsg = isOffline
+        ? (t('auth.serviceUnavailable') || 'Service temporarily unavailable. Please try again in a moment.')
+        : (msg || 'An error occurred');
       toast({
         title: "Error",
-        description: msg || 'An error occurred',
+        description: displayMsg,
         variant: "destructive",
       });
     } finally {
