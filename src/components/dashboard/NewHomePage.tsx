@@ -153,10 +153,11 @@ const NewHomePage: React.FC = () => {
             userLat = location.latitude;
             userLon = location.longitude;
           } else if (currentUser?.id) {
+            const USER_LOC_TIMEOUT_MS = 5000;
             const userLocRes = await Promise.race([
               supabase.from('users').select('latitude, longitude').eq('id', currentUser.id).single(),
               new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('User location timed out')), REQUEST_TIMEOUT_MS)
+                setTimeout(() => reject(new Error('User location timed out')), USER_LOC_TIMEOUT_MS)
               ),
             ]);
             const userData = userLocRes?.data;
@@ -166,7 +167,9 @@ const NewHomePage: React.FC = () => {
             }
           }
         } catch (locErr) {
-          console.warn('User location fetch failed or timed out, continuing without distance:', locErr);
+          if (import.meta.env.DEV) {
+            console.warn('User location fetch failed or timed out, continuing without distance:', locErr);
+          }
         }
 
         // Load pet profiles (for sitters to browse) with timeout so one hanging request doesn't block the UI
