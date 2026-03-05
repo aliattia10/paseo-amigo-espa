@@ -29,47 +29,24 @@ const BookingRequestPage: React.FC = () => {
 
   // Fetch user's dogs
   React.useEffect(() => {
+    if (!currentUser) return;
+    const controller = new AbortController();
     const fetchDogs = async () => {
-      if (!currentUser) return;
-      
       try {
         const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await supabase
-          .from('pets')
-          .select('id, name, image_url, pet_type')
-          .eq('owner_id', currentUser?.id);
-        
-        if (error) {
-          // If table doesn't exist, show empty state
-          if (error.message.includes('does not exist') || error.message.includes('not find')) {
-            console.warn('Pets table not found. Please run database migrations.');
-            setDogs([]);
-            return;
-          }
-          throw error;
-        }
-        setDogs((data || []).map(dog => ({
-          ...dog,
-          pet_type: (dog.pet_type as 'cat' | 'dog') || 'dog'
-        })));
-        
-        // Auto-select first dog if only one
-        if (data && data.length === 1) {
-          setFormData(prev => ({ ...prev, dogId: data[0].id }));
-        }
-      } catch (error: any) {
-        console.error('Error fetching dogs:', error);
-        toast({
-          title: t('common.error'),
-          description: 'Failed to load your pets',
-          variant: 'destructive',
-        });
-      }
+        const res = await Promise.race([
+          supabase.from('pets').select('id, name, image_url, pet_type').eq('owner_id', currentUser.id),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+        ]);
+        if (!res || !res.data) return;
+        const { data, error } = res as any;
+        if (error) return; // silent empty state on any error
+        setDogs((data || []).map((dog: any) => ({ ...dog, pet_type: (dog.pet_type as 'cat' | 'dog') || 'dog' })));
+        if (data && data.length === 1) setFormData(prev => ({ ...prev, dogId: data[0].id }));
+      } catch { /* silent */ }
     };
-    
-    if (currentUser) {
-      fetchDogs();
-    }
+    fetchDogs();
+    return () => controller.abort();
   }, [currentUser]);
 
   // Calculate pricing

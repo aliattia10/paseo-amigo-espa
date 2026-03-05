@@ -157,154 +157,89 @@ const NewProfilePage: React.FC = () => {
     }
   };
 
-  // Load user's pets
-  React.useEffect(() => {
+  // Load pets, bookings, reviews all in parallel with 5s timeouts each
+  useEffect(() => {
+    if (!currentUser) {
+      setLoadingPets(false);
+      setLoadingBookings(false);
+      setLoadingReviews(false);
+      return;
+    }
+
+    const TIMEOUT_MS = 5000;
+    // Cast to Promise<any> because PostgrestFilterBuilder isn't a plain Promise but is awaitable
+    const withTimeout = (query: any): Promise<any> =>
+      Promise.race([
+        Promise.resolve(query),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), TIMEOUT_MS)),
+      ]).catch(() => null);
+
     const fetchPets = async () => {
-      if (!currentUser || activeRole !== 'owner') {
-        setLoadingPets(false);
-        return;
-      }
-      
       try {
         const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await supabase
-          .from('pets')
-          .select('id, name, breed, age, image_url, pet_type')
-          .eq('owner_id', currentUser.id);
+        if (activeRole !== 'owner') { setLoadingPets(false); return; }
+        const res = await withTimeout(
+          supabase.from('pets').select('id, name, breed, age, image_url, pet_type').eq('owner_id', currentUser.id)
+        );
+        if (res?.data) {
+          setPets(res.data.map((pet: any) => ({ ...pet, pet_type: (pet.pet_type as 'cat' | 'dog') || 'dog' })));
+        }
+      } catch { /* silent */ } finally { setLoadingPets(false); }
+    };
 
-        if (error) {
-          // If table doesn't exist, try dogs table
-          if (error.message.includes('does not exist')) {
-            const { data: dogsData, error: dogsError } = await supabase
-              .from('dogs')
-              .select('id, name, breed, age, image_url')
-              .eq('owner_id', currentUser.id);
-            
-            if (!dogsError && dogsData) {
-              setPets(dogsData.map(dog => ({ ...dog, pet_type: 'dog' as const })));
-            }
-          }
-        } else {
-          setPets((data || []).map(pet => ({
-            ...pet,
-            pet_type: (pet.pet_type as 'cat' | 'dog') || 'dog'
+    const fetchBookings = async () => {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const res = await withTimeout(
+          supabase
+            .from('bookings')
+            .select('*, sitter:users!bookings_sitter_id_fkey(name), owner:users!bookings_owner_id_fkey(name), pet:pets(name)')
+            .or(`owner_id.eq.${currentUser.id},sitter_id.eq.${currentUser.id}`)
+            .order('created_at', { ascending: false })
+            .limit(5)
+        );
+        if (res?.data) {
+          setBookings(res.data.map((b: any) => ({
+            id: b.id,
+            sitter_name: b.sitter?.name,
+            owner_name: b.owner?.name,
+            pet_name: b.pet?.name,
+            start_time: b.start_time,
+            end_time: b.end_time,
+            status: b.status,
+            service_type: b.service_type,
           })));
         }
-      } catch (error) {
-        console.error('Error fetching pets:', error);
-      } finally {
-        setLoadingPets(false);
-      }
+      } catch { /* silent */ } finally { setLoadingBookings(false); }
     };
 
-    fetchPets();
-  }, [currentUser, activeRole]);
-
-  // Load booking history
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!currentUser) {
-        setLoadingBookings(false);
-        return;
-      }
-      
-      try {
-        const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await supabase
-          .from('bookings')
-          .select(`
-            *,
-            sitter:users!bookings_sitter_id_fkey(name),
-            owner:users!bookings_owner_id_fkey(name),
-            pet:pets(name)
-          `)
-          .or(`owner_id.eq.${currentUser.id},sitter_id.eq.${currentUser.id}`)
-          .order('created_at', { ascending: false })
-          .limit(5);
-        
-        if (error) {
-          // Table doesn't exist or other error - show empty state
-          if (error.message.includes('does not exist') || error.message.includes('not find')) {
-            setBookings([]);
-            setLoadingBookings(false);
-            return;
-          }
-          throw error;
-        }
-        
-        const formattedBookings = data?.map((booking: any) => ({
-          id: booking.id,
-          sitter_name: booking.sitter?.name,
-          owner_name: booking.owner?.name,
-          pet_name: booking.pet?.name,
-          start_time: booking.start_time,
-          end_time: booking.end_time,
-          status: booking.status,
-          service_type: booking.service_type
-        })) || [];
-
-        setBookings(formattedBookings);
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
-        setBookings([]);
-      } finally {
-        setLoadingBookings(false);
-      }
-    };
-
-    fetchBookings();
-  }, [currentUser]);
-
-  // Load reviews
-  useEffect(() => {
     const fetchReviews = async () => {
-      if (!currentUser) {
-        setLoadingReviews(false);
-        return;
-      }
-      
       try {
         const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await supabase
-          .from('reviews')
-          .select(`
-            *,
-            reviewer:users!reviews_reviewer_id_fkey(name, profile_image)
-          `)
-          .eq('reviewed_id', currentUser.id)
-          .order('created_at', { ascending: false })
-          .limit(5);
-        
-        if (error) {
-          // Table doesn't exist or other error - show empty state
-          if (error.message.includes('does not exist') || error.message.includes('not find')) {
-            setReviews([]);
-            setLoadingReviews(false);
-            return;
-          }
-          throw error;
+        const res = await withTimeout(
+          supabase
+            .from('reviews')
+            .select('*, reviewer:users!reviews_reviewer_id_fkey(name, profile_image)')
+            .eq('reviewed_id', currentUser.id)
+            .order('created_at', { ascending: false })
+            .limit(5)
+        );
+        if (res?.data) {
+          setReviews(res.data.map((r: any) => ({
+            id: r.id,
+            reviewer_name: r.reviewer?.name,
+            reviewer_image: r.reviewer?.profile_image,
+            rating: r.rating,
+            comment: r.comment,
+            created_at: r.created_at,
+          })));
         }
-        
-        const formattedReviews = data?.map((review: any) => ({
-          id: review.id,
-          reviewer_name: review.reviewer?.name,
-          reviewer_image: review.reviewer?.profile_image,
-          rating: review.rating,
-          comment: review.comment,
-          created_at: review.created_at
-        })) || [];
-
-        setReviews(formattedReviews);
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-        setReviews([]);
-      } finally {
-        setLoadingReviews(false);
-      }
+      } catch { /* silent */ } finally { setLoadingReviews(false); }
     };
 
-    fetchReviews();
-  }, [currentUser]);
+    // Run all three in parallel — total wait = slowest single fetch (max 5s)
+    Promise.all([fetchPets(), fetchBookings(), fetchReviews()]);
+  }, [currentUser, activeRole]);
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-background-light dark:bg-background-dark max-w-md mx-auto">

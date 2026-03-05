@@ -42,6 +42,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const TIMEOUT_MS = 5000;
+    const withTimeout = <T,>(p: Promise<T>): Promise<T | null> =>
+      Promise.race([p, new Promise<null>((res) => setTimeout(() => res(null), TIMEOUT_MS))]).catch(() => null);
+
     const loadChats = async (showLoading = true) => {
       if (!userProfile || !currentUser) {
         setLoading(false);
@@ -51,21 +55,25 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       try {
         if (showLoading) setLoading(true);
         // Load matches from both possible column structures
-        const { data: matchesData, error: matchesError } = await supabase
-          .from('matches')
-          .select('*')
-          .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id},user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`);
+        const matchesRes = await withTimeout(
+          supabase
+            .from('matches')
+            .select('*')
+            .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id},user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`)
+        );
+        const matchesData = matchesRes?.data ?? null;
+        const matchesError = matchesRes?.error ?? null;
 
         if (matchesError) {
-          console.error('Error loading matches:', matchesError);
+          if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
         } else if (matchesData) {
-          const mutualMatches = matchesData.filter(m => {
+          const mutualMatches = matchesData.filter((m: any) => {
             if (m.is_mutual !== undefined) return m.is_mutual === true;
             return true;
           });
 
           const matchesWithUsers = await Promise.all(
-            mutualMatches.map(async (match) => {
+            mutualMatches.map(async (match: any) => {
               let otherUserId = '';
               if (match.user1_id) {
                 otherUserId = match.user1_id === currentUser.id ? match.user2_id : match.user1_id;
@@ -74,13 +82,11 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               }
               if (!otherUserId) return match;
 
-              const { data: userData, error: userError } = await supabase
-                .from('users')
-                .select('id, name, profile_image, user_type')
-                .eq('id', otherUserId)
-                .single();
-
-              if (!userError && userData) {
+              const userRes = await withTimeout(
+                supabase.from('users').select('id, name, profile_image, user_type').eq('id', otherUserId).single()
+              );
+              const userData = userRes?.data;
+              if (userData) {
                 return {
                   ...match,
                   otherUser: {
@@ -94,7 +100,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               return match;
             })
           );
-          setMatches(matchesWithUsers.filter(m => m.otherUser));
+          setMatches(matchesWithUsers.filter((m: any) => m.otherUser));
         }
 
         const requests = userProfile.userType === 'owner'
@@ -105,12 +111,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         );
         setWalkRequests(activeRequests);
       } catch (error: any) {
-        const msg = error?.message ?? '';
-        const isOffline = /timed out|failed to fetch|network|blocked|load failed|service|unavailable/i.test(msg);
-        if (!isOffline) {
-          console.error('Error loading chats:', error);
-        }
         // Network/offline errors → silent empty state, no toast
+        if (import.meta.env.DEV) console.error('Error loading chats:', error);
       } finally {
         setLoading(false);
       }

@@ -24,11 +24,12 @@ export const createUser = async (userId: string, userData: Omit<User, 'id' | 'cr
 
 export const getUser = async (userId: string): Promise<User | null> => {
   try {
-    const { data, error} = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    const res = await Promise.race([
+      supabase.from('users').select('*').eq('id', userId).single(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+    ]);
+    if (!res) return null; // timed out
+    const { data, error } = res as any;
 
     if (error) {
       if (error.code === 'PGRST116') return null;
