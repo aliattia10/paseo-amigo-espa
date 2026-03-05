@@ -46,7 +46,13 @@ const NotificationsPage: React.FC = () => {
   }, [notifications]);
 
   const fetchNotifications = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+
+    // Safety: never stay in loading longer than 8s
+    const safetyId = setTimeout(() => setLoading(false), 8000);
     
     try {
       const { supabase } = await import('@/integrations/supabase/client');
@@ -83,6 +89,7 @@ const NotificationsPage: React.FC = () => {
       // Don't show sample notifications for new users, show empty state instead
       setNotifications([]);
     } finally {
+      clearTimeout(safetyId);
       setLoading(false);
     }
   };

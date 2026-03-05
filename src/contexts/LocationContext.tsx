@@ -59,15 +59,12 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const setupListener = async () => {
       try {
         permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-        console.log('Initial permission state:', permissionStatus.state);
         
         const handleChange = () => {
           if (!permissionStatus) return;
-          console.log('Permission changed to:', permissionStatus.state);
           
           // If permission was granted, automatically get location
           if (permissionStatus.state === 'granted' && !locationEnabled) {
-            console.log('Permission granted, requesting location...');
             // Use a small delay to ensure the permission is fully granted
             setTimeout(() => {
               requestLocation();
@@ -76,7 +73,6 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           
           // If permission was denied, clear saved state
           if (permissionStatus.state === 'denied') {
-            console.log('Permission denied, clearing saved state');
             localStorage.removeItem('locationEnabled');
             setLocationEnabled(false);
             setLocation(null);
@@ -114,12 +110,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (navigator.permissions) {
       try {
         const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-        console.log('Location permission status:', permissionStatus.state);
-        
-        // If permission is in prompt state, the browser will show native popup
-        if (permissionStatus.state === 'prompt') {
-          console.log('Permission is in prompt state - browser will show native popup');
-        }
+          // Nothing to do here; let the geolocation API handle the request
         
         // Note: We don't return early on 'denied' state because sometimes
         // the Permissions API is out of sync with actual browser settings
@@ -130,8 +121,6 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
-      console.log('Requesting location...');
-      console.log('Browser should show native permission popup now');
       
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -141,7 +130,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
       });
 
-      console.log('Location received:', position.coords);
+      
       const { latitude, longitude } = position.coords;
       setLocation({ latitude, longitude });
       setLocationEnabled(true);

@@ -43,7 +43,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
   useEffect(() => {
     const loadChats = async (showLoading = true) => {
-      if (!userProfile || !currentUser) return;
+      if (!userProfile || !currentUser) {
+        setLoading(false);
+        return;
+      }
 
       try {
         if (showLoading) setLoading(true);

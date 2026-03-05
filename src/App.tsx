@@ -672,19 +672,15 @@ const AuthComponent = () => {
   const [isLogin, setIsLogin] = useState(true);
   const location = useLocation();
 
-  // Use react-router location so query params are reliable in SPA
   React.useEffect(() => {
     try {
       const params = new URLSearchParams(location.search);
       const mode = params.get('mode');
-      console.log('AuthComponent: location.search=', location.search, 'mode=', mode);
       setIsLogin(mode !== 'signup');
     } catch (e) {
       // ignore
     }
   }, [location.search]);
-
-  console.log('AuthComponent render: isLogin=', isLogin, 'location.search=', location.search);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center p-4">
