@@ -371,6 +371,10 @@ const NewHomePage: React.FC = () => {
 
   const handleRetryProfiles = () => {
     setProfileLoadError(null);
+    setLoadingProfiles(true);
+    setRealPetProfiles([]);
+    setRealSitterProfiles([]);
+    setCurrentIndex(0);
     setProfileRetryKey((k) => k + 1);
   };
   
@@ -917,44 +921,31 @@ const NewHomePage: React.FC = () => {
                 {t('home.seenAllProfiles', { type: userRole === 'owner' ? t('home.sitters') : t('home.pets') })}
               </p>
               <button
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  
-                  if (!currentUser?.id) return;
-                  
-                  try {
+
+                  // Reset local UI state immediately — never block on DB
+                  setPassedProfileIds(new Set());
+                  setLikedProfileIds(new Set());
+                  setPassedProfiles(new Set());
+                  setLikedProfiles(new Set());
+                  setCurrentIndex(0);
+                  setCurrentImageIndex(0);
+
+                  toast({
+                    title: t('home.resetComplete') || 'Reset!',
+                    description: t('home.allProfilesAvailable') || 'All profiles are available again.',
+                  });
+
+                  // Best-effort sync to DB (fire-and-forget; ignore errors when offline)
+                  if (currentUser?.id) {
+                    const uid = currentUser.id;
                     if (userRole === 'owner') {
-                      // Delete owner's passes for sitters
-                      await (supabase as any)
-                        .from('passes')
-                        .delete()
-                        .eq('passer_id', currentUser.id);
+                      (supabase as any).from('passes').delete().eq('passer_id', uid).then(() => {});
                     } else {
-                      // Delete sitter's passes for pets
-                      await (supabase as any)
-                        .from('pet_passes')
-                        .delete()
-                        .eq('sitter_id', currentUser.id);
+                      (supabase as any).from('pet_passes').delete().eq('sitter_id', uid).then(() => {});
                     }
-                    
-                    // Clear local state
-                    setPassedProfileIds(new Set());
-                    setLikedProfileIds(new Set());
-                    setCurrentIndex(0);
-                    setCurrentImageIndex(0);
-                    
-                    toast({
-                      title: t('home.resetComplete'),
-                      description: t('home.allProfilesAvailable'),
-                    });
-                  } catch (error) {
-                    console.error('Error resetting profiles:', error);
-                    toast({
-                      title: t('common.error'),
-                      description: t('home.failedToReset'),
-                      variant: 'destructive',
-                    });
                   }
                 }}
                 className="px-6 py-3 bg-home-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity"

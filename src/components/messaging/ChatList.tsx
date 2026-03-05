@@ -104,13 +104,13 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
           request => ['pending', 'accepted', 'in-progress'].includes(request.status)
         );
         setWalkRequests(activeRequests);
-      } catch (error) {
-        console.error('Error loading chats:', error);
-        toast({
-          title: t('common.error'),
-          description: t('messages.loadError') || 'Could not load conversations.',
-          variant: "destructive",
-        });
+      } catch (error: any) {
+        const msg = error?.message ?? '';
+        const isOffline = /timed out|failed to fetch|network|blocked|load failed|service|unavailable/i.test(msg);
+        if (!isOffline) {
+          console.error('Error loading chats:', error);
+        }
+        // Network/offline errors → silent empty state, no toast
       } finally {
         setLoading(false);
       }

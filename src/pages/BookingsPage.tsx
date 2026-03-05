@@ -110,25 +110,10 @@ const BookingsPage: React.FC = () => {
       const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
       if (error) {
-        if (error.message === 'Request timed out') {
+        const isOffline = /timed out|failed to fetch|network|blocked|load failed|service|unavailable/i.test(error.message ?? '');
+        if (isOffline || error.message === 'Request timed out') {
           setBookings([]);
-          const hint = t('common.networkBlockedHint');
-          toast({
-            title: t('common.error'),
-            description: hint ? `Could not load bookings. ${hint}` : 'Could not load bookings. Please try again.',
-            variant: 'destructive',
-            duration: 10000,
-          });
-          return;
-        }
-        if (error.message && /failed to fetch|network|blocked|load failed/i.test(error.message)) {
-          setBookings([]);
-          toast({
-            title: t('common.error'),
-            description: `${t('common.networkBlockedHint')}`,
-            variant: 'destructive',
-            duration: 10000,
-          });
+          // Show silent empty state — no toast. The user can refresh manually.
           return;
         }
         if (error.message.includes('does not exist') || error.message.includes('not find') || error.message.includes('foreign key') || error.message.includes('relation')) {
@@ -154,13 +139,16 @@ const BookingsPage: React.FC = () => {
     } catch (error: any) {
       setBookings([]);
       const msg = error?.message ?? '';
-      const isBlocked = /failed to fetch|network|blocked|load failed/i.test(msg);
-      toast({
-        title: t('common.error'),
-        description: isBlocked ? t('common.networkBlockedHint') : (msg || 'Failed to load bookings'),
-        variant: 'destructive',
-        duration: isBlocked ? 10000 : 5000,
-      });
+      const isOffline = /timed out|failed to fetch|network|blocked|load failed|service|unavailable/i.test(msg);
+      if (!isOffline && msg) {
+        toast({
+          title: t('common.error'),
+          description: msg,
+          variant: 'destructive',
+          duration: 5000,
+        });
+      }
+      // Network / offline errors → silent empty state, no toast
     } finally {
       setLoading(false);
     }

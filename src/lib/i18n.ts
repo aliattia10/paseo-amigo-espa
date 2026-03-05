@@ -222,7 +222,7 @@ const resources = {
       // Common
       'common.loading': 'Loading...',
       'common.error': 'Error',
-      'common.networkBlockedHint': 'If you use an ad blocker or privacy extension, try disabling it for this site or open the page in a private window.',
+      'common.networkBlockedHint': 'Could not reach the server. Check your connection or try again in a moment.',
       'common.retry': 'Retry',
       'common.success': 'Success',
       'common.cancel': 'Cancel',
@@ -760,7 +760,7 @@ const resources = {
       // Common
       'common.loading': 'Chargement...',
       'common.error': 'Erreur',
-      'common.networkBlockedHint': 'Si vous utilisez un bloqueur de pub ou une extension de confidentialité, désactivez-les pour ce site ou ouvrez la page en navigation privée.',
+      'common.networkBlockedHint': 'Impossible de joindre le serveur. Vérifiez votre connexion ou réessayez dans un instant.',
       'common.retry': 'Réessayer',
       'common.success': 'Succès',
       'common.cancel': 'Annuler',
@@ -1549,7 +1549,7 @@ const resources = {
       // Common
       'common.loading': 'Cargando...',
       'common.error': 'Error',
-      'common.networkBlockedHint': 'Si usas un bloqueador de anuncios o una extensión de privacidad, desactívala para este sitio o abre la página en una ventana privada.',
+      'common.networkBlockedHint': 'No se puede contactar el servidor. Comprueba tu conexión o inténtalo de nuevo en un momento.',
       'common.retry': 'Reintentar',
       'common.success': 'Éxito',
       'common.cancel': 'Cancelar',
