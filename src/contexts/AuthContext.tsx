@@ -68,11 +68,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         );
         const { data } = await Promise.race([sessionPromise, timeoutPromise]);
         const session = data?.session;
+
         if (session?.user) {
-          setCurrentUser(session.user);
-          checkAdminStatus(session.user);
-          setLoading(false);
-          fetchUserProfile(session.user.id);
+          // Check if the access token is already expired.
+          // If it is, don't trust the stored session yet — let Supabase's internal
+          // _recoverAndRefresh handle the refresh. onAuthStateChange will fire
+          // with the valid session (or SIGNED_OUT if the refresh token is also invalid).
+          // This prevents a flood of 401 API calls when the project was paused/restored.
+          const expiresAt = (session as any).expires_at ?? 0;
+          const tokenExpired = expiresAt > 0 && expiresAt * 1000 < Date.now() + 5000;
+
+          if (tokenExpired) {
+            // Token is expired — try a silent refresh first
+            const { data: refreshed, error: refreshErr } = await supabase.auth.refreshSession();
+            if (refreshErr || !refreshed?.session) {
+              // Refresh token is invalid (project was paused/restored) → clear it
+              await supabase.auth.signOut({ scope: 'local' });
+              setLoading(false);
+              return;
+            }
+            // Refresh succeeded
+            setCurrentUser(refreshed.session.user);
+            checkAdminStatus(refreshed.session.user);
+            setLoading(false);
+            fetchUserProfile(refreshed.session.user.id);
+          } else {
+            // Token is still valid — set the user immediately
+            setCurrentUser(session.user);
+            checkAdminStatus(session.user);
+            setLoading(false);
+            fetchUserProfile(session.user.id);
+          }
         } else {
           setLoading(false);
         }
@@ -89,6 +115,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }, 6000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' as any) {
+        if (!session) {
+          // Session was cleared (expired, project restored, or explicit sign-out)
+          // Remove any stale local storage entries so re-login is clean
+          try {
+            Object.keys(localStorage)
+              .filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+              .forEach(k => localStorage.removeItem(k));
+          } catch { /* ignore */ }
+          setCurrentUser(null);
+          setUserProfile(null);
+          setLoading(false);
+          return;
+        }
+      }
+
       setCurrentUser(session?.user ?? null);
       checkAdminStatus(session?.user ?? null);
       
