@@ -29,17 +29,19 @@ export async function checkSupabaseConnectivity(): Promise<ConnectivityResult> {
     await Promise.race([authPromise, timeoutPromise]);
     result.auth = true;
 
-    // 2. REST reachability (single row select; table must exist)
-    const restPromise = supabase.from('users').select('id').limit(1).maybeSingle();
+    // 2. REST reachability: use a table that allows public/anonymous read so local dev without login still passes
+    const restPromise = supabase.from('subscription_plans').select('id').limit(1).maybeSingle();
     const restTimeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('REST check timed out')), CHECK_TIMEOUT_MS)
     );
     const restResult = await Promise.race([restPromise, restTimeout]) as Awaited<typeof restPromise>;
-    // REST ok if we got a response from Supabase (data or error both mean we connected)
     result.rest = true;
-    if (restResult?.error && restResult.error.message?.includes('Failed to fetch')) {
-      result.rest = false;
-      result.error = result.error || restResult.error.message;
+    if (restResult?.error) {
+      if (restResult.error.message?.includes('Failed to fetch') || restResult.error.message?.includes('fetch')) {
+        result.rest = false;
+        result.error = result.error || restResult.error.message;
+      }
+      // RLS/permission errors still mean we reached Supabase (REST ok)
     }
     result.ok = result.auth && result.rest;
   } catch (e: any) {

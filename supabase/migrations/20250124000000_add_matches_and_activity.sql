@@ -7,7 +7,7 @@
 
 -- Table for tracking user matches (likes, passes, mutual matches)
 CREATE TABLE IF NOT EXISTS matches (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     matched_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     match_type TEXT NOT NULL CHECK (match_type IN ('like', 'superlike', 'pass')),
@@ -18,42 +18,39 @@ CREATE TABLE IF NOT EXISTS matches (
     UNIQUE(user_id, matched_user_id)
 );
 
--- Create index for faster queries
-CREATE INDEX IF NOT EXISTS idx_matches_user_id ON matches(user_id);
-CREATE INDEX IF NOT EXISTS idx_matches_matched_user_id ON matches(matched_user_id);
-CREATE INDEX IF NOT EXISTS idx_matches_mutual ON matches(is_mutual) WHERE is_mutual = true;
-
--- Trigger to check for mutual matches
-CREATE OR REPLACE FUNCTION check_mutual_match()
-RETURNS TRIGGER AS $$
+-- Create index for faster queries (only if columns exist - table may already exist with same name from another migration)
+DO $$
 BEGIN
-    -- Only process likes, not passes
-    IF NEW.match_type IN ('like', 'superlike') THEN
-        -- Check if the other user has also liked this user
-        UPDATE matches
-        SET is_mutual = TRUE, matched_at = NOW()
-        WHERE user_id = NEW.matched_user_id 
-        AND matched_user_id = NEW.user_id 
-        AND match_type IN ('like', 'superlike')
-        AND is_mutual = FALSE;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    CREATE INDEX IF NOT EXISTS idx_matches_user_id ON matches(user_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'matched_user_id') THEN
+    CREATE INDEX IF NOT EXISTS idx_matches_matched_user_id ON matches(matched_user_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'is_mutual') THEN
+    CREATE INDEX IF NOT EXISTS idx_matches_mutual ON matches(is_mutual) WHERE is_mutual = true;
+  END IF;
+END $$;
 
-        -- Check if this creates a mutual match
-        IF FOUND THEN
-            NEW.is_mutual := TRUE;
-            NEW.matched_at := NOW();
+-- Trigger to check for mutual matches (only if matches has user_id)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    CREATE OR REPLACE FUNCTION check_mutual_match()
+    RETURNS TRIGGER AS $fn$
+    BEGIN
+        IF NEW.match_type IN ('like', 'superlike') THEN
+            UPDATE matches SET is_mutual = TRUE, matched_at = NOW()
+            WHERE user_id = NEW.matched_user_id AND matched_user_id = NEW.user_id AND match_type IN ('like', 'superlike') AND is_mutual = FALSE;
+            IF FOUND THEN NEW.is_mutual := TRUE; NEW.matched_at := NOW(); END IF;
         END IF;
-    END IF;
-    
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Drop trigger if exists and create new one
-DROP TRIGGER IF EXISTS check_mutual_match_trigger ON matches;
-CREATE TRIGGER check_mutual_match_trigger
-    BEFORE INSERT ON matches
-    FOR EACH ROW
-    EXECUTE FUNCTION check_mutual_match();
+        RETURN NEW;
+    END;
+    $fn$ LANGUAGE plpgsql;
+    DROP TRIGGER IF EXISTS check_mutual_match_trigger ON matches;
+    CREATE TRIGGER check_mutual_match_trigger BEFORE INSERT ON matches FOR EACH ROW EXECUTE FUNCTION check_mutual_match();
+  END IF;
+END $$;
 
 -- =====================================================
 -- 2. CREATE ACTIVITY FEED TABLE
@@ -61,7 +58,7 @@ CREATE TRIGGER check_mutual_match_trigger
 
 -- Table for storing user activities for the activity feed
 CREATE TABLE IF NOT EXISTS activity_feed (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     activity_type TEXT NOT NULL CHECK (activity_type IN ('walk_completed', 'new_match', 'review_received', 'profile_updated', 'new_dog')),
     activity_data JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -88,24 +85,19 @@ ON CONFLICT (id) DO NOTHING;
 -- 4. RLS POLICIES FOR MATCHES
 -- =====================================================
 
--- Enable RLS on matches table
 ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 
--- Users can view matches where they are involved
-CREATE POLICY "Users can view their matches" ON matches
-FOR SELECT
-USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
-
--- Users can create matches
-CREATE POLICY "Users can create matches" ON matches
-FOR INSERT
-WITH CHECK (auth.uid() = user_id);
-
--- Users can update their own matches
-CREATE POLICY "Users can update their matches" ON matches
-FOR UPDATE
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    DROP POLICY IF EXISTS "Users can view their matches" ON matches;
+    CREATE POLICY "Users can view their matches" ON matches FOR SELECT USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
+    DROP POLICY IF EXISTS "Users can create matches" ON matches;
+    CREATE POLICY "Users can create matches" ON matches FOR INSERT WITH CHECK (auth.uid() = user_id);
+    DROP POLICY IF EXISTS "Users can update their matches" ON matches;
+    CREATE POLICY "Users can update their matches" ON matches FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  END IF;
+END $$;
 
 -- =====================================================
 -- 5. RLS POLICIES FOR ACTIVITY FEED

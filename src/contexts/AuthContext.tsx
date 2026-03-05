@@ -58,40 +58,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Get initial session – stop loading as soon as we have session; fetch profile in background
+    // Get initial session – race with short timeout so we never block the UI
     const getInitialSession = async () => {
+      const SESSION_WAIT_MS = 4000;
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+          setTimeout(() => resolve({ data: { session: null } }), SESSION_WAIT_MS)
+        );
+        const { data } = await Promise.race([sessionPromise, timeoutPromise]);
+        const session = data?.session;
         if (session?.user) {
-          console.log('AuthContext: User found:', session.user.id);
           setCurrentUser(session.user);
           checkAdminStatus(session.user);
           setLoading(false);
-          fetchUserProfile(session.user.id); // don't await – profile loads in background
+          fetchUserProfile(session.user.id);
         } else {
           setLoading(false);
         }
       } catch (error) {
-        console.error('AuthContext: Error getting initial session:', error);
         setLoading(false);
       }
     };
 
     getInitialSession();
 
-    // Safety timeout: if getSession() hangs (e.g. network), force loading off after 12s
+    // Hard cap: force loading off after 6s no matter what
     const timeoutId = setTimeout(() => {
-      setLoading((prev) => {
-        if (prev) {
-          console.warn('AuthContext: Loading timeout - forcing loading to false');
-          return false;
-        }
-        return prev;
-      });
-    }, 12000);
+      setLoading((prev) => (prev ? false : prev));
+    }, 6000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('AuthContext: Auth state change:', event, session?.user?.id);
       setCurrentUser(session?.user ?? null);
       checkAdminStatus(session?.user ?? null);
       

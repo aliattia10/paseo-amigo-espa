@@ -63,6 +63,21 @@ const NewHomePage: React.FC = () => {
   });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
+  // One-time safety: stop loading after 15s so UI never sticks on spinner
+  React.useEffect(() => {
+    const SAFETY_MS = 15000;
+    const id = setTimeout(() => {
+      setLoadingProfiles((prev) => {
+        if (prev) {
+          setProfileLoadError((e) => (e ? e : 'fetch'));
+          return false;
+        }
+        return prev;
+      });
+    }, SAFETY_MS);
+    return () => clearTimeout(id);
+  }, []);
+
   // Load user's likes and passes from Supabase
   React.useEffect(() => {
     const loadUserInteractions = async () => {
@@ -181,10 +196,14 @@ const NewHomePage: React.FC = () => {
 
         const isBlockedOrNetwork = (err: { message?: string } | null) => {
           const msg = err?.message ?? '';
-          return /failed to fetch|network|blocked|load failed|timed out/i.test(msg);
+          return /failed to fetch|network|blocked|load failed|timed out|permission|policy|row-level security/i.test(msg);
         };
-        if (petsError && isBlockedOrNetwork(petsError)) {
-          setProfileLoadError('fetch');
+        if (petsError) {
+          if (import.meta.env.DEV) {
+            console.warn('[NewHomePage] Pets fetch failed:', petsError.message, petsError);
+          }
+          if (isBlockedOrNetwork(petsError)) setProfileLoadError('fetch');
+          else setProfileLoadError('fetch'); // show retry on any error (e.g. RLS)
         }
         if (!petsError && pets) {
           const petProfiles: Profile[] = pets.map(pet => {
@@ -239,8 +258,12 @@ const NewHomePage: React.FC = () => {
         const sitters = sittersRes?.data ?? null;
         const sittersError = sittersRes?.error ?? null;
 
-        if (sittersError && isBlockedOrNetwork(sittersError)) {
-          setProfileLoadError('fetch');
+        if (sittersError) {
+          if (import.meta.env.DEV) {
+            console.warn('[NewHomePage] Sitters (users) fetch failed:', sittersError.message, sittersError);
+          }
+          if (isBlockedOrNetwork(sittersError)) setProfileLoadError('fetch');
+          else setProfileLoadError('fetch');
         }
         if (!sittersError && sitters && sitters.length > 0) {
           // Filter out test/bot profiles (those with @example.com emails or default names)
@@ -292,9 +315,13 @@ const NewHomePage: React.FC = () => {
           setRealSitterProfiles(sitterProfiles);
         }
       } catch (error) {
-        console.error('Error loading profiles:', error);
+        if (import.meta.env.DEV) {
+          console.error('[NewHomePage] Error loading profiles:', error);
+        }
         const msg = error instanceof Error ? error.message : String(error);
         if (/failed to fetch|network|blocked|load failed|timed out/i.test(msg)) {
+          setProfileLoadError('fetch');
+        } else {
           setProfileLoadError('fetch');
         }
       } finally {
@@ -336,7 +363,8 @@ const NewHomePage: React.FC = () => {
       petsSubscription.unsubscribe();
       usersSubscription.unsubscribe();
     };
-  }, [currentUserId, userRole, location, locationEnabled, isGlobalMode, profileRetryKey]);
+    // Use stable location key to avoid re-running on every location object reference change
+  }, [currentUserId, userRole, locationEnabled, isGlobalMode, profileRetryKey, location?.latitude, location?.longitude]);
 
   const handleRetryProfiles = () => {
     setProfileLoadError(null);
@@ -410,15 +438,14 @@ const NewHomePage: React.FC = () => {
 
   // Apply filters to profiles
   const applyFilters = (profiles: Profile[]) => {
-    console.log('=== APPLYING FILTERS ===');
-    console.log('Total profiles before filter:', profiles.length);
-    console.log('Liked profile IDs:', Array.from(likedProfileIds));
-    console.log('Passed profile IDs:', Array.from(passedProfileIds));
+    if (import.meta.env.DEV) {
+      console.log('=== APPLYING FILTERS ===', 'Total profiles:', profiles.length);
+    }
     
     // Filter out profiles user has already interacted with (from Supabase)
     let filtered = profiles.filter(p => !passedProfileIds.has(p.id) && !likedProfileIds.has(p.id));
     
-    console.log('Profiles after interaction filter:', filtered.length);
+    if (import.meta.env.DEV) console.log('Profiles after filter:', filtered.length);
 
     // Pet type filter (for owners looking at walkers)
     if (userRole === 'owner' && filters.petType !== 'all') {

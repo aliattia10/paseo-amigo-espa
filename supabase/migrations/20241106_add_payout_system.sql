@@ -26,12 +26,12 @@ CREATE INDEX IF NOT EXISTS idx_payout_requests_created_at ON payout_requests(cre
 -- Add RLS policies for payout_requests
 ALTER TABLE payout_requests ENABLE ROW LEVEL SECURITY;
 
--- Sitters can view their own payout requests
+DROP POLICY IF EXISTS "Sitters can view own payout requests" ON payout_requests;
 CREATE POLICY "Sitters can view own payout requests"
   ON payout_requests FOR SELECT
   USING (auth.uid() = sitter_id);
 
--- Sitters can create their own payout requests
+DROP POLICY IF EXISTS "Sitters can create own payout requests" ON payout_requests;
 CREATE POLICY "Sitters can create own payout requests"
   ON payout_requests FOR INSERT
   WITH CHECK (auth.uid() = sitter_id);

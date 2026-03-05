@@ -61,12 +61,14 @@ import { checkSupabaseConnectivity, logConnectivityResult } from "@/lib/supabase
 
 const queryClient = new QueryClient();
 
-// Run Supabase connectivity check once on app load (log result to console)
+// Run Supabase connectivity check only in development (avoids noisy console in production)
 const SupabaseConnectivityCheck = () => {
   useEffect(() => {
-    checkSupabaseConnectivity().then((result) => {
-      logConnectivityResult(result);
-    });
+    if (import.meta.env.DEV) {
+      checkSupabaseConnectivity().then((result) => {
+        logConnectivityResult(result);
+      });
+    }
   }, []);
   return null;
 };
@@ -617,14 +619,24 @@ const OnboardingFlow = () => {
   return null;
 };
 
-// Protected Route Component
+// Protected Route Component – never show loading longer than 5s
+const PROTECTED_ROUTE_MAX_LOADING_MS = 5000;
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
-  
-  console.log('ProtectedRoute:', { currentUser: !!currentUser, loading });
-  
-  if (loading) {
-    console.log('ProtectedRoute: Still loading...');
+  const [giveUpLoading, setGiveUpLoading] = useState(false);
+
+  useEffect(() => {
+    if (!loading) return;
+    const t = setTimeout(() => setGiveUpLoading(true), PROTECTED_ROUTE_MAX_LOADING_MS);
+    return () => clearTimeout(t);
+  }, [loading]);
+
+  useEffect(() => {
+    if (!loading) setGiveUpLoading(false);
+  }, [loading]);
+
+  const showSpinner = loading && !giveUpLoading;
+  if (showSpinner) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sunny-light via-warm-bg to-mediterranean-light flex items-center justify-center">
         <div className="text-center">
@@ -634,8 +646,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
-  
-  console.log('ProtectedRoute: Loading complete, currentUser:', !!currentUser);
+
   return currentUser ? <>{children}</> : <Navigate to="/auth" />;
 };
 

@@ -14,7 +14,13 @@
     "backend:start": "cd backend && npm start",
     "db:migrate": "cd backend && npm run db:migrate",
     "db:seed": "cd backend && npm run db:seed",
-    "db:reset": "cd backend && npm run db:reset"
+    "db:reset": "cd backend && npm run db:reset",
+    "supabase": "supabase",
+    "supabase:status": "supabase status",
+    "supabase:db:push": "supabase db push",
+    "supabase:db:diff": "supabase db diff",
+    "supabase:link": "supabase link",
+    "supabase:login": "supabase login"
   },
   "dependencies": {
     "@didit-protocol/sdk-web": "^0.1.7",
@@ -90,6 +96,7 @@
     "globals": "^15.9.0",
     "lovable-tagger": "^1.1.7",
     "netlify-cli": "^23.9.5",
+    "supabase": "^2.76.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",

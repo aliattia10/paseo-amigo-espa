@@ -55,7 +55,7 @@ npm install
    - Copy the Project URL and anon public key
 
 4. **Update Environment Variables**
-   - Create a `.env` file in the root directory
+   - Copy `env.example` to `.env` in the root directory (or create `.env` and add):
    - Add your Supabase credentials:
 
 ```env
@@ -63,7 +63,30 @@ VITE_SUPABASE_URL=your-supabase-project-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
-### 4. Run the Development Server
+5. **If local app can’t load any Supabase data (empty dashboard, no pets/sitters):**
+   - In **Supabase Dashboard** → **SQL Editor** → New query, paste and run the contents of **`RUN_THIS_IN_SUPABASE.sql`** (in the project root). This fixes RLS so `users`, `pets`, `subscription_plans`, `bookings`, `likes`, `passes`, `pet_likes`, `pet_passes` are readable by the app when logged in.
+   - Restart the dev server and try again. In the browser console (F12) you’ll see `[NewHomePage]` warnings if a fetch still fails.
+
+### 4. Supabase CLI (migrations)
+
+The project uses the Supabase CLI for migrations. After linking (see below), push migrations with:
+
+```bash
+npm run supabase:db:push
+# or: npx supabase db push --linked --yes
+```
+
+**If you see "Remote migration versions not found in local migrations directory":**  
+Run the one-time fix in Supabase Dashboard → SQL Editor: open `supabase/fix_migration_versions.sql`, copy its contents, paste in a new query, and Run. Then run `npm run supabase:db:push` again.
+
+**First-time link (optional):**
+
+```bash
+npm run supabase:login   # open browser to sign in
+npm run supabase:link   # select project or use existing link
+```
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev

@@ -34,19 +34,23 @@ DROP POLICY IF EXISTS "Users can update their own profile" ON users;
 DROP POLICY IF EXISTS "Users can insert their own profile" ON users;
 
 -- Create secure policies for users table
+DROP POLICY IF EXISTS "Allow user registration" ON users;
 CREATE POLICY "Allow user registration" ON users 
 FOR INSERT 
 WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can view their own profile" ON users;
 CREATE POLICY "Users can view their own profile" ON users 
 FOR SELECT 
 USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update their own profile" ON users;
 CREATE POLICY "Users can update their own profile" ON users 
 FOR UPDATE 
 USING (auth.uid() = id)
 WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Service role full access" ON users;
 CREATE POLICY "Service role full access" ON users 
 FOR ALL 
 TO service_role 
@@ -58,6 +62,7 @@ DROP POLICY IF EXISTS "Users can view their own dogs" ON dogs;
 DROP POLICY IF EXISTS "Users can insert their own dogs" ON dogs;
 DROP POLICY IF EXISTS "Users can update their own dogs" ON dogs;
 
+DROP POLICY IF EXISTS "Owners can manage their dogs" ON dogs;
 CREATE POLICY "Owners can manage their dogs" ON dogs 
 FOR ALL 
 USING (auth.uid() = owner_id)
@@ -69,6 +74,7 @@ DROP POLICY IF EXISTS "Users can view their own walker profile" ON walker_profil
 DROP POLICY IF EXISTS "Users can insert their own walker profile" ON walker_profiles;
 DROP POLICY IF EXISTS "Users can update their own walker profile" ON walker_profiles;
 
+DROP POLICY IF EXISTS "Users can manage their own walker profile" ON walker_profiles;
 CREATE POLICY "Users can manage their own walker profile" ON walker_profiles 
 FOR ALL 
 USING (auth.uid() = user_id)
