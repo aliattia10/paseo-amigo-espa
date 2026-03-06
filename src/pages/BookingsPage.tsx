@@ -202,7 +202,7 @@ const BookingsPage: React.FC = () => {
         body: { bookingId, reason },
       });
       if (error) throw error;
-      toast({ title: 'Booking Cancelled', description: 'Booking cancelled and payment refunded.' });
+      toast({ title: t('bookings.cancelled', 'Booking Cancelled'), description: t('bookings.refunded', 'Booking cancelled and payment refunded.') });
       fetchBookings();
     } catch (error: any) {
       toast({ title: t('common.error'), description: error.message, variant: 'destructive' });
@@ -236,8 +236,8 @@ const BookingsPage: React.FC = () => {
       if (error) throw error;
       
       toast({ 
-        title: 'Booking Cancelled', 
-        description: 'The booking has been cancelled successfully.' 
+        title: t('bookings.cancelled', 'Booking Cancelled'), 
+        description: t('bookings.cancelledSuccess', 'The booking has been cancelled successfully.') 
       });
       
       fetchBookings();
@@ -262,8 +262,8 @@ const BookingsPage: React.FC = () => {
       }
       
       toast({ 
-        title: '✅ Service Marked Complete', 
-        description: 'Waiting for owner confirmation to release payment.' 
+        title: t('bookings.serviceComplete', 'Service Marked Complete'), 
+        description: t('bookings.waitingConfirmation', 'Waiting for owner confirmation to release payment.') 
       });
       
       fetchBookings();
@@ -288,8 +288,8 @@ const BookingsPage: React.FC = () => {
       }
       
       toast({ 
-        title: '✅ Completion Confirmed!', 
-        description: 'Please leave a review to release payment to the sitter\'s balance!' 
+        title: t('bookings.completionConfirmed', 'Completion Confirmed!'), 
+        description: t('bookings.leaveReviewPrompt', 'Please leave a review to release payment to the sitter\'s balance!') 
       });
       
       // Open review modal
@@ -415,11 +415,11 @@ const BookingsPage: React.FC = () => {
               <span className="material-symbols-outlined text-6xl mb-4 text-text-secondary-light dark:text-text-secondary-dark">
                 event_busy
               </span>
-              <p className="font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                No bookings found
+                <p className="font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                {t('bookings.noBookings', 'No bookings found')}
               </p>
               <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4">
-                Start browsing sitters to make your first booking!
+                {t('bookings.startBrowsing', 'Start browsing sitters to make your first booking!')}
               </p>
             </div>
           ) : (

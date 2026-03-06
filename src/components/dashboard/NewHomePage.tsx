@@ -400,15 +400,15 @@ const NewHomePage: React.FC = () => {
     setFilters(newFilters);
     setCurrentIndex(0); // Reset to first profile
     toast({
-      title: 'Filters applied',
-      description: 'Profiles updated based on your preferences',
+      title: t('filters.applied', 'Filters applied'),
+      description: t('filters.updated', 'Profiles updated based on your preferences'),
     });
   };
 
   // Apply filters to profiles
   const applyFilters = (profiles: Profile[]) => {
     if (import.meta.env.DEV) {
-      console.log('=== APPLYING FILTERS ===', 'Total profiles:', profiles.length);
+      if (import.meta.env.DEV) console.log('=== APPLYING FILTERS ===', 'Total profiles:', profiles.length);
     }
     
     // Filter out profiles user has already interacted with (from Supabase)
@@ -993,7 +993,7 @@ const NewHomePage: React.FC = () => {
               <div className="flex w-full items-end justify-between gap-4 p-4 pb-6">
                 <div className="flex max-w-[440px] flex-1 flex-col gap-2">
                   {/* Name and Age */}
-                  <p className="text-white tracking-tight text-3xl font-bold leading-tight max-w-[440px] drop-shadow-lg">
+                  <p className="text-white tracking-tight text-3xl font-bold leading-tight max-w-[440px] drop-shadow-lg truncate">
                     {currentProfile.name}{currentProfile.age ? `, ${currentProfile.age}` : ''}
                   </p>
                   
@@ -1156,7 +1156,7 @@ const NewHomePage: React.FC = () => {
             <div className="space-y-3 mt-4">
               <button
                 onClick={async () => {
-                  console.log('Enable Location button clicked');
+                  if (import.meta.env.DEV) console.log('Enable Location button clicked');
                   await requestLocation();
                   // Modal will close automatically via useEffect when locationEnabled becomes true
                 }}

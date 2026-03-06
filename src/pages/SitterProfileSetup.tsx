@@ -108,7 +108,7 @@ const SitterProfileSetup: React.FC = () => {
     if (sitterData.hourlyRate < 10 || sitterData.hourlyRate > 100) {
       toast({
         title: t('common.error'),
-        description: 'Hourly rate must be between $10 and $100',
+        description: 'Hourly rate must be between €10 and €100',
         variant: 'destructive',
       });
       return;
@@ -233,7 +233,7 @@ const SitterProfileSetup: React.FC = () => {
               Hourly Rate <span className="text-red-500">*</span>
             </label>
             <div className="flex items-center gap-3">
-              <span className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">$</span>
+              <span className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">€</span>
               <Input
                 type="number"
                 value={sitterData.hourlyRate}

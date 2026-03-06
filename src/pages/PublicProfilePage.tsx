@@ -216,7 +216,7 @@ const PublicProfilePage: React.FC = () => {
             {userProfile?.hourlyRate && (userProfile?.userType === 'walker' || (userProfile?.userType as any) === 'sitter' || (userProfile?.userType as any) === 'both') && (
               <div className="bg-primary/10 dark:bg-primary/20 border-2 border-primary/30 rounded-xl p-3 mb-3 text-center">
                 <p className="text-2xl font-bold text-primary mb-1">
-                  ${userProfile.hourlyRate}/hr
+                  €{userProfile.hourlyRate}/hr
                 </p>
                 <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
                   Base hourly rate

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -28,6 +29,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -60,11 +62,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             .eq('match_id', matchId)
             .order('created_at', { ascending: true });
           
-          console.log('=== LOADED MESSAGES ===');
-          console.log('Match ID:', matchId);
-          console.log('Messages data:', data);
-          console.log('Error:', error);
-          
           if (error) throw error;
           setMessages(data || []);
         } else if (walkRequest) {
@@ -75,8 +72,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
       } catch (error) {
         console.error('Error loading messages:', error);
         toast({
-          title: "Error",
-          description: "Could not load messages.",
+        title: t('common.error', 'Error'),
+        description: t('messages.loadFailed', 'Could not load messages.'),
           variant: "destructive",
         });
       } finally {
@@ -90,8 +87,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   // Subscribe to real-time messages
   useEffect(() => {
     if (matchId) {
-      console.log('Setting up real-time subscription for match:', matchId);
-      
       // Subscribe to match messages
       const channel = supabase
         .channel(`match-${matchId}`)
@@ -101,7 +96,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           table: 'messages',
           filter: `match_id=eq.${matchId}`
         }, (payload) => {
-          console.log('Real-time message received:', payload.new);
           setMessages(prev => {
             // Avoid duplicates
             if (prev.some(m => m.id === payload.new.id)) {
@@ -110,12 +104,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             return [...prev, payload.new];
           });
         })
-        .subscribe((status) => {
-          console.log('Subscription status:', status);
-        });
+        .subscribe();
 
       return () => {
-        console.log('Unsubscribing from match:', matchId);
         channel.unsubscribe();
       };
     } else if (walkRequest) {
@@ -184,7 +175,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
 
     // If message-media bucket doesn't exist, try avatars bucket
     if (uploadError && uploadError.message.includes('not found')) {
-      console.log('message-media bucket not found, using avatars bucket');
+      // fallback to avatars bucket
       bucketName = 'avatars';
       const result = await supabase.storage
         .from(bucketName)
@@ -237,7 +228,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           throw error;
         }
         
-        console.log('Message sent successfully, ID:', messageId);
         
         // Optimistically add message to UI immediately
         const newMsg = {
@@ -298,7 +288,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   }
 
   return (
-    <Card className="h-[600px] flex flex-col">
+    <Card className="h-[calc(100vh-200px)] max-h-[600px] flex flex-col">
       <CardHeader className="flex-shrink-0 border-b">
         <div className="flex items-center gap-3">
           <Button
@@ -323,7 +313,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             <Button
               onClick={() => {
                 // Navigate to booking page with walker ID
-                window.location.href = `/booking/request?walkerId=${otherUser.id}&walkerName=${encodeURIComponent(otherUser.name)}&rate=${otherUser.hourlyRate || 15}`;
+                navigate(`/booking/request?walkerId=${otherUser.id}&walkerName=${encodeURIComponent(otherUser.name)}&rate=${otherUser.hourlyRate || 15}`);
               }}
               className="bg-primary hover:bg-primary/90"
             >

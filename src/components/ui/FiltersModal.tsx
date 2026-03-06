@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface FiltersModalProps {
   isOpen: boolean;
@@ -19,6 +19,7 @@ export interface FilterOptions {
 }
 
 const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, userRole }) => {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<FilterOptions>({
     petType: 'all',
     maxDistance: 50,
@@ -27,7 +28,6 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
     sortBy: 'distance',
   });
 
-  // Load saved filters from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('userFilters');
     if (saved) {
@@ -62,10 +62,9 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Filters
+            {t('filters.title', 'Filters')}
           </h2>
           <button
             onClick={onClose}
@@ -75,53 +74,33 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Pet Type Filter - Only for owners */}
           {userRole === 'owner' && (
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                Pet Type
+                {t('filters.petType', 'Pet Type')}
               </label>
               <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => setFilters({ ...filters, petType: 'all' })}
-                  className={`py-3 px-4 rounded-lg font-medium transition-all ${
-                    filters.petType === 'all'
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  All
-                </button>
-                <button
-                  onClick={() => setFilters({ ...filters, petType: 'dog' })}
-                  className={`py-3 px-4 rounded-lg font-medium transition-all ${
-                    filters.petType === 'dog'
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  🐕 Dogs
-                </button>
-                <button
-                  onClick={() => setFilters({ ...filters, petType: 'cat' })}
-                  className={`py-3 px-4 rounded-lg font-medium transition-all ${
-                    filters.petType === 'cat'
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  🐱 Cats
-                </button>
+                {(['all', 'dog', 'cat'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setFilters({ ...filters, petType: type })}
+                    className={`py-3 px-4 rounded-lg font-medium transition-all ${
+                      filters.petType === type
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {type === 'all' ? t('filters.all', 'All') : type === 'dog' ? `🐕 ${t('filters.dogs', 'Dogs')}` : `🐱 ${t('filters.cats', 'Cats')}`}
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
-          {/* Distance Filter */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              Maximum Distance: {filters.maxDistance} km
+              {t('filters.maxDistance', 'Maximum Distance')}: {filters.maxDistance} km
             </label>
             <input
               type="range"
@@ -138,11 +117,10 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
             </div>
           </div>
 
-          {/* Rating Filter - Only for owners */}
           {userRole === 'owner' && (
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                Minimum Rating
+                {t('filters.minRating', 'Minimum Rating')}
               </label>
               <div className="grid grid-cols-6 gap-2">
                 {[0, 1, 2, 3, 4, 5].map((rating) => (
@@ -155,18 +133,17 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {rating === 0 ? 'Any' : `${rating}★`}
+                    {rating === 0 ? t('filters.any', 'Any') : `${rating}★`}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Price Filter - Only for owners */}
           {userRole === 'owner' && (
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                Maximum Price per Hour
+                {t('filters.maxPrice', 'Maximum Price per Hour')}
               </label>
               <div className="flex items-center gap-3">
                 <input
@@ -175,7 +152,7 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
                   max="100"
                   value={filters.maxPrice || ''}
                   onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value ? parseInt(e.target.value) : null })}
-                  placeholder="No limit"
+                  placeholder={t('filters.noLimit', 'No limit')}
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <span className="text-gray-600 dark:text-gray-400">€/hr</span>
@@ -183,10 +160,9 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
             </div>
           )}
 
-          {/* Sort By */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              Sort By
+              {t('filters.sortBy', 'Sort By')}
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -197,7 +173,7 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
-                📍 Distance
+                📍 {t('filters.distance', 'Distance')}
               </button>
               {userRole === 'owner' && (
                 <>
@@ -209,7 +185,7 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    ⭐ Rating
+                    ⭐ {t('filters.rating', 'Rating')}
                   </button>
                   <button
                     onClick={() => setFilters({ ...filters, sortBy: 'price' })}
@@ -219,7 +195,7 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    💰 Price
+                    💰 {t('filters.price', 'Price')}
                   </button>
                 </>
               )}
@@ -231,26 +207,25 @@ const FiltersModal: React.FC<FiltersModalProps> = ({ isOpen, onClose, onApply, u
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
-                🆕 Newest
+                🆕 {t('filters.newest', 'Newest')}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 flex gap-3">
           <Button
             onClick={handleReset}
             variant="outline"
             className="flex-1"
           >
-            Reset
+            {t('filters.reset', 'Reset')}
           </Button>
           <Button
             onClick={handleApply}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
           >
-            Apply Filters
+            {t('filters.apply', 'Apply Filters')}
           </Button>
         </div>
       </div>

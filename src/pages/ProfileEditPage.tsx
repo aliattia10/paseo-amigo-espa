@@ -513,7 +513,7 @@ const ProfileEditPage: React.FC = () => {
             {userProfile?.userType !== 'owner' && (
               <div>
                 <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Hourly Rate ($/hr)
+                  Hourly Rate (€/hr)
                 </label>
                 <Input
                   type="number"
@@ -526,7 +526,7 @@ const ProfileEditPage: React.FC = () => {
                   step="1"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Set your base hourly rate ($10-$100)
+                  Set your base hourly rate (€10-€100)
                 </p>
               </div>
             )}

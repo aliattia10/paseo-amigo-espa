@@ -138,7 +138,7 @@ const AuthNew = () => {
         const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
         if (error) throw error;
 
-        console.log('Login successful, user:', data.user?.id);
+        if (import.meta.env.DEV) console.log('Login successful, user:', data.user?.id);
 
         toast({
           title: "Success!",

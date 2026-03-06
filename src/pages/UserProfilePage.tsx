@@ -111,7 +111,12 @@ const UserProfilePage: React.FC = () => {
           <div className="space-y-4">
             {/* Top image */}
             {photos[0] && (
-              <img src={photos[0]} alt={user.name} className="w-full h-64 object-cover rounded-2xl shadow-lg" />
+              <img
+                src={photos[0]}
+                alt={user.name}
+                className="w-full h-64 object-cover rounded-2xl shadow-lg"
+                onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400'; }}
+              />
             )}
 
             {/* Name + chips */}
@@ -247,7 +252,7 @@ const UserProfilePage: React.FC = () => {
                 </div>
               ) : (
                 <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark text-center py-4">
-                  No reviews yet
+                  {t('profile.noReviews', 'No reviews yet')}
                 </p>
               )}
             </div>

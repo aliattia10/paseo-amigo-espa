@@ -188,9 +188,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUserProfile(null);
     setIsAdmin(false);
 
-    const doRedirect = () => {
-      window.location.href = '/home';
-    };
+    // Clear all Supabase keys from localStorage before redirect
+    try {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-'))
+        .forEach(k => localStorage.removeItem(k));
+    } catch {}
 
     try {
       await Promise.race([
@@ -200,7 +203,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     }
-    doRedirect();
+    window.location.href = '/home';
   };
 
   const refreshUserProfile = async () => {

@@ -51,8 +51,8 @@ const NotificationsPage: React.FC = () => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterdayStart = new Date(todayStart.getTime() - 86400000);
-    if (d >= todayStart) return 'Today';
-    if (d >= yesterdayStart) return 'Yesterday';
+    if (d >= todayStart) return t('common.today', 'Today');
+    if (d >= yesterdayStart) return t('common.yesterday', 'Yesterday');
     return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
@@ -136,8 +136,8 @@ const NotificationsPage: React.FC = () => {
       
       if (unreadNotifs.length === 0) {
         toast({
-          title: 'No unread notifications',
-          description: 'All notifications are already marked as read',
+          title: t('notifications.noUnread', 'No unread notifications'),
+          description: t('notifications.allRead', 'All notifications are already marked as read'),
         });
         setShowMenu(false);
         return;
@@ -182,9 +182,11 @@ const NotificationsPage: React.FC = () => {
     return true;
   });
 
-  const todayNotifications = filteredNotifications.filter(n => n.time === 'Today');
-  const yesterdayNotifications = filteredNotifications.filter(n => n.time === 'Yesterday');
-  const earlierNotifications = filteredNotifications.filter(n => n.time !== 'Today' && n.time !== 'Yesterday');
+  const todayLabel = t('common.today', 'Today');
+  const yesterdayLabel = t('common.yesterday', 'Yesterday');
+  const todayNotifications = filteredNotifications.filter(n => n.time === todayLabel);
+  const yesterdayNotifications = filteredNotifications.filter(n => n.time === yesterdayLabel);
+  const earlierNotifications = filteredNotifications.filter(n => n.time !== todayLabel && n.time !== yesterdayLabel);
 
   const NotifRow = ({ notif }: { notif: Notification }) => (
     <div
@@ -301,6 +303,13 @@ const NotificationsPage: React.FC = () => {
       </div>
 
       <main className="flex-1 space-y-4 pb-24">
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        )}
+
         {/* Empty State */}
         {filteredNotifications.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -310,10 +319,10 @@ const NotificationsPage: React.FC = () => {
               </span>
             </div>
             <h3 className="text-text-primary-light dark:text-text-primary-dark text-xl font-bold mb-2">
-              No notifications yet
+              {t('notifications.emptyTitle', 'No notifications yet')}
             </h3>
             <p className="text-text-secondary-light dark:text-text-secondary-dark text-center text-sm">
-              When you receive bookings, matches, or messages, they'll appear here
+              {t('notifications.emptyDescription', 'When you receive bookings, matches, or messages, they\'ll appear here')}
             </p>
           </div>
         )}
@@ -350,7 +359,7 @@ const NotificationsPage: React.FC = () => {
         {earlierNotifications.length > 0 && (
           <>
             <h3 className="text-text-primary-light dark:text-text-primary-dark px-4 pb-1 pt-2 text-base font-bold leading-tight tracking-[-0.015em]">
-              Earlier
+              {t('common.earlier', 'Earlier')}
             </h3>
             <div className="flex flex-col gap-2">
               {earlierNotifications.map((notif) => (

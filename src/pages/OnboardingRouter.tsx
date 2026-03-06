@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDogsByOwner, getWalkerProfile } from '@/lib/supabase-services';
 import DogProfileForm from '@/components/onboarding/DogProfileForm';
@@ -8,6 +9,7 @@ import WalkerDashboard from '@/components/dashboard/WalkerDashboard';
 import OwnerDashboard from '@/components/dashboard/OwnerDashboard';
 
 const OnboardingRouter: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
