@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { DiditSdk } from '@didit-protocol/sdk-web';
-import { ShieldCheck, Loader2, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Loader2, ArrowRight, AlertTriangle } from 'lucide-react';
 
 const VerifyIdentityPage: React.FC = () => {
   const { t } = useTranslation();
@@ -14,6 +13,7 @@ const VerifyIdentityPage: React.FC = () => {
   const { currentUser, userProfile, refreshUserProfile } = useAuth();
   const { toast } = useToast();
   const [starting, setStarting] = useState(false);
+  const [serviceUnavailable, setServiceUnavailable] = useState(false);
 
   useEffect(() => {
     if (!currentUser) {
@@ -25,6 +25,7 @@ const VerifyIdentityPage: React.FC = () => {
   const handleStartVerification = async () => {
     if (!currentUser || !userProfile) return;
     setStarting(true);
+    setServiceUnavailable(false);
     try {
       const { data, error } = await supabase.functions.invoke('create-didit-session', {
         body: { userType: userProfile.userType },
@@ -34,43 +35,55 @@ const VerifyIdentityPage: React.FC = () => {
       if (!url) throw new Error('No verification URL returned');
       setStarting(false);
 
-      DiditSdk.shared.onComplete = (result) => {
-        if (result.type === 'completed') {
-          toast({
-            title: t('verifyIdentity.successTitle', 'Verification submitted'),
-            description: t('verifyIdentity.successDesc', 'Your identity is being verified. You’ll be updated when it’s approved.'),
-          });
-          refreshUserProfile();
-          navigate('/dashboard');
-        } else if (result.type === 'cancelled') {
-          toast({
-            title: t('verifyIdentity.cancelled', 'Verification cancelled'),
-            variant: 'default',
-          });
-        } else if (result.type === 'failed') {
-          toast({
-            title: t('common.error', 'Error'),
-            description: result.error?.message || t('verifyIdentity.failed', 'Verification failed'),
-            variant: 'destructive',
-          });
-        }
-      };
+      // Try the SDK first, fall back to opening the URL directly
+      try {
+        const { DiditSdk } = await import('@didit-protocol/sdk-web');
 
-      await DiditSdk.shared.startVerification({ url });
+        DiditSdk.shared.onComplete = (result: any) => {
+          if (result.type === 'completed') {
+            toast({
+              title: t('verifyIdentity.successTitle', 'Verification submitted'),
+              description: t('verifyIdentity.successDesc', "Your identity is being verified. You'll be updated when it's approved."),
+            });
+            refreshUserProfile();
+            navigate('/dashboard');
+          } else if (result.type === 'cancelled') {
+            toast({
+              title: t('verifyIdentity.cancelled', 'Verification cancelled'),
+              variant: 'default',
+            });
+          } else if (result.type === 'failed') {
+            toast({
+              title: t('common.error', 'Error'),
+              description: result.error?.message || t('verifyIdentity.failed', 'Verification failed'),
+              variant: 'destructive',
+            });
+          }
+        };
+
+        await DiditSdk.shared.startVerification({ url });
+      } catch {
+        // SDK failed to load — open URL in a new tab as fallback
+        window.open(url, '_blank');
+        toast({
+          title: t('verifyIdentity.openedInTab', 'Verification opened'),
+          description: t('verifyIdentity.openedInTabDesc', 'Complete the verification in the new tab, then come back.'),
+        });
+      }
     } catch (err: unknown) {
       setStarting(false);
       const raw = err instanceof Error ? err.message : String(err);
-      // Translate cryptic edge-function / Didit API errors into user-friendly messages
       const isConfigError = /non-2xx|400|500|server configuration|workflow|api key/i.test(raw);
-      const displayMsg = isConfigError
-        ? t('verifyIdentity.configError', 'ID verification is temporarily unavailable. Please try again later or skip for now.')
-        : raw || t('verifyIdentity.failed', 'Failed to start verification');
-      toast({
-        title: t('common.error', 'Error'),
-        description: displayMsg,
-        variant: 'destructive',
-        duration: 8000,
-      });
+      if (isConfigError) {
+        setServiceUnavailable(true);
+      } else {
+        toast({
+          title: t('common.error', 'Error'),
+          description: raw || t('verifyIdentity.failed', 'Failed to start verification'),
+          variant: 'destructive',
+          duration: 8000,
+        });
+      }
     }
   };
 
@@ -94,6 +107,21 @@ const VerifyIdentityPage: React.FC = () => {
         <p className="text-gray-600 dark:text-gray-300">
           {t('verifyIdentity.description', 'To keep our community safe, we ask you to verify your identity with a quick ID check. This only takes a minute.')}
         </p>
+
+        {serviceUnavailable && (
+          <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-left">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                {t('verifyIdentity.unavailableTitle', 'Temporarily unavailable')}
+              </p>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                {t('verifyIdentity.configError', 'ID verification is temporarily unavailable. Please try again later or skip for now.')}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col gap-3 pt-4">
           <Button
             size="lg"

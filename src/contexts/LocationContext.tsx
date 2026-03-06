@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +17,7 @@ const LocationContext = createContext<LocationContextType | undefined>(undefined
 
 export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationEnabled, setLocationEnabled] = useState(false);
@@ -99,8 +101,8 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const requestLocation = async () => {
     if (!navigator.geolocation) {
       toast({
-        title: 'Location not supported',
-        description: 'Your browser does not support location services',
+        title: t('location.notSupported'),
+        description: t('location.notSupportedDesc'),
         variant: 'destructive',
       });
       return;
@@ -144,24 +146,24 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       toast({
-        title: '📍 Location enabled',
-        description: 'You can now see nearby matches',
+        title: t('location.enabled'),
+        description: t('location.enabledDesc'),
       });
     } catch (error: any) {
       console.error('Error getting location:', error);
       
-      let errorMessage = 'Unable to get your location';
-      let errorDescription = 'Please try again or browse globally';
+      let errorMessage = t('location.unableToGet');
+      let errorDescription = t('location.tryAgainOrGlobal');
       
-      if (error?.code === 1) { // PERMISSION_DENIED
-        errorMessage = 'Location access denied';
-        errorDescription = 'Click the location icon (🔒) in your browser address bar to allow location access';
-      } else if (error?.code === 2) { // POSITION_UNAVAILABLE
-        errorMessage = 'Location unavailable';
-        errorDescription = 'Your location could not be determined. Try again or browse globally';
-      } else if (error?.code === 3) { // TIMEOUT
-        errorMessage = 'Location request timed out';
-        errorDescription = 'Please check your connection and try again';
+      if (error?.code === 1) {
+        errorMessage = t('location.denied');
+        errorDescription = t('location.deniedDesc');
+      } else if (error?.code === 2) {
+        errorMessage = t('location.unavailable');
+        errorDescription = t('location.unavailableDesc');
+      } else if (error?.code === 3) {
+        errorMessage = t('location.timedOut');
+        errorDescription = t('location.timedOutDesc');
       }
       
       toast({
@@ -204,10 +206,10 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('globalMode', String(newMode));
     
     toast({
-      title: newMode ? '🌍 Global mode' : '📍 Local mode',
+      title: newMode ? t('location.globalMode') : t('location.localMode'),
       description: newMode 
-        ? 'Showing profiles from everywhere' 
-        : 'Showing nearby profiles only',
+        ? t('location.globalModeDesc') 
+        : t('location.localModeDesc'),
     });
   };
 

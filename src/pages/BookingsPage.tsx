@@ -472,7 +472,7 @@ const BookingsPage: React.FC = () => {
               {(booking.status as string) === 'confirmed' && booking.payment_status === 'held' && (
                 <div>
                   <div className="text-sm text-center text-medium-jungle dark:text-sage-green mb-2">
-                    ✓ Payment secured - Waiting for service
+                    {t('bookings.paymentSecured')}
                   </div>
                   {/* SITTER: Show "Mark as Complete" button */}
                   {currentUser?.id === booking.sitter_id && (
@@ -480,7 +480,7 @@ const BookingsPage: React.FC = () => {
                       onClick={() => handleMarkComplete(booking.id)} 
                       className="w-full bg-medium-jungle text-white hover:bg-medium-jungle/90"
                     >
-                      ✅ Mark Service Complete
+                      {t('bookings.markComplete')}
                     </Button>
                   )}
                 </div>
@@ -492,18 +492,18 @@ const BookingsPage: React.FC = () => {
                   {currentUser?.id === booking.owner_id ? (
                     <>
                       <div className="text-sm text-center text-blue-600 dark:text-blue-400 mb-2">
-                        🎉 Service completed! Please confirm and review
+                        {t('bookings.serviceCompleted')}
                       </div>
                       <Button 
                         onClick={() => handleConfirmCompletion(booking.id, booking)} 
                         className="w-full bg-blue-600 text-white hover:bg-blue-700"
                       >
-                        ✓ Confirm & Review
+                        {t('bookings.confirmReview')}
                       </Button>
                     </>
                   ) : (
                     <div className="text-sm text-center text-blue-600 dark:text-blue-400">
-                      ⏳ Waiting for owner confirmation
+                      {t('bookings.waitingOwnerConfirm')}
                     </div>
                   )}
                 </div>
@@ -516,10 +516,10 @@ const BookingsPage: React.FC = () => {
                     <>
                       <div className="text-sm text-center mb-2">
                         <div className="text-blue-600 dark:text-blue-400 font-medium">
-                          ⭐ Review Required
+                          {t('bookings.reviewRequired')}
                         </div>
                         <div className="text-gray-600 dark:text-gray-400 text-xs mt-1">
-                          Submit a review to release payment to sitter's balance
+                          {t('bookings.reviewToRelease')}
                         </div>
                       </div>
                       <Button 
@@ -529,12 +529,12 @@ const BookingsPage: React.FC = () => {
                         }}
                         className="w-full bg-blue-600 text-white hover:bg-blue-700"
                       >
-                        📝 Leave Review & Release Payment
+                        {t('bookings.leaveReview')}
                       </Button>
                     </>
                   ) : (
                     <div className="text-sm text-center text-blue-600 dark:text-blue-400">
-                      ⏳ Waiting for owner to submit review and release payment
+                      {t('bookings.waitingOwnerReview')}
                     </div>
                   )}
                 </div>
@@ -543,7 +543,7 @@ const BookingsPage: React.FC = () => {
               {/* Payment released to balance */}
               {booking.payment_status === 'released' && booking.balance_released_at && (
                 <div className="text-sm text-center text-medium-jungle dark:text-sage-green font-medium">
-                  💵 Payment Released - Added to sitter's balance
+                  {t('bookings.paymentReleasedBalance')}
                 </div>
               )}
               

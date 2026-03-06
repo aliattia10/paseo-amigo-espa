@@ -43,7 +43,7 @@ const MessagingPage: React.FC = () => {
         .eq('type', 'message');
       toast({ title: t('common.success'), description: t('notifications.allRead', 'All marked as read') });
     } catch {
-      toast({ title: t('common.error'), description: 'Failed', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('messages.markAllFailed'), variant: 'destructive' });
     }
   };
 

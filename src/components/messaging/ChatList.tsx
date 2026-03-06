@@ -303,7 +303,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                       )}
                     </div>
                     <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                      Matched {formatDate(new Date(match.created_at))}
+                      {t('messages.matchedOn', { date: formatDate(new Date(match.created_at)) })}
                     </p>
                   </div>
 

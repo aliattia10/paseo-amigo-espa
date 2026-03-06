@@ -270,7 +270,7 @@ const NewHomePage: React.FC = () => {
             }
             return {
               id: sitter.id,
-              name: sitter.name || 'Pet Sitter',
+              name: sitter.name || t('home.petSitter'),
               distance,
               rating: sitter.rating ? Number(sitter.rating) : 0,
               reviewCount: sitter.review_count ? Number(sitter.review_count) : 0,
@@ -502,8 +502,8 @@ const NewHomePage: React.FC = () => {
     
     if (!currentUser) {
       toast({
-        title: 'Error',
-        description: 'Please sign in to like profiles',
+        title: t('common.error'),
+        description: t('home.errorSignIn'),
         variant: 'destructive',
       });
       return;
@@ -514,27 +514,17 @@ const NewHomePage: React.FC = () => {
     newLiked.add(profile.id);
     setLikedProfileIds(newLiked);
     
-    // Save to Supabase and check for match
+    // Save to Supabase and check for match (saves like + auto-matches with bots server-side)
     try {
       if (userRole === 'owner' && profile.type === 'walker') {
-        // For demo/seed profiles, ensure a reverse like exists so match triggers
-        const isDemoProfile = profile.id.startsWith('a1000000-');
-        if (isDemoProfile) {
-          await supabase.from('likes').insert({
-            id: crypto.randomUUID(),
-            liker_id: profile.id,
-            liked_id: currentUser.id,
-          }).then(() => {});
-        }
-
-        // Owner liking a sitter - use match system
-        const { data: isMatch, error } = await supabase.rpc('check_and_create_match', {
-          liker_user_id: currentUser.id,
-          liked_user_id: profile.id
+        // Single RPC: saves like and creates match when liking a demo bot (instant match)
+        const { data: isMatch, error } = await (supabase as any).rpc('save_like_and_check_match', {
+          p_liker_id: currentUser.id,
+          p_liked_id: profile.id
         });
         
         if (error) {
-          console.error('Match check error:', error);
+          console.error('Error saving like / match:', error);
           throw error;
         }
         
@@ -568,8 +558,8 @@ const NewHomePage: React.FC = () => {
           // No match yet, just show success toast
           playLikeSound(); // Play like sound
           toast({
-            title: '❤️ Liked!',
-            description: `You liked ${profile.name}`,
+            title: t('home.liked'),
+            description: t('home.youLiked', { name: profile.name }),
           });
         }
       } else {
@@ -632,7 +622,7 @@ const NewHomePage: React.FC = () => {
             
             setMatchedUser({
               id: petData.owner_id,
-              name: ownerData?.name || 'Pet Owner',
+              name: ownerData?.name || t('home.petOwner'),
               imageUrl: ownerImageUrl,
               petType: petType
             });
@@ -643,8 +633,8 @@ const NewHomePage: React.FC = () => {
         if (!isMatch) {
           playLikeSound();
           toast({
-            title: '❤️ Liked!',
-            description: `You liked ${profile.name}`,
+            title: t('home.liked'),
+            description: t('home.youLiked', { name: profile.name }),
           });
         }
       }
@@ -656,8 +646,8 @@ const NewHomePage: React.FC = () => {
       setLikedProfileIds(revertedLiked);
       
       toast({
-        title: 'Error',
-        description: 'Failed to save like. Please try again.',
+        title: t('common.error'),
+        description: t('home.likeFailed'),
         variant: 'destructive',
       });
       return;
@@ -792,7 +782,7 @@ const NewHomePage: React.FC = () => {
       {/* Minimal Top Bar */}
       <header className="shrink-0 max-w-md mx-auto w-full">
         <div className="flex items-center px-4 py-3 justify-between">
-          <img src="/app-logo.png" alt="Petflik" className="w-8 h-8" />
+          <img src="/favicon.svg" alt="Petflik" className="w-8 h-8" />
           <div className="flex items-center gap-1">
             <button
               onClick={toggleTheme}
@@ -831,7 +821,7 @@ const NewHomePage: React.FC = () => {
                   ? 'bg-home-primary text-white'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
-              title={isGlobalMode ? 'Global mode' : 'Local mode'}
+              title={isGlobalMode ? t('home.globalMode') : t('home.localMode')}
             >
               <span className="material-symbols-outlined text-xl">
                 {isGlobalMode ? 'public' : 'near_me'}
@@ -1117,9 +1107,9 @@ const NewHomePage: React.FC = () => {
               <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">near_me</span>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Enable Location</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{t('home.enableLocation')}</h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                Find nearby {userRole === 'owner' ? 'sitters' : 'pets'} or browse globally.
+                {t('home.findNearby', { type: userRole === 'owner' ? t('home.sitters') : t('home.pets') })}
               </p>
             </div>
             <div className="space-y-2.5 mt-4">
@@ -1131,20 +1121,20 @@ const NewHomePage: React.FC = () => {
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <span className="material-symbols-outlined text-lg">location_on</span>
-                Enable Location
+                {t('home.enableLocation')}
               </button>
               <button
                 onClick={() => { toggleGlobalMode(); setShowLocationPrompt(false); }}
                 className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <span className="material-symbols-outlined text-lg">public</span>
-                Browse Globally
+                {t('home.browseGlobally')}
               </button>
               <button
                 onClick={() => setShowLocationPrompt(false)}
                 className="w-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-medium py-1.5 transition-colors text-sm"
               >
-                Maybe Later
+                {t('home.maybeLater')}
               </button>
             </div>
           </div>

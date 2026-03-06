@@ -261,7 +261,7 @@ const NewProfilePage: React.FC = () => {
           <button
             onClick={toggleTheme}
             className="flex items-center justify-center rounded-full h-9 w-9 text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            title={theme === 'dark' ? t('home.lightMode') : t('home.darkMode')}
           >
             <span className="material-symbols-outlined text-xl">
               {theme === 'dark' ? 'light_mode' : 'dark_mode'}

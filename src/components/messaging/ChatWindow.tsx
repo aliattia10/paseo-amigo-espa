@@ -129,8 +129,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
     if (!validTypes.includes(file.type)) {
       toast({
-        title: 'Invalid file type',
-        description: 'Please select an image or video file',
+        title: t('messages.invalidFile'),
+        description: t('messages.invalidFileDesc'),
         variant: 'destructive',
       });
       return;
@@ -139,8 +139,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast({
-        title: 'File too large',
-        description: 'Please select a file smaller than 10MB',
+        title: t('messages.fileTooLarge'),
+        description: t('messages.fileTooLargeDesc'),
         variant: 'destructive',
       });
       return;
@@ -253,14 +253,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
       clearMedia();
       
       toast({
-        title: '✓ Sent',
-        description: mediaUrl ? 'Media sent successfully' : 'Message sent',
+        title: t('messages.sent'),
+        description: mediaUrl ? t('messages.mediaSent') : t('messages.messageSent'),
       });
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
-        title: "Error",
-        description: "Could not send message.",
+        title: t('common.error'),
+        description: t('messages.sendFailed'),
         variant: "destructive",
       });
     } finally {
@@ -306,7 +306,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           <div className="flex-1">
             <h3 className="font-semibold">{otherUser.name}</h3>
             <p className="text-sm text-muted-foreground">
-              {walkRequest ? `Paseo para ${walkRequest.dogId}` : 'Match'}
+              {walkRequest ? t('messages.walkFor', { dog: walkRequest.dogId }) : t('messages.match')}
             </p>
           </div>
           {matchId && (

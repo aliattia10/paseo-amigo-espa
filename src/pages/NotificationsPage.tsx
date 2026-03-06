@@ -178,13 +178,13 @@ const NotificationsPage: React.FC = () => {
       
       toast({
         title: t('common.success'),
-        description: `Marked ${unreadNotifs.length} notification${unreadNotifs.length > 1 ? 's' : ''} as read`,
+        description: t('notifications.markedAsRead', { count: unreadNotifs.length }),
       });
     } catch (error: any) {
       console.error('Error marking notifications as read:', error);
       toast({
         title: t('common.error'),
-        description: 'Failed to mark notifications as read',
+        description: t('notifications.markFailed'),
         variant: 'destructive',
       });
     }
@@ -339,7 +339,7 @@ const NotificationsPage: React.FC = () => {
         {todayNotifications.length > 0 && (
           <>
             <h3 className="text-text-primary-light dark:text-text-primary-dark px-4 pb-1 pt-2 text-base font-bold leading-tight tracking-[-0.015em]">
-              Today
+              {t('common.today', 'Today')}
             </h3>
             <div className="flex flex-col gap-2">
               {todayNotifications.map((notif) => (
@@ -353,7 +353,7 @@ const NotificationsPage: React.FC = () => {
         {yesterdayNotifications.length > 0 && (
           <>
             <h3 className="text-text-primary-light dark:text-text-primary-dark px-4 pb-1 pt-2 text-base font-bold leading-tight tracking-[-0.015em]">
-              Yesterday
+              {t('common.yesterday', 'Yesterday')}
             </h3>
             <div className="flex flex-col gap-2">
               {yesterdayNotifications.map((notif) => (
