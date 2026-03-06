@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { LocationProvider } from "@/contexts/LocationContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import OwnerDashboard from "./components/dashboard/OwnerDashboard";
@@ -697,6 +698,7 @@ const AuthComponent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
     <LanguageProvider>
       <AuthProvider>
         <LocationProvider>
@@ -897,6 +899,7 @@ const App = () => (
         </LocationProvider>
       </AuthProvider>
     </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

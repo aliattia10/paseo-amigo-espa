@@ -255,6 +255,14 @@ const resources = {
       'verifyIdentity.configError': 'ID verification is temporarily unavailable. Please try again later or skip for now.',
       'verifyIdentity.banner': 'Verify your identity to build trust',
       'verifyIdentity.verify': 'Verify',
+      'verifyIdentity.pendingTitle': 'Identity verification pending',
+      'verifyIdentity.pendingDescription': 'Verify to earn trust and get more bookings',
+
+      // Settings
+      'settings.darkMode': 'Dark Mode',
+      'settings.verification': 'Identity Verification',
+      'settings.verified': 'Verified',
+      'settings.pending': 'Pending',
       
       // Messages & Chat
       'messages.writeMessage': 'Write a message...',
@@ -796,6 +804,14 @@ const resources = {
       'verifyIdentity.configError': 'La vérification d\'identité est temporairement indisponible. Réessayez plus tard ou ignorez pour l\'instant.',
       'verifyIdentity.banner': 'Vérifiez votre identité pour inspirer confiance',
       'verifyIdentity.verify': 'Vérifier',
+      'verifyIdentity.pendingTitle': 'Vérification d\'identité en attente',
+      'verifyIdentity.pendingDescription': 'Vérifiez-vous pour inspirer confiance et obtenir plus de réservations',
+
+      // Settings
+      'settings.darkMode': 'Mode sombre',
+      'settings.verification': 'Vérification d\'identité',
+      'settings.verified': 'Vérifié',
+      'settings.pending': 'En attente',
 
       // Messages & Chat
       'messages.writeMessage': 'Écrire un message...',
@@ -1588,6 +1604,14 @@ const resources = {
       'verifyIdentity.configError': 'La verificación de identidad no está disponible temporalmente. Inténtalo más tarde o omítelo por ahora.',
       'verifyIdentity.banner': 'Verifica tu identidad para generar confianza',
       'verifyIdentity.verify': 'Verificar',
+      'verifyIdentity.pendingTitle': 'Verificación de identidad pendiente',
+      'verifyIdentity.pendingDescription': 'Verifica tu identidad para generar confianza y recibir más reservas',
+
+      // Settings
+      'settings.darkMode': 'Modo oscuro',
+      'settings.verification': 'Verificación de identidad',
+      'settings.verified': 'Verificado',
+      'settings.pending': 'Pendiente',
       
       // Messages & Chat
       'messages.writeMessage': 'Escribe un mensaje...',

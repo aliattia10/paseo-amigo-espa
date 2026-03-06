@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
@@ -30,6 +31,7 @@ interface Review {
 const NewProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, userProfile, refreshUserProfile, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
   const unreadNotifications = useUnreadNotificationCount();
@@ -255,7 +257,16 @@ const NewProfilePage: React.FC = () => {
         <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-text-primary-light dark:text-text-primary-dark">
           {t('nav.profile')}
         </h2>
-        <div className="flex gap-2 items-center justify-end">
+        <div className="flex gap-1 items-center justify-end">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center rounded-full h-9 w-9 text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          >
+            <span className="material-symbols-outlined text-xl">
+              {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+            </span>
+          </button>
           <button
             onClick={() => {
               const languages = ['en', 'es', 'fr'];
@@ -263,20 +274,18 @@ const NewProfilePage: React.FC = () => {
               const nextIndex = (currentIndex + 1) % languages.length;
               i18n.changeLanguage(languages[nextIndex]);
             }}
-            className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-medium text-gray-700 dark:text-gray-300"
+            className="flex items-center justify-center rounded-full h-9 px-2 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Change language"
           >
-            {i18n.language === 'en' ? 'EN' : i18n.language === 'es' ? 'ES' : 'FR'}
+            {i18n.language.toUpperCase()}
           </button>
-          <button onClick={() => navigate('/notifications')} className="relative">
-            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
+          <button onClick={() => navigate('/notifications')} className="relative flex items-center justify-center rounded-full h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-xl">
               notifications
             </span>
-            {/* Notification badge - only show if there are unread notifications */}
-            {/* <span className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full"></span> */}
           </button>
-          <button onClick={handleLogout}>
-            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
+          <button onClick={handleLogout} className="flex items-center justify-center rounded-full h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-xl">
               logout
             </span>
           </button>
@@ -568,6 +577,27 @@ const NewProfilePage: React.FC = () => {
             </div>
           )}
 
+          {/* Verification Status */}
+          {userProfile && userProfile.verified !== true && (
+            <div
+              onClick={() => navigate('/verify-identity')}
+              className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex items-center gap-3 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">shield</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-amber-800 dark:text-amber-300">
+                  {t('verifyIdentity.pendingTitle', 'Identity verification pending')}
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  {t('verifyIdentity.pendingDescription', 'Verify to earn trust and get more bookings')}
+                </p>
+              </div>
+              <span className="material-symbols-outlined text-amber-500 shrink-0">chevron_right</span>
+            </div>
+          )}
+
           {/* Account Management List */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
             <ul className="divide-y divide-border-light dark:divide-border-dark">
@@ -608,6 +638,51 @@ const NewProfilePage: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">notifications</span>
                   <span className="font-medium text-text-primary-light dark:text-text-primary-dark">{t('notifications.title')}</span>
+                </div>
+                <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Settings */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
+            <ul className="divide-y divide-border-light dark:divide-border-dark">
+              <li className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">
+                    {theme === 'dark' ? 'dark_mode' : 'light_mode'}
+                  </span>
+                  <span className="font-medium text-text-primary-light dark:text-text-primary-dark">
+                    {t('settings.darkMode', 'Dark Mode')}
+                  </span>
+                </div>
+                <button
+                  onClick={toggleTheme}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${
+                    theme === 'dark' ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                >
+                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                    theme === 'dark' ? 'translate-x-[22px]' : 'translate-x-0.5'
+                  }`} />
+                </button>
+              </li>
+              <li
+                onClick={() => navigate('/verify-identity')}
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-light dark:hover:bg-background-dark"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">verified_user</span>
+                  <div>
+                    <span className="font-medium text-text-primary-light dark:text-text-primary-dark">
+                      {t('settings.verification', 'Identity Verification')}
+                    </span>
+                    {userProfile?.verified ? (
+                      <p className="text-xs text-green-500 font-medium">{t('settings.verified', 'Verified')}</p>
+                    ) : (
+                      <p className="text-xs text-amber-500 font-medium">{t('settings.pending', 'Pending')}</p>
+                    )}
+                  </div>
                 </div>
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>

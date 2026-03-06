@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from '@/contexts/LocationContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 import BottomNavigation from '@/components/ui/BottomNavigation';
@@ -34,6 +35,7 @@ const NewHomePage: React.FC = () => {
   const { currentUser, userProfile } = useAuth();
   const currentUserId = currentUser?.id;
   const { location, locationEnabled, isGlobalMode, requestLocation, toggleGlobalMode } = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const unreadNotifications = useUnreadNotificationCount();
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
@@ -758,149 +760,146 @@ const NewHomePage: React.FC = () => {
   const currentProfile = profiles[currentIndex];
 
   return (
-    <div className="relative flex h-screen w-full flex-col group/design-root overflow-hidden bg-home-background-light dark:bg-home-background-dark">
-      {/* Network blocked / load failed hint (e.g. ad blocker on laptop) */}
-      {profileLoadError === 'fetch' && (
-        <div className="shrink-0 bg-amber-500/95 dark:bg-amber-600/95 text-gray-900 dark:text-gray-100 px-4 py-3 max-w-md mx-auto w-full">
-          <p className="text-sm mb-2">{t('common.networkBlockedHint')}</p>
-          <Button size="sm" variant="secondary" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" onClick={handleRetryProfiles}>
-            {t('common.retry')}
-          </Button>
-        </div>
-      )}
-      {/* Verify identity banner */}
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f0f0f0] dark:bg-[#121212]">
+      {/* Verification pending banner */}
       {userProfile && userProfile.verified !== true && (
-        <div className="shrink-0 bg-amber-500/90 dark:bg-amber-600/90 text-gray-900 dark:text-gray-100 px-4 py-2 flex items-center justify-between gap-2 max-w-md mx-auto w-full">
-          <span className="text-sm font-medium truncate">
-            {t('verifyIdentity.banner', 'Verify your identity to build trust')}
-          </span>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="shrink-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+        <div className="shrink-0 bg-gradient-to-r from-amber-500 to-orange-500 dark:from-amber-600 dark:to-orange-600 text-white px-4 py-2.5 flex items-center justify-between gap-3 max-w-md mx-auto w-full">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="material-symbols-outlined text-lg shrink-0">shield</span>
+            <span className="text-sm font-medium truncate">
+              {t('verifyIdentity.banner', 'Verify your identity to build trust')}
+            </span>
+          </div>
+          <button
             onClick={() => navigate('/verify-identity')}
+            className="shrink-0 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors"
           >
             {t('verifyIdentity.verify', 'Verify')}
-          </Button>
+          </button>
         </div>
       )}
-      {/* Top App Bar */}
-      <header className="flex flex-col bg-home-background-light dark:bg-home-background-dark shrink-0 max-w-md mx-auto w-full">
-        <div className="flex items-center p-4 pb-2 justify-between">
-          <div className="flex size-12 shrink-0 items-center justify-start">
-            <img src="/app-logo.png" alt="Petflik Logo" className="w-10 h-10" />
-          </div>
-          <div className="flex-1" />
-          <div className="flex items-center gap-2">
+
+      {/* Minimal Top Bar */}
+      <header className="shrink-0 max-w-md mx-auto w-full">
+        <div className="flex items-center px-4 py-3 justify-between">
+          <img src="/app-logo.png" alt="Petflik" className="w-8 h-8" />
+          <div className="flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center justify-center rounded-full h-9 w-9 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              <span className="material-symbols-outlined text-xl">
+                {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+              </span>
+            </button>
             <button
               onClick={() => {
                 const languages = ['en', 'es', 'fr'];
-                const currentIndex = languages.indexOf(i18n.language);
-                const nextIndex = (currentIndex + 1) % languages.length;
-                i18n.changeLanguage(languages[nextIndex]);
+                const ci = languages.indexOf(i18n.language);
+                i18n.changeLanguage(languages[(ci + 1) % languages.length]);
               }}
-              className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-3 bg-transparent text-[#0e1b13] dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
-              title="Change language"
+              className="flex items-center justify-center rounded-full h-9 px-2.5 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
-              {i18n.language === 'en' ? 'EN' : i18n.language === 'es' ? 'ES' : 'FR'}
+              {i18n.language.toUpperCase()}
             </button>
-            <button 
+            <button
               onClick={() => setShowFilters(true)}
-              className="relative flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              title="Filters"
+              className="relative flex items-center justify-center rounded-full h-9 w-9 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
-              <span className="material-symbols-outlined">tune</span>
+              <span className="material-symbols-outlined text-xl">tune</span>
               {activeFiltersCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 bg-home-primary text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   {activeFiltersCount}
                 </span>
               )}
             </button>
-            <button 
+            <button
               onClick={toggleGlobalMode}
-              className={`flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 p-0 transition-all ${
-                isGlobalMode 
-                  ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                  : 'bg-transparent text-[#0e1b13] dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800'
+              className={`flex items-center justify-center rounded-full h-9 w-9 transition-colors ${
+                isGlobalMode
+                  ? 'bg-home-primary text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
-              title={isGlobalMode ? 'Global mode: See everyone' : 'Local mode: See nearby only'}
+              title={isGlobalMode ? 'Global mode' : 'Local mode'}
             >
-              <span className="material-symbols-outlined">
-                {isGlobalMode ? 'public' : 'location_on'}
+              <span className="material-symbols-outlined text-xl">
+                {isGlobalMode ? 'public' : 'near_me'}
               </span>
             </button>
           </div>
         </div>
-        
-        {/* Role Switcher */}
-        <div className="flex px-4 pb-3">
-          <div className="flex h-10 flex-1 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-800 p-1">
+
+        {/* Role Switcher - Pill style */}
+        <div className="px-4 pb-2">
+          <div className="flex h-9 items-center rounded-full bg-gray-200/80 dark:bg-gray-800 p-0.5">
             <button
               onClick={() => handleRoleChange('owner')}
-              className={`flex h-full grow items-center justify-center overflow-hidden rounded-md px-4 text-sm font-medium transition-all ${
+              className={`flex h-full flex-1 items-center justify-center rounded-full px-3 text-sm font-semibold transition-all ${
                 userRole === 'owner'
-                  ? 'bg-white dark:bg-gray-700 text-home-primary shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400'
               }`}
             >
-              <span className="material-symbols-outlined text-base mr-1">pets</span>
               {t('home.findSitters')}
             </button>
             <button
               onClick={() => handleRoleChange('sitter')}
-              className={`flex h-full grow items-center justify-center overflow-hidden rounded-md px-4 text-sm font-medium transition-all ${
+              className={`flex h-full flex-1 items-center justify-center rounded-full px-3 text-sm font-semibold transition-all ${
                 userRole === 'sitter'
-                  ? 'bg-white dark:bg-gray-700 text-home-primary shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400'
               }`}
             >
-              <span className="material-symbols-outlined text-base mr-1">school</span>
               {t('home.findPets')}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content: Card Stack */}
-      <main className="flex-1 flex flex-col items-center px-4 pt-2 pb-2 overflow-hidden max-w-md mx-auto w-full">
-        <div className="relative w-full max-w-[400px] flex-1 flex items-center justify-center" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+      {/* Network error hint */}
+      {profileLoadError === 'fetch' && (
+        <div className="shrink-0 mx-4 mb-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 max-w-md mx-auto w-full">
+          <p className="text-sm text-red-700 dark:text-red-300 mb-2">{t('common.networkBlockedHint')}</p>
+          <Button size="sm" variant="outline" className="text-red-700 dark:text-red-300 border-red-300 dark:border-red-700" onClick={handleRetryProfiles}>
+            {t('common.retry')}
+          </Button>
+        </div>
+      )}
+
+      {/* Card Stack */}
+      <main className="flex-1 flex flex-col items-center px-3 overflow-hidden max-w-md mx-auto w-full">
+        <div className="relative w-full flex-1 flex items-center justify-center" style={{ maxHeight: 'calc(100vh - 240px)' }}>
           {loadingProfiles ? (
-            /* Loading state */
             <div className="flex flex-col items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-home-primary mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">{t('home.loadingProfiles')}</p>
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-home-primary border-t-transparent mb-3"></div>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{t('home.loadingProfiles')}</p>
             </div>
           ) : profiles.length === 0 ? (
-            /* No more profiles message */
-            <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 text-center">
-              <span className="material-symbols-outlined text-6xl text-gray-400 mb-4">
+            <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
+              <span className="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600 mb-3">
                 {userRole === 'owner' ? 'person_search' : 'pets'}
               </span>
-              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-1">
                 {t('home.noMoreProfiles')}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-5">
                 {t('home.seenAllProfiles', { type: userRole === 'owner' ? t('home.sitters') : t('home.pets') })}
               </p>
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-
-                  // Reset local UI state immediately — never block on DB
                   setPassedProfileIds(new Set());
                   setLikedProfileIds(new Set());
                   setPassedProfiles(new Set());
                   setLikedProfiles(new Set());
                   setCurrentIndex(0);
                   setCurrentImageIndex(0);
-
                   toast({
                     title: t('home.resetComplete') || 'Reset!',
                     description: t('home.allProfilesAvailable') || 'All profiles are available again.',
                   });
-
-                  // Best-effort sync to DB (fire-and-forget; ignore errors when offline)
                   if (currentUser?.id) {
                     const uid = currentUser.id;
                     if (userRole === 'owner') {
@@ -910,199 +909,178 @@ const NewHomePage: React.FC = () => {
                     }
                   }
                 }}
-                className="px-6 py-3 bg-home-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                className="px-6 py-2.5 bg-home-primary text-white rounded-full font-semibold text-sm hover:opacity-90 transition-opacity"
               >
                 {t('home.startOver')}
               </button>
             </div>
           ) : (
             <>
-              {/* Background Card 2 */}
-              <div className="absolute w-[90%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-md transform scale-95 -translate-y-4"></div>
-              
-              {/* Background Card 1 */}
-              <div className="absolute w-[95%] h-[95%] bg-white dark:bg-gray-800 rounded-xl shadow-lg transform scale-95"></div>
-              
-              {/* Main Card */}
-              {currentProfile && (
-            <div 
-              className="absolute bg-cover bg-center flex flex-col items-stretch justify-end rounded-xl shadow-xl w-full h-full cursor-grab active:cursor-grabbing transition-transform"
-              style={{
-                backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 50%), url("${currentProfile.imageUrls[currentImageIndex] || currentProfile.imageUrls[0]}")`,
-                transform: `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.05}deg)`,
-                opacity: swipeDirection ? 0.5 : 1
-              }}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              {/* Image Progress Bars - Tinder Style */}
-              {currentProfile.imageUrls.length > 1 && (
-                <div className="absolute top-2 left-2 right-2 flex gap-1 z-10">
-                  {currentProfile.imageUrls.map((_, index) => (
-                    <div
-                      key={index}
-                      className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden backdrop-blur-sm"
-                    >
-                      <div
-                        className={`h-full bg-white transition-all duration-300 ${
-                          index === currentImageIndex ? 'w-full' : index < currentImageIndex ? 'w-full' : 'w-0'
-                        }`}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Background cards for depth */}
+              <div className="absolute w-[92%] h-[96%] bg-white dark:bg-gray-800 rounded-2xl shadow-sm transform scale-[0.94] translate-y-2 opacity-60" />
+              <div className="absolute w-[96%] h-[96%] bg-white dark:bg-gray-800 rounded-2xl shadow-md transform scale-[0.97] translate-y-1 opacity-80" />
 
-              {/* Tap zones for image navigation */}
-              {currentProfile.imageUrls.length > 1 && (
-                <>
+              {/* Main Card - Tinder style */}
+              {currentProfile && (
+                <div
+                  className="absolute w-full h-full rounded-2xl overflow-hidden shadow-xl cursor-grab active:cursor-grabbing"
+                  style={{
+                    transform: `translateX(${dragOffset.x}px) translateY(${dragOffset.y * 0.3}px) rotate(${dragOffset.x * 0.04}deg)`,
+                    opacity: swipeDirection ? 0.5 : 1,
+                    transition: dragStart ? 'none' : 'transform 0.3s ease'
+                  }}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  {/* Full-bleed photo */}
                   <div
-                    className="absolute left-0 top-0 bottom-0 w-1/3 z-10 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (currentImageIndex > 0) {
-                        setCurrentImageIndex(currentImageIndex - 1);
-                      }
-                    }}
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url("${currentProfile.imageUrls[currentImageIndex] || currentProfile.imageUrls[0]}")` }}
                   />
-                  <div
-                    className="absolute right-0 top-0 bottom-0 w-1/3 z-10 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (currentImageIndex < currentProfile.imageUrls.length - 1) {
-                        setCurrentImageIndex(currentImageIndex + 1);
-                      }
-                    }}
-                  />
-                </>
-              )}
-              
-              {/* Swipe indicators */}
-              {dragOffset.x > 50 && (
-                <div className="absolute top-8 right-8 bg-medium-jungle text-white px-6 py-3 rounded-lg font-bold text-xl transform rotate-12 shadow-lg z-20">
-                  {t('home.like')}
-                </div>
-              )}
-              {dragOffset.x < -50 && (
-                <div className="absolute top-8 left-8 bg-red-500 text-white px-6 py-3 rounded-lg font-bold text-xl transform -rotate-12 shadow-lg z-20">
-                  {t('home.nope')}
-                </div>
-              )}
-              
-              <div className="flex w-full items-end justify-between gap-4 p-4 pb-6">
-                <div className="flex max-w-[440px] flex-1 flex-col gap-2">
-                  {/* Name and Age */}
-                  <p className="text-white tracking-tight text-3xl font-bold leading-tight max-w-[440px] drop-shadow-lg truncate">
-                    {currentProfile.name}{currentProfile.age ? `, ${currentProfile.age}` : ''}
-                  </p>
-                  
-                  {/* Location/Distance - Prominent */}
-                  <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg self-start">
-                    <span className="material-symbols-outlined text-white text-lg">location_on</span>
-                    <p className="text-white text-base font-medium">
-                      {isGlobalMode 
-                        ? t('home.global') 
-                        : currentProfile.distance === Infinity || currentProfile.distance === undefined
-                          ? t('home.locationUnavailable') || 'Location unavailable'
-                          : t('home.kmAway', { distance: currentProfile.distance.toFixed(1) })}
-                    </p>
-                  </div>
-                  
-                  {/* Stats Row */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {/* Rating + Review Count */}
-                    {currentProfile.rating > 0 && (
-                      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                        <span 
-                          className="material-symbols-outlined text-yellow-400 text-lg" 
+
+                  {/* Gradient overlay - only bottom */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+                  {/* Image progress indicators */}
+                  {currentProfile.imageUrls.length > 1 && (
+                    <div className="absolute top-3 left-3 right-3 flex gap-1 z-10">
+                      {currentProfile.imageUrls.map((_, index) => (
+                        <div key={index} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/30">
+                          <div className={`h-full bg-white rounded-full transition-all duration-300 ${
+                            index <= currentImageIndex ? 'w-full' : 'w-0'
+                          }`} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Tap zones for photo nav */}
+                  {currentProfile.imageUrls.length > 1 && (
+                    <>
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-1/3 z-10"
+                        onClick={(e) => { e.stopPropagation(); if (currentImageIndex > 0) setCurrentImageIndex(currentImageIndex - 1); }}
+                      />
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-1/3 z-10"
+                        onClick={(e) => { e.stopPropagation(); if (currentImageIndex < currentProfile.imageUrls.length - 1) setCurrentImageIndex(currentImageIndex + 1); }}
+                      />
+                    </>
+                  )}
+
+                  {/* Swipe labels */}
+                  {dragOffset.x > 50 && (
+                    <div className="absolute top-16 left-6 border-[3px] border-green-400 text-green-400 px-4 py-2 rounded-lg font-black text-2xl transform -rotate-12 z-20">
+                      {t('home.like', 'LIKE')}
+                    </div>
+                  )}
+                  {dragOffset.x < -50 && (
+                    <div className="absolute top-16 right-6 border-[3px] border-red-400 text-red-400 px-4 py-2 rounded-lg font-black text-2xl transform rotate-12 z-20">
+                      {t('home.nope', 'NOPE')}
+                    </div>
+                  )}
+
+                  {/* Bottom info overlay - minimal Tinder style */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+                    {/* Name + Age + Verified */}
+                    <div className="flex items-center gap-2 mb-1">
+                      <h2 className="text-white text-[28px] font-bold drop-shadow-lg truncate">
+                        {currentProfile.name}
+                      </h2>
+                      {currentProfile.age && (
+                        <span className="text-white/90 text-2xl font-light">{currentProfile.age}</span>
+                      )}
+                      {currentProfile.verified && (
+                        <span
+                          className="material-symbols-outlined text-blue-400 text-xl drop-shadow-lg"
                           style={{ fontVariationSettings: '"FILL" 1' }}
                         >
-                          star
+                          verified
                         </span>
-                        <p className="text-white text-base font-bold leading-normal">
+                      )}
+                    </div>
+
+                    {/* Compact info row */}
+                    <div className="flex items-center gap-3 text-white/80 text-sm mb-2">
+                      {/* Distance */}
+                      <span className="flex items-center gap-0.5">
+                        <span className="material-symbols-outlined text-base">near_me</span>
+                        {isGlobalMode
+                          ? t('home.global')
+                          : currentProfile.distance === Infinity
+                            ? '--'
+                            : `${currentProfile.distance.toFixed(0)} km`}
+                      </span>
+
+                      {/* Rating */}
+                      {currentProfile.rating > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <span className="material-symbols-outlined text-yellow-400 text-base" style={{ fontVariationSettings: '"FILL" 1' }}>star</span>
                           {currentProfile.rating.toFixed(1)}
-                        </p>
-                        {currentProfile.reviewCount > 0 && (
-                          <p className="text-white/70 text-sm">
-                            ({currentProfile.reviewCount})
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    
-                    {/* New Profile Badge — only if no rating AND no reviews */}
-                    {currentProfile.rating === 0 && currentProfile.reviewCount === 0 && (
-                      <div className="bg-blue-500/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full shadow-lg">
-                        <p className="text-sm font-medium">
-                          ✨ {t('home.new')}
-                        </p>
-                      </div>
+                          {currentProfile.reviewCount > 0 && (
+                            <span className="text-white/60">({currentProfile.reviewCount})</span>
+                          )}
+                        </span>
+                      )}
+
+                      {/* Price */}
+                      {currentProfile.hourlyRate && (
+                        <span className="font-semibold text-white/90">
+                          €{currentProfile.hourlyRate}/hr
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Bio - 1 line */}
+                    {currentProfile.bio && (
+                      <p className="text-white/70 text-sm line-clamp-1">{currentProfile.bio}</p>
                     )}
 
-                    {/* Verified Badge */}
-                    {currentProfile.verified && (
-                      <div className="flex items-center gap-1 bg-medium-jungle/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full">
-                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>verified</span>
-                        <p className="text-xs font-bold">{t('home.verified', 'Verified')}</p>
-                      </div>
-                    )}
-                    
-                    {/* Hourly Rate */}
-                    {currentProfile.hourlyRate && (
-                      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full shadow-lg">
-                        <p className="text-sm font-bold">
-                          €{currentProfile.hourlyRate}/hr
-                        </p>
-                      </div>
+                    {/* New badge */}
+                    {currentProfile.rating === 0 && currentProfile.reviewCount === 0 && (
+                      <span className="inline-block mt-1.5 bg-blue-500/80 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                        {t('home.new', 'New')}
+                      </span>
                     )}
                   </div>
-                  
-                  {/* Bio */}
-                  {currentProfile.bio && (
-                    <p className="text-white text-sm leading-relaxed bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg mt-1 line-clamp-2">
-                      {currentProfile.bio}
-                    </p>
-                  )}
                 </div>
-              </div>
-            </div>
-          )}
+              )}
             </>
           )}
         </div>
       </main>
 
-      {/* Action Buttons - Fixed at bottom, above nav */}
-      <div className="flex flex-shrink-0 gap-6 px-4 py-4 justify-center items-center bg-home-background-light dark:bg-home-background-dark max-w-md mx-auto w-full" style={{ marginBottom: '64px' }}>
-        <button 
+      {/* Action Buttons */}
+      <div className="flex shrink-0 gap-4 px-4 py-3 justify-center items-center max-w-md mx-auto w-full" style={{ marginBottom: '64px' }}>
+        <button
           onClick={handlePass}
           disabled={profiles.length === 0}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-red-500 shadow-lg hover:bg-red-50 dark:hover:bg-red-900/50 transition-all hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center rounded-full h-14 w-14 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-red-500 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
         >
-          <span className="material-symbols-outlined text-4xl font-bold">close</span>
+          <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: '"wght" 600' }}>close</span>
         </button>
-        
-        <button 
+
+        <button
           onClick={handleLike}
           disabled={profiles.length === 0}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-20 w-20 bg-home-primary text-white shadow-xl shadow-home-primary/40 hover:opacity-90 transition-all hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center rounded-full h-[68px] w-[68px] bg-home-primary text-white shadow-lg shadow-home-primary/30 hover:shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
         >
-          <span className="material-symbols-outlined text-5xl font-bold">favorite</span>
+          <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: '"FILL" 1, "wght" 500' }}>favorite</span>
         </button>
-        
-        <button 
+
+        <button
           onClick={handleInfo}
           disabled={profiles.length === 0}
-          className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 w-16 bg-white dark:bg-gray-800 text-blue-500 shadow-lg hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-all hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center rounded-full h-14 w-14 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-blue-500 shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
         >
-          <span className="material-symbols-outlined text-4xl font-bold">info</span>
+          <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: '"wght" 500' }}>info</span>
         </button>
       </div>
 
       {/* Bottom Navigation Bar */}
       <BottomNavigation unreadNotifications={unreadNotifications} />
-      
+
       {/* Filters Modal */}
       <FiltersModal
         isOpen={showFilters}
@@ -1110,7 +1088,7 @@ const NewHomePage: React.FC = () => {
         onApply={handleApplyFilters}
         userRole={userRole}
       />
-      
+
       {/* Match Modal */}
       {matchedUser && (
         <MatchModal
@@ -1120,70 +1098,41 @@ const NewHomePage: React.FC = () => {
           petType={matchedUser.petType}
         />
       )}
-      
+
       {/* Location Permission Prompt */}
       {showLocationPrompt && !locationEnabled && !isGlobalMode && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <div className="text-center mb-4">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-outlined text-4xl text-blue-600 dark:text-blue-400">
-                  location_on
-                </span>
+              <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">near_me</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                Enable Location
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                Allow location access to find nearby {userRole === 'owner' ? 'sitters' : 'pets'} in your area. 
-                You can also browse globally without location.
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Enable Location</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                Find nearby {userRole === 'owner' ? 'sitters' : 'pets'} or browse globally.
               </p>
-              <details className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                <summary className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 font-medium">
-                  📍 How to enable location on desktop
-                </summary>
-                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg space-y-2 text-left">
-                  <p className="font-medium text-gray-700 dark:text-gray-300">When you click "Enable Location":</p>
-                  <p>1. Your browser will show a popup asking for permission</p>
-                  <p>2. Click <strong>"Allow"</strong> in the popup</p>
-                  <p className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <strong>If blocked:</strong> Look for the 🔒 or 📍 icon in your browser's address bar (top left), click it, and select "Allow location"
-                  </p>
-                </div>
-              </details>
             </div>
-            
-            <div className="space-y-3 mt-4">
+            <div className="space-y-2.5 mt-4">
               <button
                 onClick={async () => {
                   if (import.meta.env.DEV) console.log('Enable Location button clicked');
                   await requestLocation();
-                  // Modal will close automatically via useEffect when locationEnabled becomes true
                 }}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
               >
-                <span className="material-symbols-outlined">location_on</span>
+                <span className="material-symbols-outlined text-lg">location_on</span>
                 Enable Location
               </button>
-              
-              <div className="text-xs text-gray-500 dark:text-gray-400 text-center px-2">
-                After allowing location in your browser, click "Enable Location" again if the modal doesn't close
-              </div>
-              
               <button
-                onClick={() => {
-                  toggleGlobalMode();
-                  setShowLocationPrompt(false);
-                }}
-                className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                onClick={() => { toggleGlobalMode(); setShowLocationPrompt(false); }}
+                className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
               >
-                <span className="material-symbols-outlined">public</span>
+                <span className="material-symbols-outlined text-lg">public</span>
                 Browse Globally
               </button>
-              
               <button
                 onClick={() => setShowLocationPrompt(false)}
-                className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium py-2 transition-colors"
+                className="w-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-medium py-1.5 transition-colors text-sm"
               >
                 Maybe Later
               </button>
