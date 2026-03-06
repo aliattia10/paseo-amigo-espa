@@ -355,6 +355,7 @@ WHERE EXISTS (SELECT 1 FROM matches WHERE id = 'd4000000-0000-0000-0000-00000000
 -- STEP 10: REVIEWS between demo profiles
 -- ============================================================================
 -- Ensure reviewee_id column exists (some schemas use reviewed_id)
+-- Also make walk_request_id and booking_id nullable so demo reviews can be inserted without real requests
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'reviewee_id') THEN
@@ -363,6 +364,14 @@ BEGIN
     ELSE
       ALTER TABLE reviews ADD COLUMN reviewee_id UUID REFERENCES users(id) ON DELETE CASCADE;
     END IF;
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'walk_request_id') THEN
+    ALTER TABLE reviews ALTER COLUMN walk_request_id DROP NOT NULL;
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'booking_id') THEN
+    ALTER TABLE reviews ALTER COLUMN booking_id DROP NOT NULL;
   END IF;
 END $$;
 
