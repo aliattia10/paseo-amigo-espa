@@ -67,10 +67,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         if (matchesError) {
           if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
         } else if (matchesData) {
-          const mutualMatches = matchesData.filter((m: any) => {
-            if (m.is_mutual !== undefined) return m.is_mutual === true;
-            return true;
-          });
+          // All rows in the matches table are mutual by definition (the RPC only
+          // inserts when both users liked each other), so skip the is_mutual filter.
+          const mutualMatches = matchesData;
 
           const matchesWithUsers = await Promise.all(
             mutualMatches.map(async (match: any) => {

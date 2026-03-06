@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MatchModalProps {
   isOpen: boolean;
@@ -14,6 +16,8 @@ interface MatchModalProps {
 
 const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, petType = 'dog' }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { userProfile } = useAuth();
 
   if (!isOpen) return null;
 
@@ -26,82 +30,96 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, p
     onClose();
   };
 
-  // Determine match message based on pet type
-  const matchMessage = petType === 'cat' ? 'Meow Meow! 🐱' : 'Woof Woof! 🐾';
-  const emoji = petType === 'cat' ? '🐱' : '🐾';
+  const matchTitle = petType === 'cat' ? 'Meow! 🐱' : 'Woof! 🐾';
+
+  // Get current user's profile image
+  let currentUserImage = '';
+  if (userProfile?.profileImage) {
+    try {
+      const parsed = JSON.parse(userProfile.profileImage);
+      currentUserImage = Array.isArray(parsed) ? parsed[0] : userProfile.profileImage;
+    } catch {
+      currentUserImage = userProfile.profileImage;
+    }
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md mx-4 animate-in zoom-in duration-500">
-        {/* Match Header - Dynamic based on pet type */}
-        <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-white mb-2 animate-bounce">
-            {matchMessage}
-          </h1>
-          <p className="text-white text-xl font-medium">
-            It's a Match!
-          </p>
-        </div>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md"
+      onClick={handleKeepSwiping}
+    >
+      <div
+        className="relative w-full max-w-sm mx-4 flex flex-col items-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Title */}
+        <h1 className="text-5xl font-extrabold text-white mb-1 animate-bounce drop-shadow-lg">
+          {matchTitle}
+        </h1>
+        <p className="text-white/90 text-lg font-semibold mb-6">
+          {t('match.itsAMatch', "It's a Match!")}
+        </p>
 
-        {/* Profile Images */}
-        <div className="relative h-64 mb-8">
-          {/* Left Profile */}
-          <div className="absolute left-0 top-0 w-48 h-64 transform -rotate-6 transition-transform hover:rotate-0">
-            <div 
-              className="w-full h-full rounded-2xl bg-cover bg-center shadow-2xl border-4 border-white"
-              style={{
-                backgroundImage: `url("https://api.dicebear.com/7.x/avataaars/svg?seed=user")`
-              }}
-            />
+        {/* Two round profile images side by side */}
+        <div className="relative flex items-center justify-center gap-0 mb-8 w-full">
+          {/* Current user */}
+          <div className="relative z-10 w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-gray-200 flex-shrink-0 translate-x-3">
+            {currentUserImage ? (
+              <img src={currentUserImage} alt="You" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-400 to-teal-500 text-white text-4xl font-bold">
+                {(userProfile?.name || 'Y').charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
 
-          {/* Right Profile */}
-          <div className="absolute right-0 top-0 w-48 h-64 transform rotate-6 transition-transform hover:rotate-0">
-            <div 
-              className="w-full h-full rounded-2xl bg-cover bg-center shadow-2xl border-4 border-white"
-              style={{
-                backgroundImage: `url("${matchedUser.imageUrl}")`
-              }}
-            />
-          </div>
-
-          {/* Heart Icon in Center */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-            <div className="bg-gradient-to-br from-pink-500 to-red-500 rounded-full p-4 shadow-2xl animate-pulse">
-              <span className="material-symbols-outlined text-white text-5xl" style={{ fontVariationSettings: '"FILL" 1' }}>
+          {/* Heart between */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+            <div className="bg-gradient-to-br from-pink-500 to-red-500 rounded-full w-12 h-12 flex items-center justify-center shadow-xl animate-pulse">
+              <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: '"FILL" 1' }}>
                 favorite
               </span>
             </div>
           </div>
+
+          {/* Matched user */}
+          <div className="relative z-10 w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-gray-200 flex-shrink-0 -translate-x-3">
+            <img
+              src={matchedUser.imageUrl}
+              alt={matchedUser.name}
+              className="w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400'; }}
+            />
+          </div>
         </div>
 
-        {/* Match Message */}
-        <div className="bg-white rounded-2xl p-6 shadow-2xl mb-6">
-          <p className="text-center text-gray-800 text-lg font-medium mb-2">
-            You and <span className="font-bold text-medium-jungle">{matchedUser.name}</span> liked each other!
+        {/* Message card */}
+        <div className="bg-white rounded-2xl p-5 shadow-2xl mb-5 w-full">
+          <p className="text-center text-gray-800 text-base font-medium mb-1">
+            {t('match.youAnd', 'You and')} <span className="font-bold text-medium-jungle">{matchedUser.name}</span> {t('match.likedEachOther', 'liked each other!')}
           </p>
-          <p className="text-center text-gray-600 text-sm">
-            Start a conversation and plan your first walk together.
+          <p className="text-center text-gray-500 text-sm">
+            {t('match.startConversation', 'Start a conversation and plan your first walk together.')}
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3">
+        {/* Buttons */}
+        <div className="flex flex-col gap-3 w-full">
           <button
             onClick={handleSendMessage}
-            className="w-full bg-gradient-to-r from-medium-jungle to-sage-green text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            className="w-full bg-gradient-to-r from-medium-jungle to-sage-green text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all"
           >
             <span className="flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined">chat_bubble</span>
-              Send Message
+              <span className="material-symbols-outlined text-xl">chat_bubble</span>
+              {t('match.sendMessage', 'Send Message')}
             </span>
           </button>
-          
+
           <button
             onClick={handleKeepSwiping}
-            className="w-full bg-white/20 text-white font-medium py-4 px-6 rounded-xl backdrop-blur-sm hover:bg-white/30 transition-all duration-200"
+            className="w-full bg-white/15 text-white font-medium py-3 px-6 rounded-xl backdrop-blur-sm hover:bg-white/25 transition-all"
           >
-            Keep Swiping
+            {t('match.keepSwiping', 'Keep Swiping')}
           </button>
         </div>
       </div>
