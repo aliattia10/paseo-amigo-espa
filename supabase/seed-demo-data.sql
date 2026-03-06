@@ -373,6 +373,10 @@ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'booking_id') THEN
     ALTER TABLE reviews ALTER COLUMN booking_id DROP NOT NULL;
   END IF;
+
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'reviewed_id') THEN
+    ALTER TABLE reviews ALTER COLUMN reviewed_id DROP NOT NULL;
+  END IF;
 END $$;
 
 INSERT INTO reviews (id, reviewer_id, reviewee_id, rating, comment, created_at)
