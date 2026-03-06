@@ -315,35 +315,41 @@ INSERT INTO messages (id, match_id, sender_id, content, created_at)
 SELECT gen_random_uuid(), 'd4000000-0000-0000-0000-000000000001', u.id,
   'Hi Sophie! I saw you have great reviews. Would you be available to walk my dog Buddy this weekend?',
   NOW() - INTERVAL '5 days'
-FROM users u WHERE u.email = 'test@test.com';
+FROM users u WHERE u.email = 'test@test.com'
+  AND EXISTS (SELECT 1 FROM matches WHERE id = 'd4000000-0000-0000-0000-000000000001');
 
 INSERT INTO messages (id, match_id, sender_id, content, created_at)
-VALUES (gen_random_uuid(), 'd4000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
+SELECT gen_random_uuid(), 'd4000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
   'Hello! Of course, I''d love to walk Buddy! I''m free Saturday afternoon. What time works for you?',
-  NOW() - INTERVAL '5 days' + INTERVAL '2 hours');
+  NOW() - INTERVAL '5 days' + INTERVAL '2 hours'
+WHERE EXISTS (SELECT 1 FROM matches WHERE id = 'd4000000-0000-0000-0000-000000000001');
 
 INSERT INTO messages (id, match_id, sender_id, content, created_at)
 SELECT gen_random_uuid(), 'd4000000-0000-0000-0000-000000000001', u.id,
   'Saturday at 2pm would be perfect! He loves the park near Place des Vosges.',
   NOW() - INTERVAL '4 days'
-FROM users u WHERE u.email = 'test@test.com';
+FROM users u WHERE u.email = 'test@test.com'
+  AND EXISTS (SELECT 1 FROM matches WHERE id = 'd4000000-0000-0000-0000-000000000001');
 
 INSERT INTO messages (id, match_id, sender_id, content, created_at)
-VALUES (gen_random_uuid(), 'd4000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
+SELECT gen_random_uuid(), 'd4000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
   'Great! I know that park well. I''ll bring some treats too 🐾',
-  NOW() - INTERVAL '4 days' + INTERVAL '1 hour');
+  NOW() - INTERVAL '4 days' + INTERVAL '1 hour'
+WHERE EXISTS (SELECT 1 FROM matches WHERE id = 'd4000000-0000-0000-0000-000000000001');
 
 -- Conversation with Emma Dubois
 INSERT INTO messages (id, match_id, sender_id, content, created_at)
 SELECT gen_random_uuid(), 'd4000000-0000-0000-0000-000000000002', u.id,
   'Hi Emma! Your experience with energetic dogs sounds perfect for Buddy. He''s a golden doodle with LOTS of energy 😄',
   NOW() - INTERVAL '3 days'
-FROM users u WHERE u.email = 'test@test.com';
+FROM users u WHERE u.email = 'test@test.com'
+  AND EXISTS (SELECT 1 FROM matches WHERE id = 'd4000000-0000-0000-0000-000000000002');
 
 INSERT INTO messages (id, match_id, sender_id, content, created_at)
-VALUES (gen_random_uuid(), 'd4000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000003',
+SELECT gen_random_uuid(), 'd4000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000003',
   'Haha I love energetic dogs! Golden doodles are the best. I''d be happy to take him on some long walks in Lyon!',
-  NOW() - INTERVAL '3 days' + INTERVAL '3 hours');
+  NOW() - INTERVAL '3 days' + INTERVAL '3 hours'
+WHERE EXISTS (SELECT 1 FROM matches WHERE id = 'd4000000-0000-0000-0000-000000000002');
 
 -- ============================================================================
 -- STEP 10: REVIEWS between demo profiles
