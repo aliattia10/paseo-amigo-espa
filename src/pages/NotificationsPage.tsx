@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import { playNotificationSound } from '@/lib/sounds';
 import i18n from '@/lib/i18n';
@@ -23,6 +24,7 @@ const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const unreadNotifications = useUnreadNotificationCount();
   const [filter, setFilter] = useState<'all' | 'messages' | 'bookings'>('all');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +33,28 @@ const NotificationsPage: React.FC = () => {
   useEffect(() => {
     fetchNotifications();
   }, [currentUser]);
+
+  // Auto-mark notifications as read after a short delay when page is opened
+  useEffect(() => {
+    if (notifications.length === 0 || !currentUser) return;
+    const unread = notifications.filter(n => !n.isRead);
+    if (unread.length === 0) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        await supabase
+          .from('notifications')
+          .update({ read: true, is_read: true })
+          .eq('user_id', currentUser.id)
+          .in('id', unread.map(n => n.id));
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      } catch {
+        // silent
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [notifications.length, currentUser]);
 
   // Play sound when new unread notifications arrive
   useEffect(() => {
@@ -371,7 +395,7 @@ const NotificationsPage: React.FC = () => {
       </main>
 
       {/* Bottom Navigation */}
-      <BottomNavigation unreadNotifications={notifications.filter(n => !n.isRead).length} />
+      <BottomNavigation unreadNotifications={unreadNotifications} />
     </div>
   );
 };
