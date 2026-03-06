@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import ChatList from './ChatList';
 import ChatWindow from './ChatWindow';
 import type { WalkRequest } from '@/types';
@@ -14,6 +16,8 @@ import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 const MessagingPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
   const unreadNotifications = useUnreadNotificationCount();
   const [selectedChat, setSelectedChat] = useState<{
     walkRequest: WalkRequest | null;
@@ -29,37 +33,47 @@ const MessagingPage: React.FC = () => {
     setSelectedChat(null);
   };
 
+  const markAllMessagesRead = async () => {
+    if (!currentUser) return;
+    try {
+      await supabase
+        .from('notifications')
+        .update({ read: true, is_read: true })
+        .eq('user_id', currentUser.id)
+        .eq('type', 'message');
+      toast({ title: t('common.success'), description: t('notifications.allRead', 'All marked as read') });
+    } catch {
+      toast({ title: t('common.error'), description: 'Failed', variant: 'destructive' });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-stitch-bg-light pb-20 max-w-md mx-auto">
-      {/* Enhanced Header */}
-      <div className="bg-stitch-card-light shadow-md border-b border-stitch-border-light sticky top-0 z-50">
-        <div className="max-w-md mx-auto px-4 py-4">
+    <div className="min-h-screen bg-stitch-bg-light dark:bg-background-dark pb-20 max-w-md mx-auto">
+      {/* Header */}
+      <div className="bg-stitch-card-light dark:bg-card-dark shadow-md border-b border-stitch-border-light dark:border-border-dark sticky top-0 z-50">
+        <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/dashboard')}
-                className="hover:bg-stitch-bg-light rounded-xl"
+                className="rounded-xl"
               >
                 <span className="material-symbols-outlined">arrow_back</span>
               </Button>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-stitch-primary to-stitch-secondary rounded-2xl flex items-center justify-center shadow-md">
-                  <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: '"FILL" 1, "wght" 600' }}>chat_bubble</span>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-stitch-text-primary-light font-display">
-                    {t('dashboard.messages')}
-                  </h1>
-                  <p className="text-sm text-stitch-text-secondary-light">{t('dashboard.connectCommunity')}</p>
-                </div>
-              </div>
+              <h1 className="text-xl font-bold text-stitch-text-primary-light dark:text-text-primary-dark font-display">
+                {t('dashboard.messages')}
+              </h1>
             </div>
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1.5 bg-sage-green/20 text-medium-jungle rounded-xl text-sm font-medium shadow-sm">
-                {t('messages.active', 'Active')}
-              </div>
+              <button
+                onClick={markAllMessagesRead}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors text-xs font-medium"
+              >
+                <span className="material-symbols-outlined text-sm">done_all</span>
+                {t('notifications.markAllRead', 'Mark all read')}
+              </button>
               <LanguageSwitcher />
             </div>
           </div>

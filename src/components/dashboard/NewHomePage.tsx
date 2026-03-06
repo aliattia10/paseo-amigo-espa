@@ -517,6 +517,16 @@ const NewHomePage: React.FC = () => {
     // Save to Supabase and check for match
     try {
       if (userRole === 'owner' && profile.type === 'walker') {
+        // For demo/seed profiles, ensure a reverse like exists so match triggers
+        const isDemoProfile = profile.id.startsWith('a1000000-');
+        if (isDemoProfile) {
+          await supabase.from('likes').insert({
+            id: crypto.randomUUID(),
+            liker_id: profile.id,
+            liked_id: currentUser.id,
+          }).then(() => {});
+        }
+
         // Owner liking a sitter - use match system
         const { data: isMatch, error } = await supabase.rpc('check_and_create_match', {
           liker_user_id: currentUser.id,

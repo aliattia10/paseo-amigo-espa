@@ -28,7 +28,6 @@ const NotificationsPage: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'messages' | 'bookings'>('all');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     fetchNotifications();
@@ -163,7 +162,6 @@ const NotificationsPage: React.FC = () => {
           title: t('notifications.noUnread', 'No unread notifications'),
           description: t('notifications.allRead', 'All notifications are already marked as read'),
         });
-        setShowMenu(false);
         return;
       }
       
@@ -177,7 +175,6 @@ const NotificationsPage: React.FC = () => {
 
       // Update local state
       setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
-      setShowMenu(false);
       
       toast({
         title: t('common.success'),
@@ -251,36 +248,23 @@ const NotificationsPage: React.FC = () => {
         </h1>
         <div className="flex items-center gap-2">
           <button
+            onClick={markAllAsRead}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors text-sm font-medium"
+          >
+            <span className="material-symbols-outlined text-base">done_all</span>
+            {t('notifications.markAllRead', 'Mark all read')}
+          </button>
+          <button
             onClick={() => {
               const languages = ['en', 'es', 'fr'];
               const currentIndex = languages.indexOf(i18n.language);
               const nextIndex = (currentIndex + 1) % languages.length;
               i18n.changeLanguage(languages[nextIndex]);
             }}
-            className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-medium text-gray-700 dark:text-gray-300"
+            className="px-2 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs font-medium text-gray-700 dark:text-gray-300"
           >
-            {i18n.language === 'en' ? 'EN' : i18n.language === 'es' ? 'ES' : 'FR'}
+            {i18n.language.toUpperCase()}
           </button>
-          <div className="relative">
-            <button 
-              onClick={() => setShowMenu(!showMenu)}
-              className="text-text-primary-light dark:text-text-primary-dark flex h-10 w-10 items-center justify-center"
-            >
-              <span className="material-symbols-outlined">more_vert</span>
-            </button>
-            
-            {showMenu && (
-              <div className="absolute right-0 top-12 bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark min-w-[160px] z-20">
-                <button
-                  onClick={markAllAsRead}
-                  className="w-full px-4 py-3 text-left text-text-primary-light dark:text-text-primary-dark hover:bg-background-light dark:hover:bg-background-dark rounded-lg flex items-center gap-2"
-                >
-                  <span className="material-symbols-outlined text-base">done_all</span>
-                  {t('notifications.markAllRead')}
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </header>
 
