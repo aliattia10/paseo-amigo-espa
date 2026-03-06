@@ -19,6 +19,7 @@ interface ChatWindowProps {
     id: string;
     name: string;
     profileImage?: string;
+    hourlyRate?: number;
   };
   matchId?: string;
 }
@@ -322,7 +323,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             <Button
               onClick={() => {
                 // Navigate to booking page with walker ID
-                window.location.href = `/booking/request?walkerId=${otherUser.id}&walkerName=${encodeURIComponent(otherUser.name)}`;
+                window.location.href = `/booking/request?walkerId=${otherUser.id}&walkerName=${encodeURIComponent(otherUser.name)}&rate=${otherUser.hourlyRate || 15}`;
               }}
               className="bg-primary hover:bg-primary/90"
             >

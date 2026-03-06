@@ -20,11 +20,13 @@ interface Profile {
   age?: number;
   distance: number;
   rating: number;
-  imageUrls: string[]; // Changed to array for multiple images
+  reviewCount: number;
+  imageUrls: string[];
   bio?: string;
   hourlyRate?: number;
   type: 'dog' | 'walker';
-  petType?: 'dog' | 'cat'; // Pet type for pet profiles
+  petType?: 'dog' | 'cat';
+  verified?: boolean;
 }
 
 const NewHomePage: React.FC = () => {
@@ -173,7 +175,7 @@ const NewHomePage: React.FC = () => {
         const sittersPromise = Promise.race([
           supabase
             .from('users')
-            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude')
+            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude, rating, review_count, verified')
             .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
             .neq('id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
@@ -229,7 +231,8 @@ const NewHomePage: React.FC = () => {
               name: pet.name,
               age: pet.age ? parseInt(pet.age) : undefined,
               distance,
-              rating: 5.0,
+              rating: 0,
+              reviewCount: 0,
               imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
               type: 'dog' as const,
               petType: (pet.pet_type as 'dog' | 'cat') || 'dog',
@@ -267,11 +270,13 @@ const NewHomePage: React.FC = () => {
               id: sitter.id,
               name: sitter.name || 'Pet Sitter',
               distance,
-              rating: 5.0,
+              rating: sitter.rating ? Number(sitter.rating) : 0,
+              reviewCount: sitter.review_count ? Number(sitter.review_count) : 0,
               imageUrls,
               bio: sitter.bio || undefined,
               hourlyRate: sitter.hourly_rate || 15,
               type: 'walker' as const,
+              verified: sitter.verified === true,
             };
           });
           setRealSitterProfiles(sitterProfiles);
@@ -1005,8 +1010,8 @@ const NewHomePage: React.FC = () => {
                   </div>
                   
                   {/* Stats Row */}
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {/* Rating */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Rating + Review Count */}
                     {currentProfile.rating > 0 && (
                       <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full">
                         <span 
@@ -1018,23 +1023,36 @@ const NewHomePage: React.FC = () => {
                         <p className="text-white text-base font-bold leading-normal">
                           {currentProfile.rating.toFixed(1)}
                         </p>
+                        {currentProfile.reviewCount > 0 && (
+                          <p className="text-white/70 text-sm">
+                            ({currentProfile.reviewCount})
+                          </p>
+                        )}
                       </div>
                     )}
                     
-                    {/* New Profile Badge */}
-                    {!currentProfile.rating && (
+                    {/* New Profile Badge — only if no rating AND no reviews */}
+                    {currentProfile.rating === 0 && currentProfile.reviewCount === 0 && (
                       <div className="bg-blue-500/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full shadow-lg">
                         <p className="text-sm font-medium">
                           ✨ {t('home.new')}
                         </p>
                       </div>
                     )}
+
+                    {/* Verified Badge */}
+                    {currentProfile.verified && (
+                      <div className="flex items-center gap-1 bg-medium-jungle/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full">
+                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"FILL" 1' }}>verified</span>
+                        <p className="text-xs font-bold">{t('home.verified', 'Verified')}</p>
+                      </div>
+                    )}
                     
                     {/* Hourly Rate */}
                     {currentProfile.hourlyRate && (
-                      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-1.5 rounded-full shadow-lg">
-                        <p className="text-base font-bold">
-                          ${currentProfile.hourlyRate}/hr
+                      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full shadow-lg">
+                        <p className="text-sm font-bold">
+                          €{currentProfile.hourlyRate}/hr
                         </p>
                       </div>
                     )}

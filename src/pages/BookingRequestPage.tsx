@@ -275,7 +275,7 @@ const BookingRequestPage: React.FC = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
                 <span>Hourly Rate</span>
-                <span>${hourlyRate.toFixed(2)}/hr</span>
+                <span>€{hourlyRate.toFixed(2)}/hr</span>
               </div>
               <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
                 <span>Duration</span>
@@ -283,16 +283,16 @@ const BookingRequestPage: React.FC = () => {
               </div>
               <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>€{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-text-secondary-light dark:text-text-secondary-dark text-sm">
                 <span>Platform Fee (20%)</span>
-                <span>${platformFee.toFixed(2)}</span>
+                <span>€{platformFee.toFixed(2)}</span>
               </div>
               <div className="border-t border-border-light dark:border-border-dark pt-2 mt-2"></div>
               <div className="flex justify-between text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>€{total.toFixed(2)}</span>
               </div>
             </div>
           </div>

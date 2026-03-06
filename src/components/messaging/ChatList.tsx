@@ -26,11 +26,14 @@ interface Match {
     name: string;
     profile_image?: string;
     role?: string;
+    hourly_rate?: number;
+    rating?: number;
+    review_count?: number;
   };
 }
 
 interface ChatListProps {
-  onSelectChat: (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string }, matchId?: string) => void;
+  onSelectChat: (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string; hourlyRate?: number }, matchId?: string) => void;
 }
 
 const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
@@ -82,7 +85,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               if (!otherUserId) return match;
 
               const userRes = await withTimeout(
-                supabase.from('users').select('id, name, profile_image, user_type').eq('id', otherUserId).single()
+                supabase.from('users').select('id, name, profile_image, user_type, hourly_rate, rating, review_count').eq('id', otherUserId).single()
               );
               const userData = userRes?.data;
               if (userData) {
@@ -93,6 +96,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                     name: userData.name || 'User',
                     profile_image: userData.profile_image,
                     role: userData.user_type,
+                    hourly_rate: userData.hourly_rate,
+                    rating: userData.rating,
+                    review_count: userData.review_count,
                   },
                 };
               }
@@ -240,7 +246,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               <div
                 key={match.id}
                 className="relative bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-2xl p-4 cursor-pointer hover:shadow-lg transition-all transform hover:scale-[1.02] border border-pink-200 dark:border-pink-800"
-                onClick={() => onSelectChat(null, match.otherUser!, match.id)}
+                onClick={() => onSelectChat(null, { ...match.otherUser!, profileImage: profileImageUrl, hourlyRate: match.otherUser!.hourly_rate }, match.id)}
               >
                 {/* Match Badge */}
                 <div className="absolute top-3 right-3">
@@ -278,12 +284,23 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                     <h3 className="font-bold text-lg text-text-primary-light dark:text-text-primary-dark mb-1 truncate">
                       {match.otherUser.name}
                     </h3>
-                    <div className="flex items-center gap-2 text-sm mb-2">
+                    <div className="flex items-center gap-2 text-sm mb-2 flex-wrap">
                       <span className="bg-white/60 dark:bg-gray-800/60 px-2 py-0.5 rounded-full text-xs font-medium">
                         {match.otherUser.role === 'sitter' || match.otherUser.role === 'walker' 
                           ? `🐾 ${t('messages.sitter') || 'Sitter'}` 
                           : `🏠 ${t('messages.owner') || 'Owner'}`}
                       </span>
+                      {typeof match.otherUser.rating === 'number' && match.otherUser.rating > 0 && (
+                        <span className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 px-2 py-0.5 rounded-full text-xs font-medium">
+                          ⭐ {Number(match.otherUser.rating).toFixed(1)}
+                          {match.otherUser.review_count ? ` (${match.otherUser.review_count})` : ''}
+                        </span>
+                      )}
+                      {typeof match.otherUser.hourly_rate === 'number' && (
+                        <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-medium">
+                          €{match.otherUser.hourly_rate}/hr
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
                       Matched {formatDate(new Date(match.created_at))}

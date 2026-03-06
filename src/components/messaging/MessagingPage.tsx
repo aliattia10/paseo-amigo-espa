@@ -17,11 +17,11 @@ const MessagingPage: React.FC = () => {
   const unreadNotifications = useUnreadNotificationCount();
   const [selectedChat, setSelectedChat] = useState<{
     walkRequest: WalkRequest | null;
-    otherUser: { id: string; name: string; profileImage?: string; role?: string };
+    otherUser: { id: string; name: string; profileImage?: string; role?: string; hourlyRate?: number };
     matchId?: string;
   } | null>(null);
 
-  const handleSelectChat = (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string }, matchId?: string) => {
+  const handleSelectChat = (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string; hourlyRate?: number }, matchId?: string) => {
     setSelectedChat({ walkRequest, otherUser, matchId });
   };
 

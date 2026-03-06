@@ -351,7 +351,19 @@ VALUES (gen_random_uuid(), 'd4000000-0000-0000-0000-000000000002', 'a1000000-000
 -- ============================================================================
 -- STEP 10: REVIEWS between demo profiles
 -- ============================================================================
-INSERT INTO reviews (id, reviewer_id, reviewed_id, rating, comment, created_at)
+-- Ensure reviewee_id column exists (some schemas use reviewed_id)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'reviewee_id') THEN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'reviewed_id') THEN
+      ALTER TABLE reviews RENAME COLUMN reviewed_id TO reviewee_id;
+    ELSE
+      ALTER TABLE reviews ADD COLUMN reviewee_id UUID REFERENCES users(id) ON DELETE CASCADE;
+    END IF;
+  END IF;
+END $$;
+
+INSERT INTO reviews (id, reviewer_id, reviewee_id, rating, comment, created_at)
 VALUES
   (gen_random_uuid(), 'b2000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', 5,
    'Sophie was amazing with Luna! She sent photos during the walk and Luna came back so happy. Highly recommend!',
@@ -377,6 +389,18 @@ VALUES
    'Marco has an amazing garden where Bella could run free. She was so happy when I picked her up!',
    NOW() - INTERVAL '3 days')
 ON CONFLICT DO NOTHING;
+
+-- Update sitter user profiles with correct rating/review_count from actual reviews
+UPDATE users u
+SET
+  rating = sub.avg_rating,
+  review_count = sub.total_reviews
+FROM (
+  SELECT reviewee_id, AVG(rating)::DECIMAL(3,2) AS avg_rating, COUNT(*) AS total_reviews
+  FROM reviews
+  GROUP BY reviewee_id
+) sub
+WHERE u.id = sub.reviewee_id;
 
 -- Also add matches between some demo owners and sitters (to populate Messages page)
 INSERT INTO matches (id, user1_id, user2_id, created_at)
