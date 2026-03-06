@@ -30,13 +30,16 @@ interface Match {
     rating?: number;
     review_count?: number;
   };
+  lastMessageAt?: string;
 }
 
 interface ChatListProps {
   onSelectChat: (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string; hourlyRate?: number }, matchId?: string) => void;
+  /** When this changes (e.g. user returns to list), we refetch so new matches appear. */
+  refreshTrigger?: number | string;
 }
 
-const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
+const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => {
   const { userProfile, currentUser } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -57,32 +60,46 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
       try {
         if (showLoading) setLoading(true);
-        // Load matches from both possible column structures
+        // 1) Fetch all matches (match row = conversation container; no separate "conversations" table)
         const matchesRes = await withTimeout(
           supabase
             .from('matches')
             .select('*')
             .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id},user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`)
+            .order('created_at', { ascending: false })
         );
         const matchesData = matchesRes?.data ?? null;
         const matchesError = matchesRes?.error ?? null;
 
         if (matchesError) {
           if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
-        } else if (matchesData) {
-          // All rows in the matches table are mutual by definition (the RPC only
-          // inserts when both users liked each other), so skip the is_mutual filter.
-          const mutualMatches = matchesData;
+        } else if (matchesData && matchesData.length > 0) {
+          const matchIds = matchesData.map((m: any) => m.id);
+          // 2) Fetch which matches have at least one message (for "Messages" vs "New Matches" split)
+          const messagesRes = await withTimeout(
+            supabase
+              .from('messages')
+              .select('match_id, created_at')
+              .in('match_id', matchIds)
+              .order('created_at', { ascending: false })
+          );
+          const messagesData = messagesRes?.data ?? null;
+          const messagesByMatch = new Map<string, string>();
+          (messagesData || []).forEach((msg: any) => {
+            if (msg.match_id && (!messagesByMatch.has(msg.match_id) || (msg.created_at && msg.created_at > (messagesByMatch.get(msg.match_id) || '')))) {
+              messagesByMatch.set(msg.match_id, msg.created_at || '');
+            }
+          });
 
           const matchesWithUsers = await Promise.all(
-            mutualMatches.map(async (match: any) => {
+            matchesData.map(async (match: any) => {
               let otherUserId = '';
               if (match.user1_id) {
                 otherUserId = match.user1_id === currentUser.id ? match.user2_id : match.user1_id;
               } else if (match.user_id) {
                 otherUserId = match.user_id === currentUser.id ? match.matched_user_id : match.user_id;
               }
-              if (!otherUserId) return match;
+              if (!otherUserId) return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
 
               const userRes = await withTimeout(
                 supabase.from('users').select('id, name, profile_image, user_type, hourly_rate, rating, review_count').eq('id', otherUserId).single()
@@ -91,6 +108,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
               if (userData) {
                 return {
                   ...match,
+                  lastMessageAt: messagesByMatch.get(match.id),
                   otherUser: {
                     id: userData.id,
                     name: userData.name || 'User',
@@ -102,10 +120,12 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
                   },
                 };
               }
-              return match;
+              return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
             })
           );
           setMatches(matchesWithUsers.filter((m: any) => m.otherUser));
+        } else {
+          setMatches([]);
         }
 
         const requests = userProfile.userType === 'owner'
@@ -116,7 +136,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
         );
         setWalkRequests(activeRequests);
       } catch (error: any) {
-        // Network/offline errors → silent empty state, no toast
         if (import.meta.env.DEV) console.error('Error loading chats:', error);
       } finally {
         setLoading(false);
@@ -125,7 +144,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
     loadChats();
 
-    // Realtime: refetch when a new match is inserted for this user
     if (!currentUser?.id) return;
     const channel = supabase
       .channel('chat-list-matches')
@@ -145,7 +163,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userProfile, currentUser, toast, t]);
+  }, [userProfile, currentUser, toast, t, refreshTrigger]);
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -200,6 +218,12 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     );
   }
 
+  // Tinder-style: New Matches = no messages yet; Messages = at least one message
+  const newMatches = matches.filter((m) => !m.lastMessageAt);
+  const conversations = matches
+    .filter((m) => m.lastMessageAt)
+    .sort((a, b) => (b.lastMessageAt || '').localeCompare(a.lastMessageAt || ''));
+
   if (matches.length === 0 && walkRequests.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6 text-center">
@@ -216,6 +240,19 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     );
   }
 
+  const getProfileImageUrl = (match: Match): string => {
+    if (!match.otherUser) return '';
+    try {
+      if (match.otherUser.profile_image) {
+        const parsed = JSON.parse(match.otherUser.profile_image);
+        return Array.isArray(parsed) ? parsed[0] : match.otherUser.profile_image;
+      }
+    } catch {
+      return match.otherUser.profile_image || '';
+    }
+    return '';
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0 px-4 py-3 border-b bg-card-light dark:bg-card-dark">
@@ -226,95 +263,120 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-3">
-          {/* Show matches first - Tinder-style bubbles */}
-          {matches.map((match) => {
-            if (!match.otherUser) return null;
+        <div className="p-4 space-y-4">
+          {/* New Matches - horizontal circles (no messages yet) */}
+          {newMatches.length > 0 && (
+            <>
+              <h3 className="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark px-1">
+                {t('messages.newMatches') || 'New Matches'}
+              </h3>
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
+                {newMatches.map((match) => {
+                  if (!match.otherUser) return null;
+                  const profileImageUrl = getProfileImageUrl(match);
+                  return (
+                    <button
+                      key={match.id}
+                      type="button"
+                      className="flex-shrink-0 flex flex-col items-center gap-2 w-20 focus:outline-none focus:ring-2 focus:ring-pink-400 rounded-2xl"
+                      onClick={() => onSelectChat(null, { ...match.otherUser!, profileImage: profileImageUrl, hourlyRate: match.otherUser!.hourly_rate }, match.id)}
+                    >
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 p-0.5 ring-2 ring-pink-300 dark:ring-pink-600">
+                        <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 overflow-hidden">
+                          {profileImageUrl ? (
+                            <img src={profileImageUrl} alt={match.otherUser.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-purple-200 dark:from-pink-800 dark:to-purple-800">
+                              <span className="text-xl font-bold text-pink-600 dark:text-pink-300">
+                                {match.otherUser.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-xs font-medium text-text-primary-light dark:text-text-primary-dark truncate w-full text-center">
+                        {match.otherUser.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
-            // Parse profile image
-            let profileImageUrl = '';
-            try {
-              if (match.otherUser.profile_image) {
-                const parsed = JSON.parse(match.otherUser.profile_image);
-                profileImageUrl = Array.isArray(parsed) ? parsed[0] : match.otherUser.profile_image;
-              }
-            } catch {
-              profileImageUrl = match.otherUser.profile_image || '';
-            }
-
-            return (
-              <div
-                key={match.id}
-                className="relative bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-2xl p-4 cursor-pointer hover:shadow-lg transition-all transform hover:scale-[1.02] border border-pink-200 dark:border-pink-800"
-                onClick={() => onSelectChat(null, { ...match.otherUser!, profileImage: profileImageUrl, hourlyRate: match.otherUser!.hourly_rate }, match.id)}
-              >
-                {/* Match Badge */}
-                <div className="absolute top-3 right-3">
-                  <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
-                    <Heart className="w-3 h-3 fill-white" />
-                    {t('messages.match') || 'Match'}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  {/* Profile Image - Large Circle */}
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 p-0.5">
-                      <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 overflow-hidden">
-                        {profileImageUrl ? (
-                          <img 
-                            src={profileImageUrl} 
-                            alt={match.otherUser.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-purple-200 dark:from-pink-800 dark:to-purple-800">
-                            <span className="text-2xl font-bold text-pink-600 dark:text-pink-300">
-                              {match.otherUser.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
+          {/* Messages - list of conversations with at least one message */}
+          {conversations.length > 0 && (
+            <>
+              <h3 className="text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark px-1">
+                {t('messages.messages') || 'Messages'}
+              </h3>
+              {conversations.map((match) => {
+                if (!match.otherUser) return null;
+                const profileImageUrl = getProfileImageUrl(match);
+                return (
+                  <div
+                    key={match.id}
+                    className="relative bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-2xl p-4 cursor-pointer hover:shadow-lg transition-all transform hover:scale-[1.02] border border-pink-200 dark:border-pink-800"
+                    onClick={() => onSelectChat(null, { ...match.otherUser!, profileImage: profileImageUrl, hourlyRate: match.otherUser!.hourly_rate }, match.id)}
+                  >
+                    <div className="absolute top-3 right-3">
+                      <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
+                        <Heart className="w-3 h-3 fill-white" />
+                        {t('messages.match') || 'Match'}
                       </div>
                     </div>
-                    {/* Online indicator */}
-                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-medium-jungle border-2 border-white dark:border-gray-800 rounded-full"></div>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg text-text-primary-light dark:text-text-primary-dark mb-1 truncate">
-                      {match.otherUser.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm mb-2 flex-wrap">
-                      <span className="bg-white/60 dark:bg-gray-800/60 px-2 py-0.5 rounded-full text-xs font-medium">
-                        {match.otherUser.role === 'sitter' || match.otherUser.role === 'walker' 
-                          ? `🐾 ${t('messages.sitter') || 'Sitter'}` 
-                          : `🏠 ${t('messages.owner') || 'Owner'}`}
-                      </span>
-                      {typeof match.otherUser.rating === 'number' && match.otherUser.rating > 0 && (
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 px-2 py-0.5 rounded-full text-xs font-medium">
-                          ⭐ {Number(match.otherUser.rating).toFixed(1)}
-                          {match.otherUser.review_count ? ` (${match.otherUser.review_count})` : ''}
-                        </span>
-                      )}
-                      {typeof match.otherUser.hourly_rate === 'number' && (
-                        <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-medium">
-                          €{match.otherUser.hourly_rate}/hr
-                        </span>
-                      )}
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 p-0.5">
+                          <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 overflow-hidden">
+                            {profileImageUrl ? (
+                              <img src={profileImageUrl} alt={match.otherUser.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-purple-200 dark:from-pink-800 dark:to-purple-800">
+                                <span className="text-2xl font-bold text-pink-600 dark:text-pink-300">
+                                  {match.otherUser.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-medium-jungle border-2 border-white dark:border-gray-800 rounded-full" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-lg text-text-primary-light dark:text-text-primary-dark mb-1 truncate">
+                          {match.otherUser.name}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm mb-2 flex-wrap">
+                          <span className="bg-white/60 dark:bg-gray-800/60 px-2 py-0.5 rounded-full text-xs font-medium">
+                            {match.otherUser.role === 'sitter' || match.otherUser.role === 'walker'
+                              ? `🐾 ${t('messages.sitter') || 'Sitter'}`
+                              : `🏠 ${t('messages.owner') || 'Owner'}`}
+                          </span>
+                          {typeof match.otherUser.rating === 'number' && match.otherUser.rating > 0 && (
+                            <span className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 px-2 py-0.5 rounded-full text-xs font-medium">
+                              ⭐ {Number(match.otherUser.rating).toFixed(1)}
+                              {match.otherUser.review_count ? ` (${match.otherUser.review_count})` : ''}
+                            </span>
+                          )}
+                          {typeof match.otherUser.hourly_rate === 'number' && (
+                            <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-medium">
+                              €{match.otherUser.hourly_rate}/hr
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                          {t('messages.lastActivity', { date: formatDate(new Date(match.lastMessageAt!)) }) || `Last message ${formatDate(new Date(match.lastMessageAt!))}`}
+                        </p>
+                      </div>
+                      <div className="text-pink-400">
+                        <ArrowRight className="w-5 h-5" />
+                      </div>
                     </div>
-                    <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                      {t('messages.matchedOn', { date: formatDate(new Date(match.created_at)) })}
-                    </p>
                   </div>
-
-                  {/* Arrow indicator */}
-                  <div className="text-pink-400">
-                    <ArrowRight className="w-5 h-5" />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </>
+          )}
 
             {/* Show walk requests - Card style */}
             {walkRequests.map((request) => {

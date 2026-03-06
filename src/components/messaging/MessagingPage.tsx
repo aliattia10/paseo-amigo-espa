@@ -26,6 +26,7 @@ const MessagingPage: React.FC = () => {
   const { toast } = useToast();
   const unreadNotifications = useUnreadNotificationCount();
   const stateConsumedRef = useRef(false);
+  const [listRefreshKey, setListRefreshKey] = useState(0);
   const [selectedChat, setSelectedChat] = useState<{
     walkRequest: WalkRequest | null;
     otherUser: { id: string; name: string; profileImage?: string; role?: string; hourlyRate?: number };
@@ -149,6 +150,7 @@ const MessagingPage: React.FC = () => {
 
   const handleCloseChat = () => {
     setSelectedChat(null);
+    setListRefreshKey((k) => k + 1);
   };
 
   const markAllMessagesRead = async () => {
@@ -208,7 +210,7 @@ const MessagingPage: React.FC = () => {
             onClose={handleCloseChat}
           />
         ) : (
-          <ChatList onSelectChat={handleSelectChat} />
+          <ChatList onSelectChat={handleSelectChat} refreshTrigger={listRefreshKey} />
         )}
       </div>
 
