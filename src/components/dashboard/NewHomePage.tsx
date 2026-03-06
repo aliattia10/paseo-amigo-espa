@@ -514,10 +514,9 @@ const NewHomePage: React.FC = () => {
     newLiked.add(profile.id);
     setLikedProfileIds(newLiked);
     
-    // Save to Supabase and check for match (saves like + auto-matches with bots server-side)
+    // Save to Supabase and check for match (works for all users: mutual like creates match; demos get instant match)
     try {
       if (userRole === 'owner' && profile.type === 'walker') {
-        // Single RPC: saves like and creates match when liking a demo bot (instant match)
         const { data: isMatch, error } = await (supabase as any).rpc('save_like_and_check_match', {
           p_liker_id: currentUser.id,
           p_liked_id: profile.id

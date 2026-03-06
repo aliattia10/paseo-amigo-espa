@@ -22,7 +22,17 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, p
   if (!isOpen) return null;
 
   const handleSendMessage = () => {
-    navigate(`/messages?userId=${matchedUser.id}`);
+    // Pass matched user in state so Messages page can show the conversation immediately
+    // without waiting for a matches list re-fetch (avoids race / empty list).
+    navigate(`/messages?userId=${matchedUser.id}`, {
+      state: {
+        openMatch: {
+          id: matchedUser.id,
+          name: matchedUser.name,
+          imageUrl: matchedUser.imageUrl,
+        },
+      },
+    });
     onClose();
   };
 

@@ -50,12 +50,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     scrollToBottom();
   }, [messages]);
 
-  // Load initial messages
+  // Load initial messages (when matchId is missing briefly after optimistic open, show UI with empty messages)
   useEffect(() => {
+    if (!matchId && !walkRequest) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     const loadMessages = async () => {
       try {
         if (matchId) {
-          // Load messages for match
           const { data, error } = await (supabase as any)
             .from('messages')
             .select('*')
@@ -65,15 +70,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           if (error) throw error;
           setMessages(data || []);
         } else if (walkRequest) {
-          // Load messages for walk request (old system)
           const initialMessages = await getChatMessages(walkRequest.id);
           setMessages(initialMessages);
         }
       } catch (error) {
         console.error('Error loading messages:', error);
         toast({
-        title: t('common.error', 'Error'),
-        description: t('messages.loadFailed', 'Could not load messages.'),
+          title: t('common.error', 'Error'),
+          description: t('messages.loadFailed', 'Could not load messages.'),
           variant: "destructive",
         });
       } finally {
@@ -199,6 +203,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newMessage.trim() && !selectedMedia) || !currentUser || sending) return;
+    if (!matchId && !walkRequest) return; // matchId not resolved yet (optimistic open)
 
     setSending(true);
     setUploading(true);
@@ -402,6 +407,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         </ScrollArea>
 
         <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t space-y-3">
+          {!matchId && !walkRequest && (
+            <p className="text-xs text-muted-foreground text-center">
+              {t('messages.loadingConversation', 'Preparing conversation...')}
+            </p>
+          )}
           {/* Media preview */}
           {mediaPreview && (
             <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -450,7 +460,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               size="icon"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={sending || uploading}
+              disabled={sending || uploading || (!matchId && !walkRequest)}
               className="flex-shrink-0"
             >
               <Image className="w-4 h-4" />
@@ -460,12 +470,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder={t('messages.writeMessage')}
               className="flex-1"
-              disabled={sending || uploading}
+              disabled={sending || uploading || (!matchId && !walkRequest)}
             />
             <Button
               type="submit"
               size="icon"
-              disabled={(!newMessage.trim() && !selectedMedia) || sending || uploading}
+              disabled={(!newMessage.trim() && !selectedMedia) || sending || uploading || (!matchId && !walkRequest)}
               className="flex-shrink-0 bg-primary hover:bg-primary/90"
             >
               {uploading ? (

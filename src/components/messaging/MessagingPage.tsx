@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -13,17 +13,135 @@ import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 
+type OpenMatchState = {
+  openMatch: { id: string; name: string; imageUrl: string };
+};
+
 const MessagingPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const unreadNotifications = useUnreadNotificationCount();
+  const stateConsumedRef = useRef(false);
   const [selectedChat, setSelectedChat] = useState<{
     walkRequest: WalkRequest | null;
     otherUser: { id: string; name: string; profileImage?: string; role?: string; hourlyRate?: number };
     matchId?: string;
   } | null>(null);
+
+  // 1) Optimistic open from match modal: use navigation state so the conversation shows immediately
+  useEffect(() => {
+    const state = location.state as OpenMatchState | null;
+    const openMatch = state?.openMatch;
+    if (!currentUser?.id || !openMatch || openMatch.id === currentUser.id || stateConsumedRef.current) return;
+
+    stateConsumedRef.current = true;
+    setSelectedChat({
+      walkRequest: null,
+      otherUser: {
+        id: openMatch.id,
+        name: openMatch.name,
+        profileImage: openMatch.imageUrl,
+        role: undefined,
+        hourlyRate: undefined,
+      },
+      matchId: undefined,
+    });
+    setSearchParams({}, { replace: true });
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [currentUser?.id, location.state, location.pathname, navigate, setSearchParams]);
+
+  // 2) Resolve matchId when we have selectedChat from state but no matchId yet (so ChatWindow can load/send messages)
+  useEffect(() => {
+    if (!currentUser?.id || !selectedChat?.otherUser || selectedChat.matchId != null) return;
+
+    const otherId = selectedChat.otherUser.id;
+    let cancelled = false;
+
+    const resolve = async () => {
+      try {
+        const { data: matchesList } = await supabase
+          .from('matches')
+          .select('id, user1_id, user2_id')
+          .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id}`);
+        const match = matchesList?.find(
+          (m: any) =>
+            (m.user1_id === currentUser.id && m.user2_id === otherId) ||
+            (m.user2_id === currentUser.id && m.user1_id === otherId)
+        );
+        if (cancelled || !match?.id) return;
+        setSelectedChat((prev) =>
+          prev && prev.otherUser.id === otherId ? { ...prev, matchId: match.id } : prev
+        );
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('Resolve matchId:', e);
+      }
+    };
+
+    resolve();
+    return () => { cancelled = true; };
+  }, [currentUser?.id, selectedChat?.otherUser?.id, selectedChat?.matchId]);
+
+  // 3) Fallback: open by userId only when no state was passed (e.g. direct link)
+  useEffect(() => {
+    const userId = searchParams.get('userId');
+    if (!currentUser?.id || !userId || userId === currentUser.id) return;
+    if ((location.state as OpenMatchState)?.openMatch?.id === userId) return; // already opened from modal state
+    if (selectedChat?.otherUser?.id === userId) return;
+
+    const openChatForUser = async () => {
+      try {
+        const { data: matchesList } = await supabase
+          .from('matches')
+          .select('id, user1_id, user2_id')
+          .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id}`);
+        const match = matchesList?.find(
+          (m: any) =>
+            (m.user1_id === currentUser.id && m.user2_id === userId) ||
+            (m.user2_id === currentUser.id && m.user1_id === userId)
+        );
+        const matchId = match?.id;
+        if (!matchId) return;
+
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id, name, profile_image, user_type, hourly_rate')
+          .eq('id', userId)
+          .single();
+        if (!userData) return;
+
+        let profileImage: string | undefined;
+        try {
+          if (userData.profile_image) {
+            const parsed = JSON.parse(userData.profile_image);
+            profileImage = Array.isArray(parsed) ? parsed[0] : userData.profile_image;
+          }
+        } catch {
+          profileImage = userData.profile_image;
+        }
+
+        setSelectedChat({
+          walkRequest: null,
+          otherUser: {
+            id: userData.id,
+            name: userData.name || 'User',
+            profileImage,
+            role: userData.user_type,
+            hourlyRate: userData.hourly_rate,
+          },
+          matchId,
+        });
+        setSearchParams({}, { replace: true });
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('Open chat from userId:', e);
+      }
+    };
+
+    openChatForUser();
+  }, [currentUser?.id, searchParams, setSearchParams, selectedChat?.otherUser?.id, location.state]);
 
   const handleSelectChat = (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string; hourlyRate?: number }, matchId?: string) => {
     setSelectedChat({ walkRequest, otherUser, matchId });
