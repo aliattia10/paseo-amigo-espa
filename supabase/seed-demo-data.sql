@@ -30,9 +30,6 @@ BEGIN
   END IF;
 END $$;
 
--- Ensure is_mutual defaults to TRUE for all existing matches (they were all created by mutual likes)
-UPDATE matches SET is_mutual = TRUE WHERE is_mutual = FALSE OR is_mutual IS NULL;
-
 -- Ensure messages table exists for match-based chat
 CREATE TABLE IF NOT EXISTS messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
