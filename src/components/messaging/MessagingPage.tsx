@@ -66,12 +66,12 @@ const MessagingPage: React.FC = () => {
       try {
         const { data: matchesList } = await supabase
           .from('matches')
-          .select('id, user1_id, user2_id')
-          .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id}`);
+          .select('id, user_id, matched_user_id')
+          .or(`user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`);
         const match = matchesList?.find(
           (m: any) =>
-            (m.user1_id === currentUser.id && m.user2_id === otherId) ||
-            (m.user2_id === currentUser.id && m.user1_id === otherId)
+            (m.user_id === currentUser.id && m.matched_user_id === otherId) ||
+            (m.matched_user_id === currentUser.id && m.user_id === otherId)
         );
         if (cancelled || !match?.id) return;
         setSelectedChat((prev) =>
@@ -97,12 +97,12 @@ const MessagingPage: React.FC = () => {
       try {
         const { data: matchesList } = await supabase
           .from('matches')
-          .select('id, user1_id, user2_id')
-          .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id}`);
+          .select('id, user_id, matched_user_id')
+          .or(`user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`);
         const match = matchesList?.find(
           (m: any) =>
-            (m.user1_id === currentUser.id && m.user2_id === userId) ||
-            (m.user2_id === currentUser.id && m.user1_id === userId)
+            (m.user_id === currentUser.id && m.matched_user_id === userId) ||
+            (m.matched_user_id === currentUser.id && m.user_id === userId)
         );
         const matchId = match?.id;
         if (!matchId) return;

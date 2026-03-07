@@ -106,8 +106,8 @@ BEGIN
 
   SELECT EXISTS(
     SELECT 1 FROM matches m
-    WHERE (m.user1_id = p_liker_id AND m.user2_id = p_liked_id)
-       OR (m.user1_id = p_liked_id AND m.user2_id = p_liker_id)
+    WHERE (m.user_id = p_liker_id AND m.matched_user_id = p_liked_id)
+       OR (m.user_id = p_liked_id AND m.matched_user_id = p_liker_id)
   ) INTO v_match_exists;
 
   IF v_match_exists THEN
@@ -120,12 +120,12 @@ BEGIN
   ) INTO v_reverse_exists;
 
   IF v_reverse_exists THEN
-    INSERT INTO matches (user1_id, user2_id, created_at)
-    SELECT p_liker_id, p_liked_id, NOW()
+    INSERT INTO matches (user_id, matched_user_id, match_type, is_mutual, matched_at, created_at)
+    SELECT p_liker_id, p_liked_id, 'like', TRUE, NOW(), NOW()
     WHERE NOT EXISTS (
       SELECT 1 FROM matches m
-      WHERE (m.user1_id = p_liker_id AND m.user2_id = p_liked_id)
-         OR (m.user1_id = p_liked_id AND m.user2_id = p_liker_id)
+      WHERE (m.user_id = p_liker_id AND m.matched_user_id = p_liked_id)
+         OR (m.user_id = p_liked_id AND m.matched_user_id = p_liker_id)
     );
     RETURN TRUE;
   END IF;
@@ -137,14 +137,12 @@ $$;
 GRANT EXECUTE ON FUNCTION save_like_and_check_match(UUID, UUID) TO authenticated;
 
 -- ----------------------------------------------------------------------------
--- PART 3: So match bubbles and conversations show in Messages (RLS for user1_id/user2_id)
+-- PART 3: Ensure matches RLS covers user_id / matched_user_id
 -- ----------------------------------------------------------------------------
 DO $$
 BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user1_id') THEN
-    DROP POLICY IF EXISTS "Users can view matches by user1_id user2_id" ON public.matches;
-    CREATE POLICY "Users can view matches by user1_id user2_id"
-      ON public.matches FOR SELECT
-      USING (auth.uid() = user1_id OR auth.uid() = user2_id);
-  END IF;
+  DROP POLICY IF EXISTS "Users can view their matches" ON public.matches;
+  CREATE POLICY "Users can view their matches"
+    ON public.matches FOR SELECT
+    USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
 END $$;

@@ -14,8 +14,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface Match {
   id: string;
-  user1_id?: string;
-  user2_id?: string;
   user_id?: string;
   matched_user_id?: string;
   is_mutual?: boolean;
@@ -65,7 +63,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
           supabase
             .from('matches')
             .select('*')
-            .or(`user1_id.eq.${currentUser.id},user2_id.eq.${currentUser.id},user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`)
+            .or(`user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`)
             .order('created_at', { ascending: false })
         );
         const matchesData = matchesRes?.data ?? null;
@@ -74,31 +72,34 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
         if (matchesError) {
           if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
         } else if (matchesData && matchesData.length > 0) {
-          const matchIds = matchesData.map((m: any) => m.id);
-          // 2) Fetch which matches have at least one message (for "Messages" vs "New Matches" split)
-          const messagesRes = await withTimeout(
-            supabase
-              .from('messages')
-              .select('match_id, created_at')
-              .in('match_id', matchIds)
-              .order('created_at', { ascending: false })
-          );
-          const messagesData = messagesRes?.data ?? null;
-          const messagesByMatch = new Map<string, string>();
-          (messagesData || []).forEach((msg: any) => {
-            if (msg.match_id && (!messagesByMatch.has(msg.match_id) || (msg.created_at && msg.created_at > (messagesByMatch.get(msg.match_id) || '')))) {
-              messagesByMatch.set(msg.match_id, msg.created_at || '');
-            }
-          });
+          // Only show mutual matches
+          const mutualMatches = matchesData.filter((m: any) => m.is_mutual);
+          if (mutualMatches.length === 0) { setMatches([]); }
+          else {
+          const matchIds = mutualMatches.map((m: any) => m.id);
+          // Fetch which matches have messages (graceful: if messages table doesn't exist, treat all as new)
+          let messagesByMatch = new Map<string, string>();
+          try {
+            const messagesRes = await withTimeout(
+              supabase
+                .from('messages')
+                .select('match_id, created_at')
+                .in('match_id', matchIds)
+                .order('created_at', { ascending: false })
+            );
+            const messagesData = messagesRes?.data ?? null;
+            (messagesData || []).forEach((msg: any) => {
+              if (msg.match_id && (!messagesByMatch.has(msg.match_id) || (msg.created_at && msg.created_at > (messagesByMatch.get(msg.match_id) || '')))) {
+                messagesByMatch.set(msg.match_id, msg.created_at || '');
+              }
+            });
+          } catch {
+            // messages table may not exist; all matches are "new"
+          }
 
           const matchesWithUsers = await Promise.all(
-            matchesData.map(async (match: any) => {
-              let otherUserId = '';
-              if (match.user1_id) {
-                otherUserId = match.user1_id === currentUser.id ? match.user2_id : match.user1_id;
-              } else if (match.user_id) {
-                otherUserId = match.user_id === currentUser.id ? match.matched_user_id : match.user_id;
-              }
+            mutualMatches.map(async (match: any) => {
+              const otherUserId = match.user_id === currentUser.id ? match.matched_user_id : match.user_id;
               if (!otherUserId) return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
 
               const userRes = await withTimeout(
@@ -124,6 +125,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
             })
           );
           setMatches(matchesWithUsers.filter((m: any) => m.otherUser));
+          }
         } else {
           setMatches([]);
         }
@@ -154,7 +156,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
           const row = payload.new as Record<string, unknown>;
           const uid = currentUser.id;
           const involvesUser =
-            row?.user1_id === uid || row?.user2_id === uid || row?.user_id === uid || row?.matched_user_id === uid;
+            row?.user_id === uid || row?.matched_user_id === uid;
           if (involvesUser) loadChats(false);
         }
       )
