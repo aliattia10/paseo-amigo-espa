@@ -500,10 +500,10 @@ const NewHomePage: React.FC = () => {
   const handleLike = async () => {
     const profile = profiles[currentIndex];
     
-    if (!currentUser) {
+    if (!currentUser?.id) {
       toast({
         title: t('common.error'),
-        description: t('home.errorSignIn'),
+        description: t('auth.pleaseLogInAgain', t('home.errorSignIn', 'Please log in again')),
         variant: 'destructive',
       });
       return;

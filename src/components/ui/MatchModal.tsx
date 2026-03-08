@@ -20,7 +20,7 @@ interface MatchModalProps {
 const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, petType = 'dog', currentUserName, currentUserImageUrl }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { userProfile } = useAuth();
+  const { userProfile, loading: authLoading } = useAuth();
 
   if (!isOpen) return null;
 
@@ -50,12 +50,14 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, p
   let currentUserImage = currentUserImageUrl ?? '';
   if (!currentUserImage && userProfile?.profileImage) {
     try {
-      const parsed = JSON.parse(userProfile.profileImage);
+      const parsed = typeof userProfile.profileImage === 'string' ? JSON.parse(userProfile.profileImage) : userProfile.profileImage;
       currentUserImage = Array.isArray(parsed) ? parsed[0] : (userProfile.profileImage as string);
     } catch {
       currentUserImage = userProfile.profileImage as string;
     }
   }
+
+  const showCurrentUserSkeleton = authLoading || (!currentUserImage && !displayName && !currentUserImageUrl && !currentUserName);
 
   return (
     <div
@@ -78,7 +80,9 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, p
         <div className="relative flex items-center justify-center gap-0 mb-8 w-full">
           {/* Current user */}
           <div className="relative z-10 w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-gray-200 flex-shrink-0 translate-x-3">
-            {currentUserImage ? (
+            {showCurrentUserSkeleton ? (
+              <div className="w-full h-full animate-pulse bg-gray-300 dark:bg-gray-600" aria-hidden />
+            ) : currentUserImage ? (
               <img src={currentUserImage} alt={t('common.you', 'You')} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-400 to-teal-500 text-white text-4xl font-bold">

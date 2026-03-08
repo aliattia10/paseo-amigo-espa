@@ -10,20 +10,23 @@ import { ShieldCheck, Loader2, ArrowRight, AlertTriangle } from 'lucide-react';
 const VerifyIdentityPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currentUser, userProfile, refreshUserProfile } = useAuth();
+  const { currentUser, userProfile, loading: authLoading, refreshUserProfile } = useAuth();
   const { toast } = useToast();
   const [starting, setStarting] = useState(false);
   const [serviceUnavailable, setServiceUnavailable] = useState(false);
 
   useEffect(() => {
-    if (!currentUser) {
+    if (!authLoading && !currentUser) {
       navigate('/auth');
       return;
     }
-  }, [currentUser, navigate]);
+  }, [authLoading, currentUser, navigate]);
 
   const handleStartVerification = async () => {
-    if (!currentUser || !userProfile) return;
+    if (!currentUser?.id || !userProfile) {
+      toast({ title: t('common.error'), description: t('auth.pleaseLogInAgain', 'Please log in again'), variant: 'destructive' });
+      return;
+    }
     setStarting(true);
     setServiceUnavailable(false);
     try {
@@ -94,7 +97,23 @@ const VerifyIdentityPage: React.FC = () => {
     else navigate('/dashboard');
   };
 
-  if (!currentUser) return null;
+  if (authLoading || !currentUser?.id) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Loader2 className="w-10 h-10 animate-spin text-medium-jungle dark:text-sage-green mb-4" />
+        <p className="text-gray-600 dark:text-gray-300">{t('common.loading', 'Loading...')}</p>
+      </div>
+    );
+  }
+
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Loader2 className="w-10 h-10 animate-spin text-medium-jungle dark:text-sage-green mb-4" />
+        <p className="text-gray-600 dark:text-gray-300">{t('common.loading', 'Loading profile...')}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col items-center justify-center p-6">
@@ -128,7 +147,7 @@ const VerifyIdentityPage: React.FC = () => {
             size="lg"
             className="w-full bg-medium-jungle hover:bg-medium-jungle/90 text-white"
             onClick={handleStartVerification}
-            disabled={starting}
+            disabled={starting || !currentUser?.id || !userProfile}
           >
             {starting ? (
               <>

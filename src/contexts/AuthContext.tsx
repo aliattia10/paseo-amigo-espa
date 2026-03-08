@@ -53,6 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUserProfile(profile);
       } catch (error) {
         console.error('AuthContext: Error fetching user profile:', error);
+        setUserProfile(null);
       } finally {
         setLoading(false);
       }
@@ -87,17 +88,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               setLoading(false);
               return;
             }
-            // Refresh succeeded
+            // Refresh succeeded — keep loading true until profile is fetched
             setCurrentUser(refreshed.session.user);
             checkAdminStatus(refreshed.session.user);
-            setLoading(false);
-            fetchUserProfile(refreshed.session.user.id);
+            await fetchUserProfile(refreshed.session.user.id);
           } else {
-            // Token is still valid — set the user immediately
+            // Token is still valid — set user and keep loading true until profile is fetched
             setCurrentUser(session.user);
             checkAdminStatus(session.user);
-            setLoading(false);
-            fetchUserProfile(session.user.id);
+            await fetchUserProfile(session.user.id);
           }
         } else {
           setLoading(false);
@@ -135,6 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       checkAdminStatus(session?.user ?? null);
       
       if (session?.user) {
+        setLoading(true);
         await fetchUserProfile(session.user.id);
       } else {
         setUserProfile(null);

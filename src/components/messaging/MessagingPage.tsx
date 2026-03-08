@@ -22,7 +22,7 @@ const MessagingPage: React.FC = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const unreadNotifications = useUnreadNotificationCount();
   const stateConsumedRef = useRef(false);
@@ -184,8 +184,17 @@ const MessagingPage: React.FC = () => {
     setListRefreshKey((k) => k + 1);
   };
 
+  if (authLoading || !currentUser?.id) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-stitch-bg-light dark:bg-background-dark">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent" />
+        <p className="mt-4 text-stitch-text-secondary-light dark:text-text-secondary-dark">{t('common.loading', 'Loading...')}</p>
+      </div>
+    );
+  }
+
   const markAllMessagesRead = async () => {
-    if (!currentUser) return;
+    if (!currentUser?.id) return;
     try {
       await supabase
         .from('notifications')
