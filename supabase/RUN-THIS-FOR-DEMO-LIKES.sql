@@ -1,12 +1,12 @@
 -- ============================================================================
 -- RUN THIS ENTIRE FILE IN SUPABASE SQL EDITOR (one time) to fix "Failed to save like"
 -- 1. Makes likes table reference public.users (so demo users count)
--- 2. Inserts the 6 demo sitters into public.users
--- 3. Updates the like/match function
+-- 2. Inserts the 6 demo sitters and 6 demo owners (with pets) into public.users
+-- 3. Updates the like/match function (reverse likes for both so you can match with owners)
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- PART 1: Point likes at public.users and ensure demo sitters exist
+-- PART 1: Point likes at public.users and ensure demo sitters + demo owners exist
 -- ----------------------------------------------------------------------------
 
 -- 1a. Drop existing FKs on likes so we can point them at public.users
@@ -59,6 +59,31 @@ ON CONFLICT (id) DO UPDATE SET
   latitude = EXCLUDED.latitude,
   longitude = EXCLUDED.longitude;
 
+-- 1b2. Insert the 6 demo owners (so you can like them and get a match with their owner; link pets via seed-demo-data or pets table owner_id)
+INSERT INTO public.users (id, name, email, phone, city, postal_code, user_type, bio, profile_image, verified, latitude, longitude, created_at)
+VALUES
+  ('b2000000-0000-0000-0000-000000000001', 'Marie Laurent', 'marie.laurent@demo.petflik.com', '+33612345611', 'Paris', '75003', 'owner',
+   'Proud mama of a golden retriever named Luna. Looking for reliable walkers for weekday afternoons.',
+   '["https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800"]', true, 48.8630, 2.3600, NOW()),
+  ('b2000000-0000-0000-0000-000000000002', 'Pablo Fernández', 'pablo.fernandez@demo.petflik.com', '+34612345612', 'Madrid', '28002', 'owner',
+   'Cat lover with two rescue cats. Need a sitter who understands feline personalities.',
+   '["https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800"]', true, 40.4200, -3.7010, NOW()),
+  ('b2000000-0000-0000-0000-000000000003', 'Chloé Moreau', 'chloe.moreau@demo.petflik.com', '+33612345613', 'Lyon', '69002', 'owner',
+   'Working mom with a playful border collie. He needs lots of exercise while I am at the office!',
+   '["https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=800"]', true, 45.7580, 4.8320, NOW()),
+  ('b2000000-0000-0000-0000-000000000004', 'Antonio Ruiz', 'antonio.ruiz@demo.petflik.com', '+34612345614', 'Barcelona', '08003', 'owner',
+   'Retired professor with a senior labrador. Looking for gentle, patient walkers.',
+   '["https://images.unsplash.com/photo-1463453091185-61582044d556?w=800"]', true, 41.3900, 2.1700, NOW()),
+  ('b2000000-0000-0000-0000-000000000005', 'Camille Petit', 'camille.petit@demo.petflik.com', '+33612345615', 'Paris', '75015', 'owner',
+   'Busy entrepreneur with an adorable French bulldog. Need morning walks 3x per week.',
+   '["https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800"]', true, 48.8420, 2.2950, NOW()),
+  ('b2000000-0000-0000-0000-000000000006', 'Elena Martínez', 'elena.martinez@demo.petflik.com', '+34612345616', 'Madrid', '28003', 'owner',
+   'Animal rescue volunteer with a rescued greyhound named Bella. She needs gentle care!',
+   '["https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800"]', true, 40.4250, -3.6900, NOW())
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name, bio = EXCLUDED.bio, profile_image = EXCLUDED.profile_image,
+  verified = EXCLUDED.verified, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude;
+
 -- 1c. Remove likes whose user ids are not in public.users, then re-add FK to public.users
 DELETE FROM public.likes WHERE liker_id NOT IN (SELECT id FROM public.users) OR liked_id NOT IN (SELECT id FROM public.users);
 ALTER TABLE public.likes
@@ -67,7 +92,7 @@ ALTER TABLE public.likes
   ADD CONSTRAINT likes_liked_id_fkey FOREIGN KEY (liked_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 -- ----------------------------------------------------------------------------
--- PART 2: Update the like/match function
+-- PART 2: Update the like/match function (supports matches with user_id/matched_user_id OR user1_id/user2_id)
 -- ----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION save_like_and_check_match(
   p_liker_id UUID,
@@ -105,21 +130,22 @@ BEGIN
   END IF;
 
   SELECT EXISTS(
-    SELECT 1 FROM matches m
-    WHERE (m.user_id = p_liker_id AND m.matched_user_id = p_liked_id)
-       OR (m.user_id = p_liked_id AND m.matched_user_id = p_liker_id)
-  ) INTO v_match_exists;
-
-  IF v_match_exists THEN
-    RETURN TRUE;
-  END IF;
-
-  SELECT EXISTS(
     SELECT 1 FROM likes
     WHERE liker_id = p_liked_id AND liked_id = p_liker_id
   ) INTO v_reverse_exists;
 
-  IF v_reverse_exists THEN
+  IF NOT v_reverse_exists THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Check/create match: support user_id/matched_user_id or user1_id/user2_id
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    SELECT EXISTS(
+      SELECT 1 FROM matches m
+      WHERE (m.user_id = p_liker_id AND m.matched_user_id = p_liked_id)
+         OR (m.user_id = p_liked_id AND m.matched_user_id = p_liker_id)
+    ) INTO v_match_exists;
+    IF v_match_exists THEN RETURN TRUE; END IF;
     INSERT INTO matches (user_id, matched_user_id, match_type, is_mutual, matched_at, created_at)
     SELECT p_liker_id, p_liked_id, 'like', TRUE, NOW(), NOW()
     WHERE NOT EXISTS (
@@ -127,22 +153,40 @@ BEGIN
       WHERE (m.user_id = p_liker_id AND m.matched_user_id = p_liked_id)
          OR (m.user_id = p_liked_id AND m.matched_user_id = p_liker_id)
     );
-    RETURN TRUE;
+  ELSIF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user1_id') THEN
+    SELECT EXISTS(
+      SELECT 1 FROM matches m
+      WHERE (m.user1_id = p_liker_id AND m.user2_id = p_liked_id)
+         OR (m.user1_id = p_liked_id AND m.user2_id = p_liker_id)
+    ) INTO v_match_exists;
+    IF v_match_exists THEN RETURN TRUE; END IF;
+    INSERT INTO matches (user1_id, user2_id, created_at)
+    SELECT p_liker_id, p_liked_id, NOW()
+    WHERE NOT EXISTS (
+      SELECT 1 FROM matches m
+      WHERE (m.user1_id = p_liker_id AND m.user2_id = p_liked_id)
+         OR (m.user1_id = p_liked_id AND m.user2_id = p_liker_id)
+    );
   END IF;
 
-  RETURN FALSE;
+  RETURN TRUE;
 END;
 $$;
 
 GRANT EXECUTE ON FUNCTION save_like_and_check_match(UUID, UUID) TO authenticated;
 
 -- ----------------------------------------------------------------------------
--- PART 3: Ensure matches RLS covers user_id / matched_user_id
+-- PART 3: Ensure matches RLS (supports user_id/matched_user_id or user1_id/user2_id)
 -- ----------------------------------------------------------------------------
 DO $$
 BEGIN
   DROP POLICY IF EXISTS "Users can view their matches" ON public.matches;
-  CREATE POLICY "Users can view their matches"
-    ON public.matches FOR SELECT
-    USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
+  DROP POLICY IF EXISTS "Users can view their own matches" ON public.matches;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    CREATE POLICY "Users can view their matches" ON public.matches FOR SELECT
+      USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
+  ELSIF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user1_id') THEN
+    CREATE POLICY "Users can view their matches" ON public.matches FOR SELECT
+      USING (auth.uid() = user1_id OR auth.uid() = user2_id);
+  END IF;
 END $$;

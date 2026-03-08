@@ -427,12 +427,46 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
+-- STEP: Test user match with a demo owner (Marie Laurent) so you can have a match with an owner and their pets (Luna, Simba)
+-- ============================================================================
+-- Mutual likes: test user <-> Marie Laurent (demo owner)
+INSERT INTO likes (id, liker_id, liked_id, created_at)
+SELECT gen_random_uuid(), u.id, 'b2000000-0000-0000-0000-000000000001', NOW() - INTERVAL '2 days'
+FROM users u WHERE u.email = 'test@test.com'
+ON CONFLICT DO NOTHING;
+INSERT INTO likes (id, liker_id, liked_id, created_at)
+SELECT gen_random_uuid(), 'b2000000-0000-0000-0000-000000000001', u.id, NOW() - INTERVAL '2 days'
+FROM users u WHERE u.email = 'test@test.com'
+ON CONFLICT DO NOTHING;
+
+-- Match: test user <-> Marie Laurent (supports user1_id/user2_id or user_id/matched_user_id)
+DO $$
+DECLARE
+  v_test_user_id UUID;
+BEGIN
+  SELECT id INTO v_test_user_id FROM users WHERE email = 'test@test.com' LIMIT 1;
+  IF v_test_user_id IS NOT NULL THEN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+      INSERT INTO matches (id, user_id, matched_user_id, match_type, is_mutual, created_at)
+      VALUES ('d4000000-0000-0000-0000-000000000020', v_test_user_id, 'b2000000-0000-0000-0000-000000000001', 'like', true, NOW() - INTERVAL '2 days')
+      ON CONFLICT (id) DO NOTHING;
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user1_id') THEN
+      INSERT INTO matches (id, user1_id, user2_id, created_at)
+      VALUES ('d4000000-0000-0000-0000-000000000020', v_test_user_id, 'b2000000-0000-0000-0000-000000000001', NOW() - INTERVAL '2 days')
+      ON CONFLICT (id) DO NOTHING;
+    END IF;
+  END IF;
+END $$;
+
+-- ============================================================================
 -- DONE! The test account (test@test.com) now has:
 -- ✅ A complete owner profile with a pet (Buddy)
 -- ✅ 3 matches with sitters (Sophie, Emma, Carlos)
 -- ✅ 2 bookings (1 pending, 1 confirmed)
 -- ✅ 3 unread notifications
 -- ✅ Chat messages with Sophie and Emma
--- ✅ 6 realistic sitter profiles and 6 owner profiles with pets
+-- ✅ 6 realistic sitter profiles and 6 owner profiles with pets (pets linked via owner_id)
+-- ✅ 1 match with a demo owner (Marie) so you can chat and see their pets (Luna, Simba)
 -- ✅ Reviews between demo users
 -- ============================================================================
