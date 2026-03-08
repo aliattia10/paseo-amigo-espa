@@ -7,7 +7,11 @@ import os
 import tempfile
 from typing import Literal
 
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+# Reduce TensorFlow noise and avoid GPU allocation issues on Windows
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="KYC Verification API", version="1.0.0")
@@ -62,6 +66,12 @@ def run_ocr(image_path: str) -> list[str]:
 APPROVE_THRESHOLD = 0.7
 
 
+def _is_image_content_type(ct: str | None) -> bool:
+    if not ct:
+        return False
+    return ct.startswith("image/") or ct in ("application/octet-stream",)
+
+
 @app.post("/verify")
 async def verify(
     id_card: UploadFile = File(..., description="ID card image"),
@@ -71,9 +81,9 @@ async def verify(
     Verify identity: face match (ID vs selfie) + OCR on ID.
     Returns status (approved | manual_review), confidence, ocr_text.
     """
-    if not id_card.content_type or not id_card.content_type.startswith("image/"):
+    if not _is_image_content_type(id_card.content_type):
         raise HTTPException(400, "id_card must be an image")
-    if not selfie.content_type or not selfie.content_type.startswith("image/"):
+    if not _is_image_content_type(selfie.content_type):
         raise HTTPException(400, "selfie must be an image")
 
     id_bytes = await id_card.read()
@@ -81,10 +91,12 @@ async def verify(
     if not id_bytes or not selfie_bytes:
         raise HTTPException(400, "Empty file(s)")
 
-    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f_id:
+    # Use .jpg so OpenCV/DeepFace can read; accept any upload as image
+    ext = ".jpg"
+    with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as f_id:
         f_id.write(id_bytes)
         id_path = f_id.name
-    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f_selfie:
+    with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as f_selfie:
         f_selfie.write(selfie_bytes)
         selfie_path = f_selfie.name
 
