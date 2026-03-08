@@ -1,7 +1,7 @@
 {
-  "name": "Petflik - Trusted Sitters for Happy Pets",
-  "short_name": "Petflik",
-  "description": "Trusted sitters for happy pets. Connect with professional pet sitters for dogs and cats in your area.",
+  "name": "PAWS - Pet Care & Sitters",
+  "short_name": "PAWS",
+  "description": "PAWS – Add to your phone. Find trusted pet sitters and dog walkers. Full app coming soon to Google Play and App Store.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
