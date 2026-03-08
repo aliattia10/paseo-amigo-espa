@@ -1096,6 +1096,17 @@ const NewHomePage: React.FC = () => {
           onClose={() => setShowMatchModal(false)}
           matchedUser={matchedUser}
           petType={matchedUser.petType}
+          currentUserName={userProfile?.name}
+          currentUserImageUrl={(() => {
+            const p = userProfile?.profileImage;
+            if (!p) return undefined;
+            try {
+              const parsed = typeof p === 'string' ? JSON.parse(p) : p;
+              return Array.isArray(parsed) ? parsed[0] : (parsed as string);
+            } catch {
+              return typeof p === 'string' ? p : undefined;
+            }
+          })()}
         />
       )}
 

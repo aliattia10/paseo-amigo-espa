@@ -52,7 +52,13 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
       Promise.race([p, new Promise<null>((res) => setTimeout(() => res(null), TIMEOUT_MS))]).catch(() => null);
 
     const loadChats = async (showLoading = true) => {
-      if (!userProfile || !currentUser) {
+      if (!userProfile || !currentUser?.id) {
+        setLoading(false);
+        return;
+      }
+
+      const uid = typeof currentUser.id === 'string' ? currentUser.id.trim() : '';
+      if (!uid) {
         setLoading(false);
         return;
       }
@@ -60,80 +66,93 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
       try {
         setLoadError(null);
         if (showLoading) setLoading(true);
-        // 1) Fetch all matches (match row = conversation container; no separate "conversations" table)
-        const matchesRes = await withTimeout(
-          supabase
-            .from('matches')
-            .select('*')
-            .or(`user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`)
-            .order('created_at', { ascending: false })
-        );
-        const matchesData = matchesRes?.data ?? null;
-        const matchesError = matchesRes?.error ?? null;
 
-        if (matchesRes === null) {
+        // 1) Fetch matches – support user_id/matched_user_id or user1_id/user2_id (avoid 400 from wrong schema)
+        let matchesData: any[] | null = null;
+        let matchesError: any = null;
+        let useUser12 = false;
+
+        const orFilterA = `user_id.eq.${uid},matched_user_id.eq.${uid}`;
+        const matchesResA = await withTimeout(
+          supabase.from('matches').select('*').or(orFilterA).order('created_at', { ascending: false })
+        );
+        matchesError = matchesResA?.error ?? null;
+        if (matchesError?.code === '42703' || (matchesError?.message && String(matchesError.message).includes('user_id'))) {
+          const orFilterB = `user1_id.eq.${uid},user2_id.eq.${uid}`;
+          const matchesResB = await withTimeout(
+            supabase.from('matches').select('*').or(orFilterB).order('created_at', { ascending: false })
+          );
+          matchesError = matchesResB?.error ?? null;
+          matchesData = matchesResB?.data ?? null;
+          useUser12 = true;
+        } else {
+          matchesData = matchesResA?.data ?? null;
+        }
+
+        if (matchesResA === null && !useUser12) {
           setLoadError(t('messages.loadFailed') || 'Could not load matches.');
         } else if (matchesError) {
           if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
           setLoadError(t('messages.loadFailed') || 'Could not load matches.');
         } else if (matchesData && matchesData.length > 0) {
-          // Only show mutual matches
-          const mutualMatches = matchesData.filter((m: any) => m.is_mutual);
-          if (mutualMatches.length === 0) { setMatches([]); }
-          else {
-          const matchIds = mutualMatches.map((m: any) => m.id);
-          // Fetch which matches have messages (graceful: if messages table doesn't exist, treat all as new)
-          let messagesByMatch = new Map<string, string>();
-          try {
-            const messagesRes = await withTimeout(
-              supabase
-                .from('messages')
-                .select('match_id, created_at')
-                .in('match_id', matchIds)
-                .order('created_at', { ascending: false })
-            );
-            const messagesData = messagesRes?.data ?? null;
-            (messagesData || []).forEach((msg: any) => {
-              if (msg.match_id && (!messagesByMatch.has(msg.match_id) || (msg.created_at && msg.created_at > (messagesByMatch.get(msg.match_id) || '')))) {
-                messagesByMatch.set(msg.match_id, msg.created_at || '');
-              }
-            });
-          } catch {
-            // messages table may not exist; all matches are "new"
-          }
-
-          const matchesWithUsers = await Promise.all(
-            mutualMatches.map(async (match: any) => {
-              const otherUserId = match.user_id === currentUser.id ? match.matched_user_id : match.user_id;
-              if (!otherUserId) return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
-
-              const userRes = await withTimeout(
-                supabase.from('users').select('id, name, profile_image, user_type, hourly_rate, rating, review_count').eq('id', otherUserId).single()
+          const mutualMatches = matchesData.filter((m: any) => m.is_mutual !== false);
+          if (mutualMatches.length === 0) {
+            setMatches([]);
+          } else {
+            const matchIds = mutualMatches.map((m: any) => m.id);
+            let messagesByMatch = new Map<string, string>();
+            try {
+              const messagesRes = await withTimeout(
+                supabase
+                  .from('messages')
+                  .select('match_id, created_at')
+                  .in('match_id', matchIds)
+                  .order('created_at', { ascending: false })
               );
-              const userData = userRes?.data;
-              if (userData) {
-                return {
-                  ...match,
-                  lastMessageAt: messagesByMatch.get(match.id),
-                  otherUser: {
-                    id: userData.id,
-                    name: userData.name || 'User',
-                    profile_image: userData.profile_image,
-                    role: userData.user_type,
-                    hourly_rate: userData.hourly_rate,
-                    rating: userData.rating,
-                    review_count: userData.review_count,
-                  },
-                };
-              }
-              return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
-            })
-          );
-          const validMatches = matchesWithUsers.filter((m: any) => m.otherUser);
-          setMatches(validMatches);
-          if (mutualMatches.length > 0 && validMatches.length === 0) {
-            setLoadError(t('messages.loadFailed') || 'Could not load match details.');
-          }
+              const messagesData = messagesRes?.data ?? null;
+              (messagesData || []).forEach((msg: any) => {
+                if (msg.match_id && (!messagesByMatch.has(msg.match_id) || (msg.created_at && msg.created_at > (messagesByMatch.get(msg.match_id) || '')))) {
+                  messagesByMatch.set(msg.match_id, msg.created_at || '');
+                }
+              });
+            } catch {
+              /* messages table may not exist */
+            }
+
+            const getUserId = (m: any) => (useUser12 ? (m.user1_id === uid ? m.user2_id : m.user1_id) : (m.user_id === uid ? m.matched_user_id : m.user_id));
+
+            const matchesWithUsers = await Promise.all(
+              mutualMatches.map(async (match: any) => {
+                const otherUserId = getUserId(match);
+                if (!otherUserId) return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
+
+                const userRes = await withTimeout(
+                  supabase.from('users').select('id, name, profile_image, user_type, hourly_rate, rating, review_count').eq('id', otherUserId).single()
+                );
+                const userData = userRes?.data;
+                if (userData) {
+                  return {
+                    ...match,
+                    lastMessageAt: messagesByMatch.get(match.id),
+                    otherUser: {
+                      id: userData.id,
+                      name: userData.name || 'User',
+                      profile_image: userData.profile_image,
+                      role: userData.user_type,
+                      hourly_rate: userData.hourly_rate,
+                      rating: userData.rating,
+                      review_count: userData.review_count,
+                    },
+                  };
+                }
+                return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
+              })
+            );
+            const validMatches = matchesWithUsers.filter((m: any) => m.otherUser);
+            setMatches(validMatches);
+            if (mutualMatches.length > 0 && validMatches.length === 0) {
+              setLoadError(t('messages.loadFailed') || 'Could not load match details.');
+            }
           }
         } else {
           setMatches([]);
@@ -165,7 +184,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
           const row = payload.new as Record<string, unknown>;
           const uid = currentUser.id;
           const involvesUser =
-            row?.user_id === uid || row?.matched_user_id === uid;
+            row?.user_id === uid || row?.matched_user_id === uid ||
+            row?.user1_id === uid || row?.user2_id === uid;
           if (involvesUser) loadChats(false);
         }
       )

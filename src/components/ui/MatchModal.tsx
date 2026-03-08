@@ -12,9 +12,12 @@ interface MatchModalProps {
     imageUrl: string;
   };
   petType?: 'dog' | 'cat';
+  /** Pass from parent so avatar is correct even before userProfile is loaded */
+  currentUserName?: string;
+  currentUserImageUrl?: string;
 }
 
-const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, petType = 'dog' }) => {
+const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, petType = 'dog', currentUserName, currentUserImageUrl }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { userProfile } = useAuth();
@@ -42,14 +45,15 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, p
 
   const matchTitle = petType === 'cat' ? 'Meow! 🐱' : 'Woof! 🐾';
 
-  // Get current user's profile image
-  let currentUserImage = '';
-  if (userProfile?.profileImage) {
+  // Current user's display name and image: prefer props from parent, then userProfile
+  const displayName = currentUserName ?? userProfile?.name ?? '';
+  let currentUserImage = currentUserImageUrl ?? '';
+  if (!currentUserImage && userProfile?.profileImage) {
     try {
       const parsed = JSON.parse(userProfile.profileImage);
-      currentUserImage = Array.isArray(parsed) ? parsed[0] : userProfile.profileImage;
+      currentUserImage = Array.isArray(parsed) ? parsed[0] : (userProfile.profileImage as string);
     } catch {
-      currentUserImage = userProfile.profileImage;
+      currentUserImage = userProfile.profileImage as string;
     }
   }
 
@@ -75,10 +79,10 @@ const MatchModal: React.FC<MatchModalProps> = ({ isOpen, onClose, matchedUser, p
           {/* Current user */}
           <div className="relative z-10 w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-gray-200 flex-shrink-0 translate-x-3">
             {currentUserImage ? (
-              <img src={currentUserImage} alt="You" className="w-full h-full object-cover" />
+              <img src={currentUserImage} alt={t('common.you', 'You')} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-400 to-teal-500 text-white text-4xl font-bold">
-                {(userProfile?.name || 'Y').charAt(0).toUpperCase()}
+                {(displayName || t('common.you', 'You')).charAt(0).toUpperCase()}
               </div>
             )}
           </div>

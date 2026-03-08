@@ -59,19 +59,38 @@ const MessagingPage: React.FC = () => {
   useEffect(() => {
     if (!currentUser?.id || !selectedChat?.otherUser || selectedChat.matchId != null) return;
 
+    const uid = String(currentUser.id).trim();
     const otherId = selectedChat.otherUser.id;
+    if (!uid || !otherId) return;
     let cancelled = false;
 
     const resolve = async () => {
       try {
-        const { data: matchesList } = await supabase
+        let matchesList: any[] | null = null;
+        const { data: dataA, error: errA } = await supabase
           .from('matches')
           .select('id, user_id, matched_user_id')
-          .or(`user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`);
+          .or(`user_id.eq.${uid},matched_user_id.eq.${uid}`);
+        if (errA?.code === '42703' || (errA?.message && String(errA.message).includes('user_id'))) {
+          const { data: dataB } = await supabase
+            .from('matches')
+            .select('id, user1_id, user2_id')
+            .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
+          matchesList = dataB ?? null;
+          const match = matchesList?.find(
+            (m: any) =>
+              (m.user1_id === uid && m.user2_id === otherId) || (m.user1_id === otherId && m.user2_id === uid)
+          );
+          if (cancelled || !match?.id) return;
+          setSelectedChat((prev) =>
+            prev && prev.otherUser.id === otherId ? { ...prev, matchId: match.id } : prev
+          );
+          return;
+        }
+        matchesList = dataA ?? null;
         const match = matchesList?.find(
           (m: any) =>
-            (m.user_id === currentUser.id && m.matched_user_id === otherId) ||
-            (m.matched_user_id === currentUser.id && m.user_id === otherId)
+            (m.user_id === uid && m.matched_user_id === otherId) || (m.matched_user_id === uid && m.user_id === otherId)
         );
         if (cancelled || !match?.id) return;
         setSelectedChat((prev) =>
@@ -95,15 +114,27 @@ const MessagingPage: React.FC = () => {
 
     const openChatForUser = async () => {
       try {
-        const { data: matchesList } = await supabase
+        const uid = String(currentUser.id).trim();
+        let matchesList: any[] | null = null;
+        const { data: dataA, error: errA } = await supabase
           .from('matches')
           .select('id, user_id, matched_user_id')
-          .or(`user_id.eq.${currentUser.id},matched_user_id.eq.${currentUser.id}`);
-        const match = matchesList?.find(
-          (m: any) =>
-            (m.user_id === currentUser.id && m.matched_user_id === userId) ||
-            (m.matched_user_id === currentUser.id && m.user_id === userId)
-        );
+          .or(`user_id.eq.${uid},matched_user_id.eq.${uid}`);
+        if (errA?.code === '42703' || (errA?.message && String(errA.message).includes('user_id'))) {
+          const { data: dataB } = await supabase
+            .from('matches')
+            .select('id, user1_id, user2_id')
+            .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
+          matchesList = dataB ?? null;
+        } else {
+          matchesList = dataA ?? null;
+        }
+        const match = matchesList?.find((m: any) => {
+          if (m.user_id != null) {
+            return (m.user_id === uid && m.matched_user_id === userId) || (m.matched_user_id === uid && m.user_id === userId);
+          }
+          return (m.user1_id === uid && m.user2_id === userId) || (m.user1_id === userId && m.user2_id === uid);
+        });
         const matchId = match?.id;
         if (!matchId) return;
 
