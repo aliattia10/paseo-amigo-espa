@@ -381,18 +381,18 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
                         <div className="flex items-center gap-2 text-sm mb-2 flex-wrap">
                           <span className="bg-white/60 dark:bg-gray-800/60 px-2 py-0.5 rounded-full text-xs font-medium">
                             {match.otherUser.role === 'sitter' || match.otherUser.role === 'walker'
-                              ? `?? ${t('messages.sitter') || 'Sitter'}`
-                              : `?? ${t('messages.owner') || 'Owner'}`}
+                              ? `\u{1F43E} ${t('messages.sitter') || 'Sitter'}`
+                              : `\u{1F3E0} ${t('messages.owner') || 'Owner'}`}
                           </span>
                           {typeof match.otherUser.rating === 'number' && match.otherUser.rating > 0 && (
                             <span className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 px-2 py-0.5 rounded-full text-xs font-medium">
-                              ? {Number(match.otherUser.rating).toFixed(1)}
+                              {"\u2605"} {Number(match.otherUser.rating).toFixed(1)}
                               {match.otherUser.review_count ? ` (${match.otherUser.review_count})` : ''}
                             </span>
                           )}
                           {typeof match.otherUser.hourly_rate === 'number' && (
                             <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-medium">
-                              ?{match.otherUser.hourly_rate}/hr
+                              {"\u20AC"}{match.otherUser.hourly_rate}/hr
                             </span>
                           )}
                         </div>
