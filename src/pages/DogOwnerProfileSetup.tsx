@@ -203,7 +203,7 @@ const DogOwnerProfileSetup: React.FC = () => {
           title: t('common.success'),
           description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
         });
-        navigate('/dashboard');
+        navigate('/profile');
       } else {
         // Fallback: try to fetch the created pet
         const { data: createdPet, error: fetchError } = await supabase
@@ -232,7 +232,7 @@ const DogOwnerProfileSetup: React.FC = () => {
               title: t('common.success'),
               description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
             });
-            navigate('/dashboard');
+            navigate('/profile');
             return;
           }
         }
@@ -242,14 +242,14 @@ const DogOwnerProfileSetup: React.FC = () => {
             title: t('common.success'),
             description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
           });
-          navigate('/dashboard');
+          navigate('/profile');
         } else {
           // Fallback to dashboard if we can't get the ID
           toast({
             title: t('common.success'),
             description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created successfully!`,
           });
-          navigate('/dashboard');
+          navigate('/profile');
         }
       }
     } catch (error: any) {

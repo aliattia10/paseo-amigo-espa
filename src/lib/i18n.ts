@@ -79,6 +79,8 @@ const resources = {
       'auth.sendResetLink': 'Send Reset Link',
       'auth.resetPasswordSent': 'Reset link sent!',
       'auth.checkEmailForReset': 'Check your email for the password reset link',
+      'auth.checkEmailForConfirm': 'We sent you a verification link. Click it to activate your account, then sign in.',
+      'auth.checkEmailTitle': 'Check your email',
       'auth.resetPasswordError': 'Error sending reset link',
       'auth.enterEmailFirst': 'Please enter your email address first',
       'auth.validatingResetLink': 'Validating reset link...',
@@ -97,6 +99,7 @@ const resources = {
       'auth.sitter': 'Sitter',
       'auth.sitterDesc': 'Earn money doing what you love.',
       'auth.signIn': 'Sign In',
+      'auth.pleaseLogInAgain': 'Please log in again',
       
       // Dashboard
       'dashboard.welcome': 'Welcome to Paseo',
@@ -381,6 +384,7 @@ const resources = {
       // Profile
       'profile.title': 'Profile',
       'profile.aboutMe': 'About me',
+      'profile.editProfile': 'Edit Profile',
       'profile.notFound': 'Profile not found',
       
       // Bookings & Notifications
@@ -812,8 +816,9 @@ const resources = {
       'auth.petOwnerDesc': 'Trouvez des gardiens de confiance pour vos amis à fourrure.',
       'auth.sitter': 'Gardien',
       'auth.sitterDesc': 'Gagnez de l\'argent en faisant ce que vous aimez.',
-      'auth.signIn': 'Se Connecter',
-      
+'auth.signIn': 'Se Connecter',
+      'auth.pleaseLogInAgain': 'Veuillez vous reconnecter',
+
       // Dashboard
       'dashboard.welcome': 'Bienvenue sur Paseo',
       'dashboard.findPerfectWalker': 'Trouvez le promeneur parfait pour votre chien',
@@ -1046,6 +1051,7 @@ const resources = {
       // Profile
       'profile.title': 'Profil',
       'profile.aboutMe': 'À propos de moi',
+      'profile.editProfile': 'Modifier le profil',
       'profile.notFound': 'Profil introuvable',
       
       // Bookings & Notifications
@@ -1422,6 +1428,7 @@ const resources = {
       'auth.rateLimitMessage': 'Aus Sicherheitsgründen warten Sie einen Moment, bevor Sie es erneut versuchen',
       'auth.emailExistsTitle': 'Email bereits registriert',
       'auth.emailExistsMessage': 'Diese Email ist bereits registriert. Versuchen Sie sich anzumelden',
+      'auth.pleaseLogInAgain': 'Bitte melden Sie sich erneut an',
       
       // Dashboard
       'dashboard.welcome': 'Willkommen bei Paseo',
@@ -1560,6 +1567,7 @@ const resources = {
       // Profile
       'profile.title': 'Profil',
       'profile.aboutMe': 'Über mich',
+      'profile.editProfile': 'Profil bearbeiten',
       'profile.notFound': 'Profil nicht gefunden',
       'profile.reviews': 'Bewertungen',
       
@@ -1720,8 +1728,9 @@ const resources = {
       'auth.petOwnerDesc': 'Encuentra cuidadores de confianza para tus amigos peludos.',
       'auth.sitter': 'Cuidador',
       'auth.sitterDesc': 'Gana dinero haciendo lo que amas.',
-      'auth.signIn': 'Iniciar Sesión',
-      
+'auth.signIn': 'Iniciar Sesión',
+      'auth.pleaseLogInAgain': 'Por favor, inicia sesión de nuevo',
+
       // Dashboard
       'dashboard.welcome': 'Bienvenido a Paseo',
       'dashboard.findPerfectWalker': 'Encuentra el paseador perfecto para tu perro',
@@ -2003,6 +2012,7 @@ const resources = {
       // Profile
       'profile.title': 'Perfil',
       'profile.aboutMe': 'Sobre mí',
+      'profile.editProfile': 'Editar perfil',
       'profile.notFound': 'Perfil no encontrado',
       
       // Bookings & Notifications
@@ -2407,6 +2417,7 @@ const resources = {
       'auth.rateLimitMessage': 'Por segurança, aguarde um momento antes de tentar novamente',
       'auth.emailExistsTitle': 'Email já registrado',
       'auth.emailExistsMessage': 'Este email já está registrado. Tente fazer login',
+      'auth.pleaseLogInAgain': 'Por favor, inicie sessão novamente',
       
       // Dashboard
       'dashboard.welcome': 'Bem-vindo ao Paseo',
@@ -2545,6 +2556,7 @@ const resources = {
       // Profile
       'profile.title': 'Perfil',
       'profile.aboutMe': 'Sobre mim',
+      'profile.editProfile': 'Editar perfil',
       'profile.notFound': 'Perfil não encontrado',
       'profile.reviews': 'avaliações',
       
@@ -2619,6 +2631,7 @@ const resources = {
       'auth.rateLimitMessage': 'Per motivi di sicurezza, attendi un momento prima di riprovare',
       'auth.emailExistsTitle': 'Email già registrata',
       'auth.emailExistsMessage': 'Questa email è già registrata. Prova ad accedere',
+      'auth.pleaseLogInAgain': 'Accedi di nuovo',
       
       // Dashboard
       'dashboard.welcome': 'Benvenuto in Paseo',
@@ -2717,6 +2730,7 @@ const resources = {
       // Profile
       'profile.title': 'Profilo',
       'profile.aboutMe': 'Chi sono',
+      'profile.editProfile': 'Modifica profilo',
       'profile.notFound': 'Profilo non trovato',
       'profile.reviews': 'recensioni',
       
@@ -2791,6 +2805,7 @@ const resources = {
       'auth.rateLimitMessage': 'В целях безопасности, подождите немного перед повторной попыткой',
       'auth.emailExistsTitle': 'Email уже зарегистрирован',
       'auth.emailExistsMessage': 'Этот email уже зарегистрирован. Попробуйте войти',
+      'auth.pleaseLogInAgain': 'Пожалуйста, войдите снова',
       
       // Dashboard
       'dashboard.welcome': 'Добро пожаловать в Paseo',
@@ -2889,6 +2904,7 @@ const resources = {
       // Profile
       'profile.title': 'Профиль',
       'profile.aboutMe': 'Обо мне',
+      'profile.editProfile': 'Редактировать профиль',
       'profile.notFound': 'Профиль не найден',
       'profile.reviews': 'отзывов',
       
@@ -2963,6 +2979,7 @@ const resources = {
       'auth.rateLimitMessage': 'Ze względów bezpieczeństwa, poczekaj chwilę przed ponowną próbą',
       'auth.emailExistsTitle': 'Email już zarejestrowany',
       'auth.emailExistsMessage': 'Ten email jest już zarejestrowany. Spróbuj się zalogować',
+      'auth.pleaseLogInAgain': 'Zaloguj się ponownie',
       
       // Dashboard
       'dashboard.welcome': 'Witamy w Paseo',
@@ -3061,6 +3078,7 @@ const resources = {
       // Profile
       'profile.title': 'Profil',
       'profile.aboutMe': 'O mnie',
+      'profile.editProfile': 'Edytuj profil',
       'profile.notFound': 'Profil nie znaleziony',
       'profile.reviews': 'opinie',
       

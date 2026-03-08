@@ -155,8 +155,8 @@ const SitterProfileSetup: React.FC = () => {
         description: 'Sitter profile created! You can update your details anytime.',
       });
 
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Redirect to profile
+      navigate('/profile');
     } catch (error: any) {
       toast({
         title: t('common.error'),

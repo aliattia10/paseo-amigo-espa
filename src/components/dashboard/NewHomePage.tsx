@@ -637,16 +637,16 @@ const NewHomePage: React.FC = () => {
           });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving like:', error);
       // Revert optimistic update on error
       const revertedLiked = new Set(likedProfileIds);
       revertedLiked.delete(profile.id);
       setLikedProfileIds(revertedLiked);
-      
+      const isAuthError = error?.message?.includes('session') || error?.message?.includes('JWT') || error?.status === 401 || error?.code === 'PGRST301';
       toast({
         title: t('common.error'),
-        description: t('home.likeFailed'),
+        description: isAuthError ? t('auth.pleaseLogInAgain', 'Please log in again') : t('home.likeFailed'),
         variant: 'destructive',
       });
       return;

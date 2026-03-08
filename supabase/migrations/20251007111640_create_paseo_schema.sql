@@ -24,12 +24,9 @@ DROP TABLE IF EXISTS users CASCADE;
 DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
 DROP FUNCTION IF EXISTS update_walker_rating() CASCADE;
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Users table
+-- Users table (gen_random_uuid() is built-in in PostgreSQL 13+)
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(20) NOT NULL,
@@ -43,7 +40,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Dogs table
 CREATE TABLE IF NOT EXISTS dogs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     age VARCHAR(20) NOT NULL,
@@ -56,7 +53,7 @@ CREATE TABLE IF NOT EXISTS dogs (
 
 -- Walker profiles table
 CREATE TABLE IF NOT EXISTS walker_profiles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     bio TEXT NOT NULL,
     experience TEXT NOT NULL,
@@ -72,7 +69,7 @@ CREATE TABLE IF NOT EXISTS walker_profiles (
 
 -- Walk requests table
 CREATE TABLE IF NOT EXISTS walk_requests (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     walker_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     dog_id UUID NOT NULL REFERENCES dogs(id) ON DELETE CASCADE,
@@ -90,7 +87,7 @@ CREATE TABLE IF NOT EXISTS walk_requests (
 
 -- Chat messages table
 CREATE TABLE IF NOT EXISTS chat_messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     request_id UUID NOT NULL REFERENCES walk_requests(id) ON DELETE CASCADE,
     sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     message TEXT NOT NULL,
@@ -99,7 +96,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 
 -- Reviews table
 CREATE TABLE IF NOT EXISTS reviews (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     walk_request_id UUID NOT NULL REFERENCES walk_requests(id) ON DELETE CASCADE,
     reviewer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     reviewed_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -111,7 +108,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 
 -- Subscription plans table
 CREATE TABLE IF NOT EXISTS subscription_plans (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     interval VARCHAR(20) CHECK (interval IN ('month', '6months', 'year')) NOT NULL,
@@ -124,7 +121,7 @@ CREATE TABLE IF NOT EXISTS subscription_plans (
 
 -- User subscriptions table
 CREATE TABLE IF NOT EXISTS user_subscriptions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     plan_id UUID NOT NULL REFERENCES subscription_plans(id) ON DELETE CASCADE,
     stripe_subscription_id VARCHAR(255) NOT NULL,
@@ -138,7 +135,7 @@ CREATE TABLE IF NOT EXISTS user_subscriptions (
 
 -- Payment methods table
 CREATE TABLE IF NOT EXISTS payment_methods (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     stripe_payment_method_id VARCHAR(255) NOT NULL,
     type VARCHAR(50) NOT NULL,
@@ -152,7 +149,7 @@ CREATE TABLE IF NOT EXISTS payment_methods (
 
 -- Walk sessions table
 CREATE TABLE IF NOT EXISTS walk_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     walk_request_id UUID NOT NULL REFERENCES walk_requests(id) ON DELETE CASCADE,
     start_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     end_time TIMESTAMP WITH TIME ZONE,
@@ -164,7 +161,7 @@ CREATE TABLE IF NOT EXISTS walk_sessions (
 
 -- Geo points table
 CREATE TABLE IF NOT EXISTS geo_points (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES walk_sessions(id) ON DELETE CASCADE,
     latitude DECIMAL(10,8) NOT NULL,
     longitude DECIMAL(11,8) NOT NULL,
@@ -173,7 +170,7 @@ CREATE TABLE IF NOT EXISTS geo_points (
 
 -- Notifications table
 CREATE TABLE IF NOT EXISTS notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,

@@ -58,21 +58,28 @@ const AuthNew = () => {
     }
   }, [currentUser, mode, navigate]);
 
-  // Handle email confirmation redirect
+  // Handle email confirmation redirect: set session from hash (Supabase puts tokens in URL hash)
   useEffect(() => {
-    const checkConfirmation = async () => {
+    const run = async () => {
+      const hash = window.location.hash?.substring(1);
+      if (hash) {
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        if (accessToken && refreshToken) {
+          await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
       const confirmed = searchParams.get('confirmed');
       if (confirmed === 'true') {
         const { data: { user } } = await supabase.auth.getUser();
-        
         if (user && user.email_confirmed_at) {
           const role = user.user_metadata?.role || user.user_metadata?.user_type;
-          
           toast({
             title: "Email Confirmed!",
             description: "Let's complete your profile setup",
           });
-          
           if (role === 'owner') {
             navigate('/pet-profile-setup');
           } else if (role === 'walker' || role === 'sitter') {
@@ -83,8 +90,7 @@ const AuthNew = () => {
         }
       }
     };
-    
-    checkConfirmation();
+    run();
   }, [searchParams, navigate, toast]);
 
   // If mode is login or role is provided in URL, skip role selection
@@ -167,8 +173,11 @@ const AuthNew = () => {
         });
         if (error) throw error;
         
-        // Create user profile in database
-        if (data.user) {
+        // When Supabase has "Confirm email" ON: no session is returned and user must click the link.
+        const needsEmailConfirmation = !data.session || !data.user?.email_confirmed_at;
+        
+        // Create user profile in database (only if we have a session, else RLS may block; profile can be created on first login)
+        if (data.user && data.session) {
           const { error: profileError } = await supabase
             .from('users')
             .insert({
@@ -190,7 +199,7 @@ const AuthNew = () => {
             }
           }
           
-          // Send welcome notification
+          // Send welcome notification (only when session exists)
           try {
             await supabase
               .from('notifications')
@@ -209,18 +218,25 @@ const AuthNew = () => {
           }
         }
         
-        toast({
-          title: "Success!",
-          description: "Account created successfully!",
-        });
-        
-        // Redirect to appropriate profile setup
-        if (selectedRole === 'owner') {
-          navigate('/pet-profile-setup');
-        } else if (selectedRole === 'walker') {
-          navigate('/sitter-profile-setup');
+        if (needsEmailConfirmation) {
+          toast({
+            title: t('auth.checkEmailTitle', 'Check your email'),
+            description: t('auth.checkEmailForConfirm', 'We sent you a verification link. Click it to activate your account, then sign in.'),
+            variant: 'default',
+          });
+          navigate('/auth?mode=login&message=check_email', { replace: true });
         } else {
-          navigate('/dashboard');
+          toast({
+            title: "Success!",
+            description: "Account created successfully!",
+          });
+          if (selectedRole === 'owner') {
+            navigate('/pet-profile-setup');
+          } else if (selectedRole === 'walker') {
+            navigate('/sitter-profile-setup');
+          } else {
+            navigate('/dashboard');
+          }
         }
       }
     } catch (error: any) {
@@ -286,6 +302,13 @@ const AuthNew = () => {
       {/* Form Content */}
       <main className="flex-1 px-4 py-6">
         <div className="max-w-[480px] mx-auto">
+          {searchParams.get('message') === 'check_email' && (
+            <div className="mb-4 rounded-xl bg-green-500/10 dark:bg-green-600/20 border border-green-500/30 dark:border-green-600/40 p-4 text-center">
+              <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                {t('auth.checkEmailForConfirm', 'We sent you a verification link. Click it to activate your account, then sign in.')}
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
               <>

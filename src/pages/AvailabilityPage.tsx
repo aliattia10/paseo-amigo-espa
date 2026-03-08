@@ -79,7 +79,14 @@ const AvailabilityPage: React.FC = () => {
   };
 
   const handleAddSlot = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      toast({
+        title: t('common.error'),
+        description: t('auth.pleaseLogInAgain', 'Please log in again'),
+        variant: 'destructive',
+      });
+      return;
+    }
     
     try {
       const startDateTime = new Date(`${selectedDate}T${newSlot.startTime}`);
@@ -102,16 +109,24 @@ const AvailabilityPage: React.FC = () => {
         p_end_time: endDateTime.toISOString(),
       });
 
-      // If RPC doesn't exist, use direct insert
+      // If RPC doesn't exist, use direct insert (support both user_id and sitter_id schemas)
       if (rpcError && (rpcError.message.includes('does not exist') || rpcError.message.includes('not find'))) {
-        const { error: directError } = await supabase
-          .from('availability')
-          .insert({
-            sitter_id: currentUser.id,
-            start_time: startDateTime.toISOString(),
-            end_time: endDateTime.toISOString(),
-            status: 'available',
-          });
+        const base = {
+          start_time: startDateTime.toISOString(),
+          end_time: endDateTime.toISOString(),
+          status: 'available',
+        };
+        const userId = currentUser.id;
+        let directError: any = null;
+        const { error: errUser } = await supabase.from('availability').insert({ ...base, user_id: userId });
+        if (errUser) {
+          if (errUser.message?.includes('user_id') || errUser.code === '42703') {
+            const { error: errSitter } = await supabase.from('availability').insert({ ...base, sitter_id: userId });
+            directError = errSitter;
+          } else {
+            directError = errUser;
+          }
+        }
         insertError = directError;
       } else {
         insertError = rpcError;
