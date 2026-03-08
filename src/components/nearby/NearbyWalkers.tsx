@@ -166,7 +166,7 @@ const NearbyWalkers: React.FC<NearbyWalkersProps> = ({ onMatch }) => {
         </div>
 
         {/* Filter Chips */}
-        <div className="flex gap-3 p-3 pl-4 overflow-x-auto">
+        <div className="flex gap-3 p-3 pl-4 overflow-x-auto scrollbar-hide">
           <button className="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary-bg-light dark:bg-primary-bg-dark pl-4 pr-2">
             <p className="text-primary text-sm font-medium leading-normal">Availability</p>
             <span className="material-symbols-outlined text-primary text-xl">arrow_drop_down</span>

@@ -388,7 +388,7 @@ const BookingsPage: React.FC = () => {
       </header>
       
       {/* Filter Tabs */}
-      <div className="sticky top-[60px] z-10 flex px-4 py-3 gap-2 overflow-x-auto bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark">
+      <div className="sticky top-[60px] z-10 flex px-4 py-3 gap-2 overflow-x-auto scrollbar-hide bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark">
         {['all', 'pending', 'accepted', 'completed'].map((tab) => (
           <button 
             key={tab} 

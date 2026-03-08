@@ -209,3 +209,14 @@ html {
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+
+/* Hide scrollbar while keeping scroll (touch/mouse) */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
