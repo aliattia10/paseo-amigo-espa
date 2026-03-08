@@ -1,5 +1,5 @@
 -- Create user profiles table
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE public.profiles (
 );
 
 -- Create dogs table
-CREATE TABLE public.dogs (
+CREATE TABLE IF NOT EXISTS public.dogs (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   owner_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE public.dogs (
 );
 
 -- Create walk requests table
-CREATE TABLE public.walk_requests (
+CREATE TABLE IF NOT EXISTS public.walk_requests (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   owner_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   walker_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -45,7 +45,7 @@ CREATE TABLE public.walk_requests (
 );
 
 -- Create reviews table
-CREATE TABLE public.reviews (
+CREATE TABLE IF NOT EXISTS public.reviews (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   walk_request_id UUID NOT NULL REFERENCES public.walk_requests(id) ON DELETE CASCADE,
   reviewer_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -57,7 +57,7 @@ CREATE TABLE public.reviews (
 );
 
 -- Create chat messages table
-CREATE TABLE public.chat_messages (
+CREATE TABLE IF NOT EXISTS public.chat_messages (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   walk_request_id UUID NOT NULL REFERENCES public.walk_requests(id) ON DELETE CASCADE,
   sender_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -73,92 +73,45 @@ ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for profiles
-CREATE POLICY "Users can view their own profile" 
-ON public.profiles FOR SELECT 
-USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own profile" 
-ON public.profiles FOR UPDATE 
-USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own profile" 
-ON public.profiles FOR INSERT 
-WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Walker profiles are publicly viewable" 
-ON public.profiles FOR SELECT 
-USING (user_type = 'walker');
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
+CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
+CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.profiles;
+CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Walker profiles are publicly viewable" ON public.profiles;
+CREATE POLICY "Walker profiles are publicly viewable" ON public.profiles FOR SELECT USING (user_type = 'walker');
 
 -- RLS Policies for dogs
-CREATE POLICY "Owners can manage their dogs" 
-ON public.dogs FOR ALL 
-USING (owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Walkers can view dogs for accepted requests" 
-ON public.dogs FOR SELECT 
-USING (id IN (
-  SELECT dog_id FROM public.walk_requests 
-  WHERE walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
-));
+DROP POLICY IF EXISTS "Owners can manage their dogs" ON public.dogs;
+CREATE POLICY "Owners can manage their dogs" ON public.dogs FOR ALL USING (owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Walkers can view dogs for accepted requests" ON public.dogs;
+CREATE POLICY "Walkers can view dogs for accepted requests" ON public.dogs FOR SELECT USING (id IN (SELECT dog_id FROM public.walk_requests WHERE walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())));
 
 -- RLS Policies for walk_requests
-CREATE POLICY "Users can view their own requests" 
-ON public.walk_requests FOR SELECT 
-USING (
-  owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR
-  walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
-);
-
-CREATE POLICY "Owners can create requests" 
-ON public.walk_requests FOR INSERT 
-WITH CHECK (owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Users can update their own requests" 
-ON public.walk_requests FOR UPDATE 
-USING (
-  owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR
-  walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
-);
+DROP POLICY IF EXISTS "Users can view their own requests" ON public.walk_requests;
+CREATE POLICY "Users can view their own requests" ON public.walk_requests FOR SELECT USING (owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Owners can create requests" ON public.walk_requests;
+CREATE POLICY "Owners can create requests" ON public.walk_requests FOR INSERT WITH CHECK (owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Users can update their own requests" ON public.walk_requests;
+CREATE POLICY "Users can update their own requests" ON public.walk_requests FOR UPDATE USING (owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()));
 
 -- RLS Policies for reviews
-CREATE POLICY "Reviews are publicly viewable" 
-ON public.reviews FOR SELECT 
-USING (true);
+DROP POLICY IF EXISTS "Reviews are publicly viewable" ON public.reviews;
+CREATE POLICY "Reviews are publicly viewable" ON public.reviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can create reviews for completed walks" ON public.reviews;
+CREATE POLICY "Users can create reviews for completed walks" ON public.reviews FOR INSERT WITH CHECK (reviewer_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) AND walk_request_id IN (SELECT id FROM public.walk_requests WHERE status = 'completed' AND (owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()))));
 
-CREATE POLICY "Users can create reviews for completed walks" 
-ON public.reviews FOR INSERT 
-WITH CHECK (
-  reviewer_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) AND
-  walk_request_id IN (
-    SELECT id FROM public.walk_requests 
-    WHERE status = 'completed' AND (
-      owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR
-      walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
-    )
-  )
-);
-
--- RLS Policies for chat_messages
-CREATE POLICY "Users can view messages for their requests" 
-ON public.chat_messages FOR SELECT 
-USING (
-  walk_request_id IN (
-    SELECT id FROM public.walk_requests 
-    WHERE owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR
-          walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
-  )
-);
-
-CREATE POLICY "Users can send messages for their requests" 
-ON public.chat_messages FOR INSERT 
-WITH CHECK (
-  sender_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) AND
-  walk_request_id IN (
-    SELECT id FROM public.walk_requests 
-    WHERE owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR
-          walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
-  )
-);
+-- RLS Policies for chat_messages (only when walk_request_id column exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'chat_messages' AND column_name = 'walk_request_id') THEN
+    DROP POLICY IF EXISTS "Users can view messages for their requests" ON public.chat_messages;
+    DROP POLICY IF EXISTS "Users can send messages for their requests" ON public.chat_messages;
+    CREATE POLICY "Users can view messages for their requests" ON public.chat_messages FOR SELECT USING (walk_request_id IN (SELECT id FROM public.walk_requests WHERE owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())));
+    CREATE POLICY "Users can send messages for their requests" ON public.chat_messages FOR INSERT WITH CHECK (sender_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) AND walk_request_id IN (SELECT id FROM public.walk_requests WHERE owner_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid()) OR walker_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())));
+  END IF;
+END $$;
 
 -- Create function to update timestamps
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
@@ -170,40 +123,22 @@ END;
 $$ LANGUAGE plpgsql SET search_path = public;
 
 -- Create triggers for automatic timestamp updates
-CREATE TRIGGER update_profiles_updated_at
-  BEFORE UPDATE ON public.profiles
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at_column();
-
-CREATE TRIGGER update_dogs_updated_at
-  BEFORE UPDATE ON public.dogs
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at_column();
-
-CREATE TRIGGER update_walk_requests_updated_at
-  BEFORE UPDATE ON public.walk_requests
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at_column();
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DROP TRIGGER IF EXISTS update_dogs_updated_at ON public.dogs;
+CREATE TRIGGER update_dogs_updated_at BEFORE UPDATE ON public.dogs FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DROP TRIGGER IF EXISTS update_walk_requests_updated_at ON public.walk_requests;
+CREATE TRIGGER update_walk_requests_updated_at BEFORE UPDATE ON public.walk_requests FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Create function to handle new user signups
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (user_id, name, city, postal_code, phone, user_type)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'name', 'Usuario'),
-    COALESCE(NEW.raw_user_meta_data->>'city', ''),
-    COALESCE(NEW.raw_user_meta_data->>'postal_code', ''),
-    COALESCE(NEW.raw_user_meta_data->>'phone', ''),
-    COALESCE(NEW.raw_user_meta_data->>'user_type', 'owner')
-  );
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'name', 'Usuario'), COALESCE(NEW.raw_user_meta_data->>'city', ''), COALESCE(NEW.raw_user_meta_data->>'postal_code', ''), COALESCE(NEW.raw_user_meta_data->>'phone', ''), COALESCE(NEW.raw_user_meta_data->>'user_type', 'owner'));
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- Create trigger for new user signups
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW
-  EXECUTE FUNCTION public.handle_new_user();
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

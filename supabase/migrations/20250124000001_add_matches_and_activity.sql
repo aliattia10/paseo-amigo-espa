@@ -106,28 +106,28 @@ END $$;
 -- Enable RLS on activity_feed table
 ALTER TABLE activity_feed ENABLE ROW LEVEL SECURITY;
 
--- Anyone authenticated can view public activities
+DROP POLICY IF EXISTS "Anyone can view public activities" ON activity_feed;
 CREATE POLICY "Anyone can view public activities" ON activity_feed
 FOR SELECT
 USING (is_public = TRUE);
 
--- Users can view all their own activities
+DROP POLICY IF EXISTS "Users can view their own activities" ON activity_feed;
 CREATE POLICY "Users can view their own activities" ON activity_feed
 FOR SELECT
 USING (auth.uid() = user_id);
 
--- Users can create their own activities
+DROP POLICY IF EXISTS "Users can create activities" ON activity_feed;
 CREATE POLICY "Users can create activities" ON activity_feed
 FOR INSERT
 WITH CHECK (auth.uid() = user_id);
 
--- Users can update their own activities
+DROP POLICY IF EXISTS "Users can update their activities" ON activity_feed;
 CREATE POLICY "Users can update their activities" ON activity_feed
 FOR UPDATE
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
--- Users can delete their own activities
+DROP POLICY IF EXISTS "Users can delete their activities" ON activity_feed;
 CREATE POLICY "Users can delete their activities" ON activity_feed
 FOR DELETE
 USING (auth.uid() = user_id);
@@ -136,7 +136,7 @@ USING (auth.uid() = user_id);
 -- 6. STORAGE POLICIES FOR PROFILE IMAGES
 -- =====================================================
 
--- Allow authenticated users to upload their own profile images
+DROP POLICY IF EXISTS "Users can upload their profile images" ON storage.objects;
 CREATE POLICY "Users can upload their profile images"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -145,13 +145,13 @@ WITH CHECK (
     (storage.foldername(name))[1] = auth.uid()::text
 );
 
--- Allow public read access to all profile images
+DROP POLICY IF EXISTS "Profile images are publicly accessible" ON storage.objects;
 CREATE POLICY "Profile images are publicly accessible"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'profile-images');
 
--- Allow users to update their own profile images
+DROP POLICY IF EXISTS "Users can update their profile images" ON storage.objects;
 CREATE POLICY "Users can update their profile images"
 ON storage.objects FOR UPDATE
 TO authenticated
@@ -160,7 +160,7 @@ USING (
     (storage.foldername(name))[1] = auth.uid()::text
 );
 
--- Allow users to delete their own profile images
+DROP POLICY IF EXISTS "Users can delete their profile images" ON storage.objects;
 CREATE POLICY "Users can delete their profile images"
 ON storage.objects FOR DELETE
 TO authenticated
@@ -199,7 +199,12 @@ CREATE TRIGGER update_activity_feed_updated_at
 -- 8. REALTIME SUBSCRIPTIONS
 -- =====================================================
 
--- Enable realtime for activity feed
-ALTER PUBLICATION supabase_realtime ADD TABLE activity_feed;
-ALTER PUBLICATION supabase_realtime ADD TABLE matches;
-
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'activity_feed') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE activity_feed;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'matches') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE matches;
+  END IF;
+END $$;

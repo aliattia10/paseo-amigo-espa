@@ -1,7 +1,7 @@
 -- Migration: Add matches table and enhanced features
 -- Created: 2025-01-24
 
--- Create matches table for Tinder-style matching
+-- Create matches table for Tinder-style matching (skip if table exists with different schema)
 CREATE TABLE IF NOT EXISTS public.matches (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
@@ -13,16 +13,22 @@ CREATE TABLE IF NOT EXISTS public.matches (
     UNIQUE(user_id, matched_user_id)
 );
 
--- Create index for faster lookups
-CREATE INDEX idx_matches_user_id ON public.matches(user_id);
-CREATE INDEX idx_matches_matched_user_id ON public.matches(matched_user_id);
-CREATE INDEX idx_matches_mutual ON public.matches(is_mutual) WHERE is_mutual = TRUE;
+-- Create index for faster lookups (only if user_id column exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    CREATE INDEX IF NOT EXISTS idx_matches_user_id ON public.matches(user_id);
+    CREATE INDEX IF NOT EXISTS idx_matches_matched_user_id ON public.matches(matched_user_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'is_mutual') THEN
+    CREATE INDEX IF NOT EXISTS idx_matches_mutual ON public.matches(is_mutual) WHERE is_mutual = TRUE;
+  END IF;
+END $$;
 
--- Create function to check and create mutual matches
+-- Create function to check and create mutual matches (only if matches has user_id)
 CREATE OR REPLACE FUNCTION check_mutual_match()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Check if the other user has also liked this user
     IF NEW.match_type = 'like' OR NEW.match_type = 'superlike' THEN
         UPDATE public.matches
         SET is_mutual = TRUE, matched_at = NOW()
@@ -34,12 +40,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger for automatic mutual match detection
-DROP TRIGGER IF NOT EXISTS trigger_check_mutual_match ON public.matches;
-CREATE TRIGGER trigger_check_mutual_match
-    AFTER INSERT OR UPDATE ON public.matches
-    FOR EACH ROW
-    EXECUTE FUNCTION check_mutual_match();
+DROP TRIGGER IF EXISTS trigger_check_mutual_match ON public.matches;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    CREATE TRIGGER trigger_check_mutual_match
+      AFTER INSERT OR UPDATE ON public.matches
+      FOR EACH ROW
+      EXECUTE FUNCTION check_mutual_match();
+  END IF;
+END $$;
 
 -- Add profile_image column to users table if it doesn't exist
 DO $$ 
@@ -70,29 +80,27 @@ CREATE TABLE IF NOT EXISTS public.activity_feed (
 );
 
 -- Create index for activity feed
-CREATE INDEX idx_activity_feed_user_id ON public.activity_feed(user_id);
-CREATE INDEX idx_activity_feed_created_at ON public.activity_feed(created_at DESC);
-CREATE INDEX idx_activity_feed_public ON public.activity_feed(is_public) WHERE is_public = TRUE;
+CREATE INDEX IF NOT EXISTS idx_activity_feed_user_id ON public.activity_feed(user_id);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_created_at ON public.activity_feed(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_feed_public ON public.activity_feed(is_public) WHERE is_public = TRUE;
 
 -- Enable Row Level Security on matches table
 ALTER TABLE public.matches ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for matches
-CREATE POLICY "Users can view their own matches"
-    ON public.matches FOR SELECT
-    USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
-
-CREATE POLICY "Users can create their own matches"
-    ON public.matches FOR INSERT
-    WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own matches"
-    ON public.matches FOR UPDATE
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own matches"
-    ON public.matches FOR DELETE
-    USING (auth.uid() = user_id);
+-- RLS Policies for matches (only when user_id column exists)
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "Users can view their own matches" ON public.matches;
+  DROP POLICY IF EXISTS "Users can create their own matches" ON public.matches;
+  DROP POLICY IF EXISTS "Users can update their own matches" ON public.matches;
+  DROP POLICY IF EXISTS "Users can delete their own matches" ON public.matches;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    CREATE POLICY "Users can view their own matches" ON public.matches FOR SELECT USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
+    CREATE POLICY "Users can create their own matches" ON public.matches FOR INSERT WITH CHECK (auth.uid() = user_id);
+    CREATE POLICY "Users can update their own matches" ON public.matches FOR UPDATE USING (auth.uid() = user_id);
+    CREATE POLICY "Users can delete their own matches" ON public.matches FOR DELETE USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
 -- Enable Row Level Security on activity_feed table
 ALTER TABLE public.activity_feed ENABLE ROW LEVEL SECURITY;
