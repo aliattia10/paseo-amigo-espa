@@ -21,6 +21,13 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
+      proxy: {
+        "/api/python": {
+          target: "http://127.0.0.1:8001",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/python/, ""),
+        },
+      },
     },
     plugins: [
       react(),

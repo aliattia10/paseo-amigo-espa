@@ -1,16 +1,29 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Loader2 } from 'lucide-react';
 import { updateUserKyc } from '@/lib/supabase-services';
 
-const KYC_API_URL = import.meta.env.VITE_KYC_API_URL || 'http://localhost:8000';
+// Use proxy in dev to avoid CORS; fallback to direct KYC URL
+const getVerifyUrl = () => {
+  if (import.meta.env.DEV) return '/api/python/verify';
+  return `${import.meta.env.VITE_KYC_API_URL || 'http://localhost:8001'}/verify`;
+};
 
 export interface VerifyResult {
-  status: 'approved' | 'manual_review';
+  status: 'approved' | 'rejected';
   confidence: number;
-  ocr_text: string[];
+  extracted_data: {
+    doc_type?: string;
+    name?: string | null;
+    country?: string | null;
+    dob?: string | null;
+    expiry?: string | null;
+    ocr_text?: string[];
+    [key: string]: unknown;
+  };
   message?: string;
 }
 
@@ -23,16 +36,17 @@ interface KycUploadFormProps {
 const KycUploadForm: React.FC<KycUploadFormProps> = ({ userId, onSuccess, onError }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [idCard, setIdCard] = useState<File | null>(null);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
+  const [docType, setDocType] = useState<'id' | 'passport'>('id');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idCard || !selfie) {
+    if (!documentFile || !selfie) {
       toast({
         title: t('common.error'),
-        description: t('verifyIdentity.uploadBoth', 'Please upload both ID card and selfie'),
+        description: t('verifyIdentity.uploadBoth', 'Please upload both document and selfie'),
         variant: 'destructive',
       });
       return;
@@ -41,10 +55,11 @@ const KycUploadForm: React.FC<KycUploadFormProps> = ({ userId, onSuccess, onErro
     setSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('id_card', idCard);
+      formData.append('id_card', documentFile);
       formData.append('selfie', selfie);
+      formData.append('doc_type', docType);
 
-      const res = await fetch(`${KYC_API_URL}/verify`, {
+      const res = await fetch(getVerifyUrl(), {
         method: 'POST',
         body: formData,
       });
@@ -56,11 +71,17 @@ const KycUploadForm: React.FC<KycUploadFormProps> = ({ userId, onSuccess, onErro
 
       const data: VerifyResult = await res.json();
 
+      const kycData = {
+        status: data.status,
+        doc_type: docType,
+        extracted_data: data.extracted_data ?? {},
+      };
+
       if (data.status === 'approved') {
         await updateUserKyc(userId, {
           verification_status: 'verified',
           kyc_confidence: data.confidence,
-          kyc_data: { ocr_text: data.ocr_text, status: data.status },
+          kyc_data: kycData,
           verified: true,
         });
         toast({
@@ -72,7 +93,7 @@ const KycUploadForm: React.FC<KycUploadFormProps> = ({ userId, onSuccess, onErro
         await updateUserKyc(userId, {
           verification_status: 'pending',
           kyc_confidence: data.confidence,
-          kyc_data: { ocr_text: data.ocr_text, status: data.status },
+          kyc_data: kycData,
         });
         toast({
           title: t('verifyIdentity.pendingTitle', 'Under review'),
@@ -96,21 +117,33 @@ const KycUploadForm: React.FC<KycUploadFormProps> = ({ userId, onSuccess, onErro
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {t('verifyIdentity.idCard', 'ID Card')}
-        </label>
+        <Label>{t('verifyIdentity.docType', 'Document type')}</Label>
+        <select
+          value={docType}
+          onChange={(e) => setDocType(e.target.value as 'id' | 'passport')}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          disabled={submitting}
+        >
+          <option value="id">ID Card</option>
+          <option value="passport">Passport</option>
+        </select>
+      </div>
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {docType === 'passport' ? t('verifyIdentity.passport', 'Passport') : t('verifyIdentity.idCard', 'ID Card')}
+        </Label>
         <input
           type="file"
           accept="image/*"
           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-sage-green/20 file:text-medium-jungle dark:file:bg-sage-green/30 dark:file:text-sage-green"
-          onChange={(e) => setIdCard(e.target.files?.[0] ?? null)}
+          onChange={(e) => setDocumentFile(e.target.files?.[0] ?? null)}
           disabled={submitting}
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {t('verifyIdentity.selfie', 'Selfie')}
-        </label>
+        </Label>
         <input
           type="file"
           accept="image/*"
@@ -123,7 +156,7 @@ const KycUploadForm: React.FC<KycUploadFormProps> = ({ userId, onSuccess, onErro
         type="submit"
         size="lg"
         className="w-full bg-medium-jungle hover:bg-medium-jungle/90 text-white"
-        disabled={submitting || !idCard || !selfie}
+        disabled={submitting || !documentFile || !selfie}
       >
         {submitting ? (
           <>
