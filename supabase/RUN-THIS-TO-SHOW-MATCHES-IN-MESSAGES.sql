@@ -2,19 +2,26 @@
 -- Run this in Supabase SQL Editor if matches work (you get "It's a Match!")
 -- but the Messages page shows "No conversations".
 --
--- The matches table uses columns: user_id, matched_user_id
--- The migration already creates RLS for those columns, so this script only
--- ensures authenticated users can read other users' profiles (for chat list).
+-- Supports matches with either: user_id/matched_user_id OR user1_id/user2_id.
 -- ============================================================================
 
--- 1. Ensure the matches RLS policy exists (uses user_id / matched_user_id)
+-- 1. Ensure the matches RLS policy (supports user_id/matched_user_id OR user1_id/user2_id)
 DO $$
 BEGIN
   DROP POLICY IF EXISTS "Users can view their matches" ON public.matches;
-  CREATE POLICY "Users can view their matches"
-    ON public.matches FOR SELECT
-    USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
-  RAISE NOTICE 'Policy created: matches visible by user_id/matched_user_id';
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    CREATE POLICY "Users can view their matches"
+      ON public.matches FOR SELECT
+      USING (auth.uid() = user_id OR auth.uid() = matched_user_id);
+    RAISE NOTICE 'Policy created: matches visible by user_id/matched_user_id';
+  ELSIF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user1_id') THEN
+    CREATE POLICY "Users can view their matches"
+      ON public.matches FOR SELECT
+      USING (auth.uid() = user1_id OR auth.uid() = user2_id);
+    RAISE NOTICE 'Policy created: matches visible by user1_id/user2_id';
+  ELSE
+    RAISE EXCEPTION 'matches table has neither user_id nor user1_id';
+  END IF;
 END $$;
 
 -- 2. Allow authenticated users to read other users (so Messages can show match names/avatars)
@@ -34,26 +41,48 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view match messages" ON messages;
-CREATE POLICY "Users can view match messages"
-  ON messages FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM matches
-      WHERE matches.id = messages.match_id
-        AND (auth.uid() = matches.user_id OR auth.uid() = matches.matched_user_id)
-    )
-  );
 DROP POLICY IF EXISTS "Users can send match messages" ON messages;
-CREATE POLICY "Users can send match messages"
-  ON messages FOR INSERT
-  WITH CHECK (
-    auth.uid() = sender_id
-    AND EXISTS (
-      SELECT 1 FROM matches
-      WHERE matches.id = messages.match_id
-        AND (auth.uid() = matches.user_id OR auth.uid() = matches.matched_user_id)
-    )
-  );
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user_id') THEN
+    CREATE POLICY "Users can view match messages"
+      ON messages FOR SELECT
+      USING (
+        EXISTS (
+          SELECT 1 FROM matches m
+          WHERE m.id = messages.match_id AND (auth.uid() = m.user_id OR auth.uid() = m.matched_user_id)
+        )
+      );
+    CREATE POLICY "Users can send match messages"
+      ON messages FOR INSERT
+      WITH CHECK (
+        auth.uid() = sender_id
+        AND EXISTS (
+          SELECT 1 FROM matches m
+          WHERE m.id = messages.match_id AND (auth.uid() = m.user_id OR auth.uid() = m.matched_user_id)
+        )
+      );
+  ELSIF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'matches' AND column_name = 'user1_id') THEN
+    CREATE POLICY "Users can view match messages"
+      ON messages FOR SELECT
+      USING (
+        EXISTS (
+          SELECT 1 FROM matches m
+          WHERE m.id = messages.match_id AND (auth.uid() = m.user1_id OR auth.uid() = m.user2_id)
+        )
+      );
+    CREATE POLICY "Users can send match messages"
+      ON messages FOR INSERT
+      WITH CHECK (
+        auth.uid() = sender_id
+        AND EXISTS (
+          SELECT 1 FROM matches m
+          WHERE m.id = messages.match_id AND (auth.uid() = m.user1_id OR auth.uid() = m.user2_id)
+        )
+      );
+  END IF;
+END $$;
 
 -- 4. Create or replace the send_message RPC (so ChatWindow can send)
 CREATE OR REPLACE FUNCTION send_message(

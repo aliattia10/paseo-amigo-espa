@@ -35,7 +35,6 @@ import HomePage from './HomePage';
 import RoleSwitch from '@/components/ui/RoleSwitch';
 import DogManagement from '@/components/dog/DogManagement';
 import WalkerProfile from '@/components/walker/WalkerProfile';
-import MessagingPage from '@/components/messaging/MessagingPage';
 import ProfileEditModal from '@/components/profile/ProfileEditModal';
 import MainNavigation from '@/components/ui/MainNavigation';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
@@ -51,7 +50,7 @@ const OwnerDashboard: React.FC = () => {
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [recentWalks, setRecentWalks] = useState<WalkRequest[]>([]);
   const [loading, setLoading] = useState(false);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'home' | 'role-switch' | 'dogs' | 'walker-profile' | 'messages' | 'profile-edit' | 'nearby' | 'feed' | 'profile-settings'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'home' | 'role-switch' | 'dogs' | 'walker-profile' | 'profile-edit' | 'nearby' | 'feed' | 'profile-settings'>('dashboard');
 
   useEffect(() => {
     const loadData = async () => {
@@ -134,9 +133,6 @@ const OwnerDashboard: React.FC = () => {
   }
 
   // Show Messaging component
-  if (currentView === 'messages') {
-    return <MessagingPage />;
-  }
 
   // Show Profile Edit Modal
   if (currentView === 'profile-edit') {
@@ -163,7 +159,7 @@ const OwnerDashboard: React.FC = () => {
           activeTab="profile" 
           onTabChange={(tab) => {
             if (tab === 'home') setCurrentView('home');
-            else if (tab === 'messages') setCurrentView('messages');
+            else if (tab === 'messages') navigate('/messages');
             else if (tab === 'feed') setCurrentView('feed');
             else if (tab === 'nearby') setCurrentView('nearby');
             else if (tab === 'profile') setCurrentView('profile-settings');
@@ -182,7 +178,7 @@ const OwnerDashboard: React.FC = () => {
           activeTab="feed" 
           onTabChange={(tab) => {
             if (tab === 'home') setCurrentView('home');
-            else if (tab === 'messages') setCurrentView('messages');
+            else if (tab === 'messages') navigate('/messages');
             else if (tab === 'feed') setCurrentView('feed');
             else if (tab === 'nearby') setCurrentView('nearby');
             else if (tab === 'profile') setCurrentView('profile-settings');
@@ -199,13 +195,13 @@ const OwnerDashboard: React.FC = () => {
         <NearbyWalkers onMatch={(walkerId) => {
           console.log('Matched with walker:', walkerId);
           // Auto redirect to messages on match
-          setCurrentView('messages');
+          navigate('/messages');
         }} />
         <MainNavigation 
           activeTab="nearby" 
           onTabChange={(tab) => {
             if (tab === 'home') setCurrentView('home');
-            else if (tab === 'messages') setCurrentView('messages');
+            else if (tab === 'messages') navigate('/messages');
             else if (tab === 'feed') setCurrentView('feed');
             else if (tab === 'nearby') setCurrentView('nearby');
             else if (tab === 'profile') setCurrentView('profile-settings');
@@ -254,7 +250,7 @@ const OwnerDashboard: React.FC = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => setCurrentView('messages')}
+                onClick={() => navigate('/messages')}
                 title={t('dashboard.messages')}
                 className="relative rounded-xl"
               >
@@ -588,7 +584,7 @@ const OwnerDashboard: React.FC = () => {
         activeTab="home" 
         onTabChange={(tab) => {
           if (tab === 'home') setCurrentView('home');
-          else if (tab === 'messages') setCurrentView('messages');
+          else if (tab === 'messages') navigate('/messages');
           else if (tab === 'feed') setCurrentView('feed');
           else if (tab === 'nearby') setCurrentView('nearby');
           else if (tab === 'profile') setCurrentView('profile-settings');
