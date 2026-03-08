@@ -56,7 +56,7 @@ const DogOwnerProfileSetup: React.FC = () => {
       
       toast({
         title: t('common.success'),
-        description: `${petType === 'dog' ? 'Dog' : 'Cat'} picture uploaded successfully`,
+        description: t('pet.photoUploaded', { type: petType === 'dog' ? t('pet.dog') : t('pet.cat') }),
       });
     } catch (error: any) {
       toast({
@@ -76,7 +76,7 @@ const DogOwnerProfileSetup: React.FC = () => {
       if (!file.type.startsWith('image/')) {
         toast({
           title: t('common.error'),
-          description: 'Please select an image file',
+          description: t('pet.selectImageFile'),
           variant: 'destructive',
         });
         return;
@@ -86,7 +86,7 @@ const DogOwnerProfileSetup: React.FC = () => {
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: t('common.error'),
-          description: 'Image size must be less than 5MB',
+          description: t('pet.imageSizeMax'),
           variant: 'destructive',
         });
         return;
@@ -103,7 +103,7 @@ const DogOwnerProfileSetup: React.FC = () => {
     if (!petData.name.trim()) {
       toast({
         title: t('common.error'),
-        description: `Please enter your ${petType}'s name`,
+        description: t('pet.enterName', { type: petType === 'dog' ? t('pet.dog') : t('pet.cat') }),
         variant: 'destructive',
       });
       return;
@@ -112,7 +112,7 @@ const DogOwnerProfileSetup: React.FC = () => {
     if (!petData.age.trim()) {
       toast({
         title: t('common.error'),
-        description: `Please enter your ${petType}'s age`,
+        description: t('pet.enterAge', { type: petType === 'dog' ? t('pet.dog') : t('pet.cat') }),
         variant: 'destructive',
       });
       return;
@@ -121,7 +121,7 @@ const DogOwnerProfileSetup: React.FC = () => {
     if (photos.filter(p => p).length === 0) {
       toast({
         title: t('common.error'),
-        description: `Please upload at least one picture of your ${petType}`,
+        description: t('pet.uploadOnePhoto', { type: petType === 'dog' ? t('pet.dog') : t('pet.cat') }),
         variant: 'destructive',
       });
       return;
@@ -269,14 +269,14 @@ const DogOwnerProfileSetup: React.FC = () => {
       {/* Top App Bar */}
       <div className="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
         <div className="flex size-12 shrink-0 items-center justify-start">
-          <button onClick={() => navigate('/home')}>
+          <button type="button" onClick={() => navigate(-1)} aria-label={t('common.close')}>
             <span className="material-symbols-outlined text-text-primary-light dark:text-text-primary-dark text-2xl">
               close
             </span>
           </button>
         </div>
         <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-text-primary-light dark:text-text-primary-dark">
-          Add Your Pet
+          {t('pet.addYourPet')}
         </h2>
         <div className="flex w-12 items-center justify-end"></div>
       </div>
@@ -285,7 +285,7 @@ const DogOwnerProfileSetup: React.FC = () => {
       <main className="flex-1 p-4 space-y-4">
         <div className="text-center py-4">
           <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
-            Let's create a profile for your furry friend! This helps sitters know your pet better.
+            {t('pet.addPetIntro')}
           </p>
         </div>
 
@@ -293,7 +293,7 @@ const DogOwnerProfileSetup: React.FC = () => {
           {/* Pet Type Selection */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-3">
-              Pet Type <span className="text-red-500">*</span>
+              {t('pet.petType')} <span className="text-red-500">*</span>
             </label>
             <PetTypeSelector value={petType} onChange={setPetType} />
           </div>
@@ -301,10 +301,10 @@ const DogOwnerProfileSetup: React.FC = () => {
           {/* Tinder-Style Pet Photo Gallery */}
           <div className="mb-4">
             <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark px-4 mb-2">
-              {petType === 'dog' ? 'Dog' : 'Cat'} Photos <span className="text-red-500">*</span>
+              {petType === 'dog' ? t('pet.dog') : t('pet.cat')} {t('pet.photos')} <span className="text-red-500">*</span>
             </h3>
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark px-4 mb-3">
-              Add up to 6 photos of your {petType}. At least one photo is required.
+              {t('pet.photosHint', { type: petType === 'dog' ? t('pet.dog').toLowerCase() : t('pet.cat').toLowerCase() })}
             </p>
             <TinderPhotoGallery
               photos={photos}
@@ -312,21 +312,21 @@ const DogOwnerProfileSetup: React.FC = () => {
               maxPhotos={MAX_PHOTOS}
             />
             {photos.filter(p => p).length === 0 && (
-              <p className="text-xs text-red-500 font-medium text-center mt-2">* At least one photo is required</p>
+              <p className="text-xs text-red-500 font-medium text-center mt-2">* {t('pet.atLeastOnePhoto')}</p>
             )}
           </div>
 
           {/* Pet Name - Required */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Pet's Name <span className="text-red-500">*</span>
+              {t('pet.petName')} <span className="text-red-500">*</span>
             </label>
             <Input
               type="text"
               value={petData.name}
               onChange={(e) => setPetData({ ...petData, name: e.target.value })}
               className="w-full"
-              placeholder="e.g., Max, Bella, Charlie"
+              placeholder={t('pet.namePlaceholder')}
               required
             />
           </div>
@@ -334,14 +334,14 @@ const DogOwnerProfileSetup: React.FC = () => {
           {/* Pet Age - Required */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Age <span className="text-red-500">*</span>
+              {t('pet.age')} <span className="text-red-500">*</span>
             </label>
             <Input
               type="text"
               value={petData.age}
               onChange={(e) => setPetData({ ...petData, age: e.target.value })}
               className="w-full"
-              placeholder="e.g., 2 years, 6 months"
+              placeholder={t('pet.agePlaceholder')}
               required
             />
           </div>
@@ -358,7 +358,7 @@ const DogOwnerProfileSetup: React.FC = () => {
           {/* Energy Level - Required */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Energy Level <span className="text-red-500">*</span>
+              {t('pet.energyLevel')} <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-2">
               {(['low', 'medium', 'high'] as const).map((level) => (
@@ -372,7 +372,7 @@ const DogOwnerProfileSetup: React.FC = () => {
                       : 'bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark border border-border-light dark:border-border-dark'
                   }`}
                 >
-                  {level}
+                  {t(`pet.energy.${level}`)}
                 </button>
               ))}
             </div>
@@ -381,7 +381,7 @@ const DogOwnerProfileSetup: React.FC = () => {
           {/* Temperament - Optional */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Temperament (Select all that apply)
+              {t('pet.temperament')}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {['Friendly', 'Shy', 'Energetic', 'Calm', 'Playful', 'Anxious', 'Good with Kids', 'Good with Dogs'].map((trait) => (
@@ -400,7 +400,7 @@ const DogOwnerProfileSetup: React.FC = () => {
                       : 'bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark border border-border-light dark:border-border-dark'
                   }`}
                 >
-                  {trait}
+                  {t(`pet.trait.${trait.replace(/\s+/g, '')}` as any) || trait}
                 </button>
               ))}
             </div>
@@ -409,26 +409,26 @@ const DogOwnerProfileSetup: React.FC = () => {
           {/* Special Needs - Optional */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Special Needs (Optional)
+              {t('pet.specialNeeds')}
             </label>
             <textarea
               value={petData.specialNeeds}
               onChange={(e) => setPetData({ ...petData, specialNeeds: e.target.value })}
               className="w-full min-h-[80px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
-              placeholder="Medications, allergies, behavioral notes..."
+              placeholder={t('pet.specialNeedsPlaceholder')}
             />
           </div>
 
           {/* Notes - Optional */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Additional Notes (Optional)
+              {t('pet.additionalNotes')}
             </label>
             <textarea
               value={petData.notes}
               onChange={(e) => setPetData({ ...petData, notes: e.target.value })}
               className="w-full min-h-[80px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
-              placeholder="Any other information about your dog..."
+              placeholder={t('pet.notesPlaceholder')}
             />
           </div>
 
@@ -439,11 +439,11 @@ const DogOwnerProfileSetup: React.FC = () => {
               disabled={loading || uploadingImage || photos.filter(p => p).length === 0}
               className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? t('common.loading') : 'Create Pet Profile'}
+              {loading ? t('common.loading') : t('pet.createProfile')}
             </Button>
             
             <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark text-center mt-3">
-              You can add more pets later from your profile
+              {t('pet.addMoreLater')}
             </p>
           </div>
         </form>

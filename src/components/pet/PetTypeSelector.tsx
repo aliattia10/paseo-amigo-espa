@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface PetTypeSelectorProps {
   value: 'dog' | 'cat';
@@ -7,6 +8,7 @@ interface PetTypeSelectorProps {
 }
 
 const PetTypeSelector: React.FC<PetTypeSelectorProps> = ({ value, onChange, disabled }) => {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-2 gap-4">
       <button
@@ -20,8 +22,8 @@ const PetTypeSelector: React.FC<PetTypeSelectorProps> = ({ value, onChange, disa
         } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <span className="text-4xl mb-2 block">🐕</span>
-        <h3 className="font-bold text-text-primary-light dark:text-text-primary-dark">Dog</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Walks & Training</p>
+        <h3 className="font-bold text-text-primary-light dark:text-text-primary-dark">{t('pet.dog')}</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('pet.dogDesc')}</p>
       </button>
       
       <button
@@ -35,8 +37,8 @@ const PetTypeSelector: React.FC<PetTypeSelectorProps> = ({ value, onChange, disa
         } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <span className="text-4xl mb-2 block">🐱</span>
-        <h3 className="font-bold text-text-primary-light dark:text-text-primary-dark">Cat</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Play & Care</p>
+        <h3 className="font-bold text-text-primary-light dark:text-text-primary-dark">{t('pet.cat')}</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('pet.catDesc')}</p>
       </button>
     </div>
   );
