@@ -34,7 +34,8 @@ If you prefer not to use the CLI or don’t have the DB password:
 2. Run the contents of **one** of these files (copy/paste and run):
    - `supabase/RUN-THIS-TO-SHOW-MATCHES-IN-MESSAGES.sql` (matches visible in Messages, chat, `send_message`).
    - `supabase/RUN-THIS-FOR-DEMO-LIKES.sql` (demo users + fix “Failed to save like”).
-3. Run the other file if you want both behaviours.
+   - **`supabase/RUN-THIS-SYNC-AUTH-TO-PUBLIC-USERS.sql`** – if new users can't send likes (406/409): sync auth to public.users and backfill.
+3. Run the other files if you need those behaviours.
 
 Each file is idempotent (safe to run more than once).
 

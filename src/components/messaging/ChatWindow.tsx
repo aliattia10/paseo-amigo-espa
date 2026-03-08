@@ -404,7 +404,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           )}
         </div>
 
-        <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark space-y-3">
+        <form onSubmit={handleSendMessage} className="flex-shrink-0 px-4 py-2 border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark space-y-2">
           {!matchId && !walkRequest && (
             <p className="text-xs text-muted-foreground text-center">
               {t('messages.loadingConversation', 'Preparing conversation...')}

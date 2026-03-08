@@ -231,7 +231,7 @@ const MessagingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-4 py-6">
+      <div className="px-4 pt-4 pb-1">
         {/* Chat List or Chat Window - Mobile Style */}
         {selectedChat ? (
           <ChatWindow
