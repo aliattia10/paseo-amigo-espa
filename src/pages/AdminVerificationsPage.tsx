@@ -4,7 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { approveUser, rejectUser } from '@/lib/kyc-actions';
+import { Loader2, CheckCircle, XCircle, ArrowLeft, LogOut } from 'lucide-react';
+import { clearAdminSession } from '@/lib/admin-auth';
 import { useTranslation } from 'react-i18next';
 
 interface UserRow {
@@ -28,11 +30,12 @@ const AdminVerificationsPage: React.FC = () => {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authLoading && !isAdmin) {
-      navigate('/home');
+    if (authLoading) return;
+    if (!isAdmin) {
+      navigate('/admin');
       return;
     }
-    if (isAdmin) loadUsers();
+    loadUsers();
   }, [isAdmin, authLoading, navigate]);
 
   const loadUsers = async () => {
@@ -41,6 +44,7 @@ const AdminVerificationsPage: React.FC = () => {
       const { data, error } = await supabase
         .from('users')
         .select('id, email, name, verification_status, kyc_confidence, kyc_data, verified, updated_at')
+        .not('verification_status', 'is', null)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
@@ -56,16 +60,8 @@ const AdminVerificationsPage: React.FC = () => {
   const setVerification = async (userId: string, status: 'verified' | 'rejected') => {
     setUpdatingId(userId);
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({
-          verification_status: status,
-          verified: status === 'verified',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
-
-      if (error) throw error;
+      if (status === 'verified') await approveUser(userId);
+      else await rejectUser(userId);
       toast({
         title: t('common.success'),
         description: status === 'verified' ? 'User approved.' : 'User rejected.',
@@ -90,13 +86,24 @@ const AdminVerificationsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
-            <ArrowLeft className="h-5 w-5" />
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+              {t('admin.verifications', 'KYC Verifications')}
+            </h1>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { clearAdminSession(); navigate('/admin/login'); }}
+            className="text-gray-600 dark:text-gray-400"
+          >
+            <LogOut className="h-4 w-4 mr-1" />
+            Log out
           </Button>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            {t('admin.verifications', 'KYC Verifications')}
-          </h1>
         </div>
 
         {loading ? (
@@ -112,6 +119,8 @@ const AdminVerificationsPage: React.FC = () => {
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">AI Confidence</th>
+                    <th className="px-4 py-3">Doc Type</th>
+                    <th className="px-4 py-3">Scanned Name</th>
                     <th className="px-4 py-3">Last Updated</th>
                     <th className="px-4 py-3">Actions</th>
                   </tr>
@@ -125,13 +134,13 @@ const AdminVerificationsPage: React.FC = () => {
                       <td className="px-4 py-3">{u.email ?? '—'}</td>
                       <td className="px-4 py-3">
                         <span
-                          className={
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                             u.verification_status === 'verified'
-                              ? 'text-green-600 dark:text-green-400'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                               : u.verification_status === 'rejected'
-                                ? 'text-red-600 dark:text-red-400'
-                                : 'text-amber-600 dark:text-amber-400'
-                          }
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                          }`}
                         >
                           {u.verification_status ?? '—'}
                         </span>
@@ -140,6 +149,12 @@ const AdminVerificationsPage: React.FC = () => {
                         {u.kyc_confidence != null
                           ? (Number(u.kyc_confidence) * 100).toFixed(1) + '%'
                           : '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {(u.kyc_data as { doc_type?: string })?.doc_type ?? '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {(u.kyc_data as { extracted_data?: { name?: string } })?.extracted_data?.name ?? '—'}
                       </td>
                       <td className="px-4 py-3">
                         {u.updated_at

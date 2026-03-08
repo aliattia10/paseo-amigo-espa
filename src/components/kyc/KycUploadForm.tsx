@@ -9,7 +9,7 @@ import { updateUserKyc } from '@/lib/supabase-services';
 // Use proxy in dev to avoid CORS; fallback to direct KYC URL
 const getVerifyUrl = () => {
   if (import.meta.env.DEV) return '/api/python/verify';
-  return `${import.meta.env.VITE_KYC_API_URL || 'http://localhost:8001'}/verify`;
+  return `${import.meta.env.VITE_KYC_API_URL || 'http://localhost:8002'}/verify`;
 };
 
 export interface VerifyResult {

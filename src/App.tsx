@@ -42,6 +42,8 @@ import PaymentPage from "./pages/PaymentPage";
 import PayoutMethodsPage from "./pages/PayoutMethodsPage";
 import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import AdminVerificationsPage from "./pages/AdminVerificationsPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminGuard from "./components/admin/AdminGuard";
 import LandingPage from "./pages/LandingPage";
 import AboutUsPage from "./pages/AboutUsPage";
 import ContactPage from "./pages/ContactPage";
@@ -732,10 +734,12 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminPage />} />
-                <Route path="/admin/blog/new" element={<AdminBlogPage />} />
-                <Route path="/admin/blog/edit/:id" element={<AdminBlogPage />} />
+                {/* Admin Login (no guard) */}
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                {/* Admin Routes (password-protected via AdminGuard) */}
+                <Route path="/admin" element={<AdminGuard><AdminPage /></AdminGuard>} />
+                <Route path="/admin/blog/new" element={<AdminGuard><AdminBlogPage /></AdminGuard>} />
+                <Route path="/admin/blog/edit/:id" element={<AdminGuard><AdminBlogPage /></AdminGuard>} />
                 
                 {/* Protected Routes */}
                 <Route path="/verify-identity" element={<ProtectedRoute><VerifyIdentityPage /></ProtectedRoute>} />
@@ -885,19 +889,19 @@ const App = () => (
                   } 
                 />
                 <Route 
-                  path="/admin/payouts" 
+path="/admin/payouts"
                   element={
-                    <ProtectedRoute>
+                    <AdminGuard>
                       <AdminPayoutsPage />
-                    </ProtectedRoute>
-                  } 
+                    </AdminGuard>
+                  }
                 />
                 <Route 
                   path="/admin/verifications" 
                   element={
-                    <ProtectedRoute>
+                    <AdminGuard>
                       <AdminVerificationsPage />
-                    </ProtectedRoute>
+                    </AdminGuard>
                   } 
                 />
                 

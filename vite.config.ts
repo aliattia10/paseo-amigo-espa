@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       proxy: {
         "/api/python": {
-          target: "http://127.0.0.1:8001",
+          target: process.env.VITE_KYC_PROXY_TARGET || "http://127.0.0.1:8002",
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/python/, ""),
         },

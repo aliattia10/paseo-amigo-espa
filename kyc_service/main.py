@@ -1,141 +1,182 @@
 """
-Custom KYC verification API.
-POST /verify: accepts id_card and selfie (multipart/form-data).
-Uses DeepFace (VGG-Face) for face match and EasyOCR for ID text.
+Lightweight KYC verification API for Render 512MB free tier.
+- OCR: pytesseract (Tesseract) instead of EasyOCR to reduce RAM.
+- Face: DeepFace with Facenet512 (faster/lighter than VGG-Face).
+- Passport: passporteye / mrz for MRZ.
+POST /verify: id_doc, selfie, doc_type -> { status, confidence, data, reason }.
 """
+from __future__ import annotations
+
 import os
 import tempfile
 from typing import Literal
 
-# Reduce TensorFlow noise and avoid GPU allocation issues on Windows
+# Low RAM: reduce TF memory growth and avoid GPU
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+os.environ.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "true")
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="KYC Verification API", version="1.0.0")
+app = FastAPI(title="KYC Verification API (Lightweight)", version="3.0.0")
 
-# Allow localhost:3000 (Vite) to call localhost:8000
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Lazy-load heavy deps to speed up startup
-_ocr_reader = None
-def get_ocr_reader():
-    global _ocr_reader
-    if _ocr_reader is None:
-        import easyocr
-        _ocr_reader = easyocr.Reader(["en"], gpu=False, verbose=False)
-    return _ocr_reader
-
 
 def run_face_verify(id_path: str, selfie_path: str) -> tuple[bool, float]:
-    """Compare ID face vs selfie with DeepFace (VGG-Face). Returns (verified, distance)."""
+    """Face match: Facenet512 is lighter and faster than VGG-Face for 512MB RAM."""
     from deepface import DeepFace
     result = DeepFace.verify(
         id_path,
         selfie_path,
-        model_name="VGG-Face",
+        model_name="Facenet512",
         enforce_detection=False,
         detector_backend="opencv",
     )
     verified = result.get("verified", False)
     distance = float(result.get("distance", 1.0))
-    # distance is lower when more similar; convert to a "confidence" in 0..1
     confidence = max(0.0, min(1.0, 1.0 - distance))
     return verified, confidence
 
 
-def run_ocr(image_path: str) -> list[str]:
-    """Extract text lines from ID image."""
-    reader = get_ocr_reader()
-    results = reader.readtext(image_path, detail=0)
-    return [str(line).strip() for line in results if line and str(line).strip()]
+def run_ocr_id(image_path: str) -> list[str]:
+    """ID card text via pytesseract (uses system Tesseract; much less RAM than EasyOCR)."""
+    import pytesseract
+    text = pytesseract.image_to_string(image_path)
+    lines = [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
+    return lines
 
 
-# Threshold above which we auto-approve; below = manual_review
+def extract_mrz_passport(image_path: str) -> dict:
+    """Passport MRZ via passporteye (optional mrz fallback)."""
+    out = {"name": None, "country": None, "dob": None, "expiry": None, "raw_mrz": None}
+    try:
+        from passporteye import read_mrz
+        mrz_data = read_mrz(image_path)
+        if mrz_data is not None:
+            surname = (getattr(mrz_data, "surname", None) or "").strip()
+            names = (getattr(mrz_data, "names", None) or "").strip()
+            out["name"] = f"{surname} {names}".strip() or None
+            out["country"] = getattr(mrz_data, "country", None) or getattr(mrz_data, "nationality", None)
+            out["dob"] = getattr(mrz_data, "date_of_birth", None)
+            out["expiry"] = getattr(mrz_data, "expiration_date", None)
+            out["raw_mrz"] = str(mrz_data) if mrz_data else None
+            return out
+    except Exception:
+        pass
+    try:
+        import mrz
+        if hasattr(mrz, "read_mrz"):
+            m = mrz.read_mrz(image_path)
+            if m:
+                out["name"] = getattr(m, "name", None) or getattr(m, "surname", "")
+                out["country"] = getattr(m, "country", None)
+                out["dob"] = getattr(m, "date_of_birth", None)
+                out["expiry"] = getattr(m, "expiration_date", None)
+                out["raw_mrz"] = str(m)
+    except Exception:
+        pass
+    return out
+
+
 APPROVE_THRESHOLD = 0.7
 
 
-def _is_image_content_type(ct: str | None) -> bool:
-    if not ct:
-        return False
-    return ct.startswith("image/") or ct in ("application/octet-stream",)
+def _is_image(ct: str | None) -> bool:
+    return bool(ct and (ct.startswith("image/") or ct == "application/octet-stream"))
 
 
 @app.post("/verify")
 async def verify(
-    id_card: UploadFile = File(..., description="ID card image"),
+    id_doc: UploadFile = File(None, description="ID or passport image (or use id_card)"),
+    id_card: UploadFile = File(None, description="Alias for id_doc"),
     selfie: UploadFile = File(..., description="Selfie image"),
+    doc_type: str = Form("id", description="'id' or 'passport'"),
 ) -> dict:
     """
-    Verify identity: face match (ID vs selfie) + OCR on ID.
-    Returns status (approved | manual_review), confidence, ocr_text.
+    Returns: { status: "approved"|"rejected", confidence: float, data: {}, reason?: str }.
     """
-    if not _is_image_content_type(id_card.content_type):
-        raise HTTPException(400, "id_card must be an image")
-    if not _is_image_content_type(selfie.content_type):
+    doc_type = (doc_type or "id").strip().lower()
+    if doc_type not in ("id", "passport"):
+        doc_type = "id"
+
+    doc_file = id_doc if id_doc and id_doc.filename else id_card
+    if not doc_file:
+        raise HTTPException(400, "Provide id_doc or id_card")
+    if not _is_image(doc_file.content_type):
+        raise HTTPException(400, "id_doc/id_card must be an image")
+    if not _is_image(selfie.content_type):
         raise HTTPException(400, "selfie must be an image")
 
-    id_bytes = await id_card.read()
+    id_bytes = await doc_file.read()
     selfie_bytes = await selfie.read()
     if not id_bytes or not selfie_bytes:
         raise HTTPException(400, "Empty file(s)")
 
-    # Use .jpg so OpenCV/DeepFace can read; accept any upload as image
-    ext = ".jpg"
-    with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as f_id:
-        f_id.write(id_bytes)
-        id_path = f_id.name
-    with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as f_selfie:
-        f_selfie.write(selfie_bytes)
-        selfie_path = f_selfie.name
+    suf = ".jpg"
+    with tempfile.NamedTemporaryFile(suffix=suf, delete=False) as f1:
+        f1.write(id_bytes)
+        id_path = f1.name
+    with tempfile.NamedTemporaryFile(suffix=suf, delete=False) as f2:
+        f2.write(selfie_bytes)
+        selfie_path = f2.name
+
+    reason: str | None = None
+    data: dict = {"doc_type": doc_type}
 
     try:
-        # Face verification
         try:
             verified, confidence = run_face_verify(id_path, selfie_path)
         except Exception as e:
+            reason = f"Face verification failed: {e}"
             return {
-                "status": "manual_review",
+                "status": "rejected",
                 "confidence": 0.0,
-                "ocr_text": [],
-                "message": f"Face verification failed: {str(e)}",
+                "data": data,
+                "extracted_data": data,
+                "reason": reason,
             }
 
-        # OCR on ID
-        try:
-            ocr_text = run_ocr(id_path)
-        except Exception:
-            ocr_text = []
+        if doc_type == "passport":
+            mrz_out = extract_mrz_passport(id_path)
+            data["name"] = mrz_out.get("name")
+            data["country"] = mrz_out.get("country")
+            data["dob"] = mrz_out.get("dob")
+            data["expiry"] = mrz_out.get("expiry")
+            data["raw_mrz"] = mrz_out.get("raw_mrz")
+        else:
+            ocr_lines = run_ocr_id(id_path)
+            data["ocr_text"] = ocr_lines
+            data["name"] = ocr_lines[0] if ocr_lines else None
 
-        status: Literal["approved", "manual_review"] = (
-            "approved" if (verified and confidence >= APPROVE_THRESHOLD) else "manual_review"
+        status: Literal["approved", "rejected"] = (
+            "approved" if (verified and confidence >= APPROVE_THRESHOLD) else "rejected"
         )
+        if status == "rejected" and not verified:
+            reason = "Face match failed or below threshold"
 
-        return {
+        resp: dict = {
             "status": status,
             "confidence": round(confidence, 4),
-            "ocr_text": ocr_text,
+            "data": data,
+            "extracted_data": data,  # frontend compatibility
         }
+        if reason:
+            resp["reason"] = reason
+        return resp
     finally:
-        try:
-            os.unlink(id_path)
-        except OSError:
-            pass
-        try:
-            os.unlink(selfie_path)
-        except OSError:
-            pass
+        for p in (id_path, selfie_path):
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
 
 
 @app.get("/health")
