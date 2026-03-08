@@ -14,7 +14,7 @@ import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import OwnerDashboard from "./components/dashboard/OwnerDashboard";
 import WalkerDashboard from "./components/dashboard/WalkerDashboard";
-import MessagesPage from "./pages/MessagesPage";
+import MessagingPage from "./components/messaging/MessagingPage";
 import SubscriptionPage from "./components/subscription/SubscriptionPage";
 import Index from "./pages/Index";
 import AuthNew from "./pages/AuthNew";
@@ -861,7 +861,7 @@ const App = () => (
                   path="/messages" 
                   element={
                     <ProtectedRoute>
-                      <MessagesPage />
+                      <MessagingPage />
                     </ProtectedRoute>
                   } 
                 />
