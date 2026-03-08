@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from '@/contexts/AuthContext';
 import { sendMessage, getChatMessages, subscribeToChatMessages } from '@/lib/supabase-services';
 import { useToast } from '@/hooks/use-toast';
-import { Send, ArrowLeft, MessageCircle, Image, Video, X } from 'lucide-react';
+import { Send, ArrowLeft, MessageCircle, Image, Video, X, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ChatMessage, WalkRequest } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -36,6 +36,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [chatBookings, setChatBookings] = useState<Array<{ id: string; status: string; start_time?: string; total_price?: number }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +58,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     }
 
     setLoading(true);
+    const LOAD_TIMEOUT_MS = 10000;
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+    }, LOAD_TIMEOUT_MS);
+
     const loadMessages = async () => {
       try {
         if (matchId) {
@@ -80,12 +86,33 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           variant: "destructive",
         });
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
 
     loadMessages();
-  }, [matchId, walkRequest, toast]);
+    return () => clearTimeout(timeoutId);
+  }, [matchId, walkRequest, toast, t]);
+
+  // Load bookings between current user and this conversation partner (so they appear in chat)
+  useEffect(() => {
+    if (!currentUser?.id || !otherUser?.id) {
+      setChatBookings([]);
+      return;
+    }
+    const uid = currentUser.id;
+    const oid = otherUser.id;
+    (async () => {
+      const { data } = await supabase
+        .from('bookings')
+        .select('id, status, start_time, total_price')
+        .or(`and(owner_id.eq.${uid},sitter_id.eq.${oid}),and(owner_id.eq.${oid},sitter_id.eq.${uid})`)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      setChatBookings(data ?? []);
+    })();
+  }, [currentUser?.id, otherUser?.id]);
 
   // Subscribe to real-time messages
   useEffect(() => {
@@ -292,7 +319,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   }
 
   return (
-    <Card className="h-[calc(100vh-200px)] max-h-[600px] flex flex-col bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+    <Card className="flex flex-col flex-1 min-h-[400px] h-[calc(100vh-180px)] md:max-h-[none] max-h-[calc(100vh-160px)] bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark w-full">
       <CardHeader className="flex-shrink-0 border-b border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark">
         <div className="flex items-center gap-3">
           <Button
@@ -327,6 +354,39 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0 bg-background-light dark:bg-background-dark">
+        {chatBookings.length > 0 && (
+          <div className="flex-shrink-0 border-b border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-3 py-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">
+                {t('messages.bookingsWith', 'Bookings with')} {otherUser.name}
+              </span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+              {chatBookings.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => navigate('/bookings')}
+                  className="flex-shrink-0 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-left min-w-[120px] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <p className="text-xs font-medium text-text-primary-light dark:text-text-primary-dark truncate">
+                    {b.start_time ? new Date(b.start_time).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                  </p>
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark capitalize">{b.status}</p>
+                  {b.total_price != null && <p className="text-xs text-primary font-medium">€{Number(b.total_price).toFixed(0)}</p>}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/bookings')}
+              className="text-xs text-primary font-medium mt-1 hover:underline"
+            >
+              {t('bookings.myBookings')} →
+            </button>
+          </div>
+        )}
         <div ref={scrollAreaRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide p-4 bg-background-light dark:bg-background-dark">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">

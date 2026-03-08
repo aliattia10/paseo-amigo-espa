@@ -10,13 +10,14 @@ import i18n from '@/lib/i18n';
 
 interface Notification {
   id: string;
-  type: 'booking' | 'match' | 'message' | 'review';
+  type: string;
   title: string;
   description: string;
   time: string;
   isRead: boolean;
   icon: string;
   iconColor: string;
+  relatedId?: string | null;
 }
 
 const NotificationsPage: React.FC = () => {
@@ -110,13 +111,14 @@ const NotificationsPage: React.FC = () => {
 
       const formattedNotifications = (data || []).map((notif: any) => ({
         id: notif.id,
-        type: notif.type,
+        type: notif.type || 'notification',
         title: notif.title,
         description: notif.message,
         time: relativeDay(notif.created_at),
         isRead: notif.read === true || notif.is_read === true,
         icon: getIconForType(notif.type),
         iconColor: getIconColorForType(notif.type),
+        relatedId: notif.related_id ?? null,
       }));
 
       setNotifications(formattedNotifications);
@@ -209,9 +211,34 @@ const NotificationsPage: React.FC = () => {
   const yesterdayNotifications = filteredNotifications.filter(n => n.time === yesterdayLabel);
   const earlierNotifications = filteredNotifications.filter(n => n.time !== todayLabel && n.time !== yesterdayLabel);
 
+  const handleNotificationClick = (notif: Notification) => {
+    const type = (notif.type || '').toLowerCase();
+    if (type.includes('booking') || type === 'booking_request' || type === 'booking_status_update' || type === 'booking_confirmed' || type === 'payment' || type === 'service_completed' || type === 'completion_confirmed' || type === 'payment_released') {
+      navigate('/bookings');
+      return;
+    }
+    if (type === 'message' || type.includes('message')) {
+      navigate('/messages');
+      return;
+    }
+    if (type === 'match') {
+      navigate('/messages');
+      return;
+    }
+    if (type === 'review' || type.includes('review')) {
+      navigate('/bookings');
+      return;
+    }
+    navigate('/bookings');
+  };
+
   const NotifRow = ({ notif }: { notif: Notification }) => (
     <div
-      className={`flex cursor-pointer items-center gap-4 px-4 py-3 min-h-[72px] justify-between ${
+      role="button"
+      tabIndex={0}
+      onClick={() => handleNotificationClick(notif)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNotificationClick(notif); }}
+      className={`flex cursor-pointer items-center gap-4 px-4 py-3 min-h-[72px] justify-between hover:opacity-90 active:opacity-95 ${
         notif.isRead ? 'bg-card-light dark:bg-card-dark' : 'bg-primary/10 dark:bg-primary/20'
       }`}
     >

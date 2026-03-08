@@ -67,19 +67,19 @@ const MessagingPage: React.FC = () => {
     const resolve = async () => {
       try {
         let matchesList: any[] | null = null;
-        const { data: dataA, error: errA } = await supabase
+        const { data: dataB, error: errB } = await supabase
           .from('matches')
-          .select('id, user_id, matched_user_id')
-          .or(`user_id.eq.${uid},matched_user_id.eq.${uid}`);
-        if (errA?.code === '42703' || (errA?.message && String(errA.message).includes('user_id'))) {
-          const { data: dataB } = await supabase
+          .select('id, user1_id, user2_id')
+          .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
+        if (errB?.code === '42703' || errB?.status === 400 || (errB?.message && String(errB.message).includes('user1_id'))) {
+          const { data: dataA } = await supabase
             .from('matches')
-            .select('id, user1_id, user2_id')
-            .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
-          matchesList = dataB ?? null;
+            .select('id, user_id, matched_user_id')
+            .or(`user_id.eq.${uid},matched_user_id.eq.${uid}`);
+          matchesList = dataA ?? null;
           const match = matchesList?.find(
             (m: any) =>
-              (m.user1_id === uid && m.user2_id === otherId) || (m.user1_id === otherId && m.user2_id === uid)
+              (m.user_id === uid && m.matched_user_id === otherId) || (m.matched_user_id === uid && m.user_id === otherId)
           );
           if (cancelled || !match?.id) return;
           setSelectedChat((prev) =>
@@ -87,10 +87,10 @@ const MessagingPage: React.FC = () => {
           );
           return;
         }
-        matchesList = dataA ?? null;
+        matchesList = dataB ?? null;
         const match = matchesList?.find(
           (m: any) =>
-            (m.user_id === uid && m.matched_user_id === otherId) || (m.matched_user_id === uid && m.user_id === otherId)
+            (m.user1_id === uid && m.user2_id === otherId) || (m.user1_id === otherId && m.user2_id === uid)
         );
         if (cancelled || !match?.id) return;
         setSelectedChat((prev) =>
@@ -116,18 +116,18 @@ const MessagingPage: React.FC = () => {
       try {
         const uid = String(currentUser.id).trim();
         let matchesList: any[] | null = null;
-        const { data: dataA, error: errA } = await supabase
+        const { data: dataB, error: errB } = await supabase
           .from('matches')
-          .select('id, user_id, matched_user_id')
-          .or(`user_id.eq.${uid},matched_user_id.eq.${uid}`);
-        if (errA?.code === '42703' || (errA?.message && String(errA.message).includes('user_id'))) {
-          const { data: dataB } = await supabase
+          .select('id, user1_id, user2_id')
+          .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
+        if (errB?.code === '42703' || errB?.status === 400 || (errB?.message && String(errB.message).includes('user1_id'))) {
+          const { data: dataA } = await supabase
             .from('matches')
-            .select('id, user1_id, user2_id')
-            .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
-          matchesList = dataB ?? null;
-        } else {
+            .select('id, user_id, matched_user_id')
+            .or(`user_id.eq.${uid},matched_user_id.eq.${uid}`);
           matchesList = dataA ?? null;
+        } else {
+          matchesList = dataB ?? null;
         }
         const match = matchesList?.find((m: any) => {
           if (m.user_id != null) {
@@ -199,10 +199,10 @@ const MessagingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stitch-bg-light dark:bg-background-dark pb-20 max-w-md mx-auto">
+    <div className="min-h-screen flex flex-col bg-stitch-bg-light dark:bg-background-dark pb-20 w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto">
       {/* Header */}
       <div className="bg-stitch-card-light dark:bg-card-dark shadow-md border-b border-stitch-border-light dark:border-border-dark sticky top-0 z-50">
-        <div className="max-w-md mx-auto px-4 py-3">
+        <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
@@ -231,8 +231,8 @@ const MessagingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-4 pt-4 pb-1">
-        {/* Chat List or Chat Window - Mobile Style */}
+      <div className="flex-1 flex flex-col min-h-0 w-full px-4 pt-4 pb-1">
+        {/* Chat List or Chat Window */}
         {selectedChat ? (
           <ChatWindow
             walkRequest={selectedChat.walkRequest}

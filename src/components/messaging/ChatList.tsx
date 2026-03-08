@@ -44,9 +44,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryTrigger, setRetryTrigger] = useState(0);
 
   useEffect(() => {
-    const TIMEOUT_MS = 5000;
+    const TIMEOUT_MS = 8000;
     const withTimeout = <T,>(p: Promise<T>): Promise<T | null> =>
       Promise.race([p, new Promise<null>((res) => setTimeout(() => res(null), TIMEOUT_MS))]).catch(() => null);
 
@@ -62,33 +63,43 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
         return;
       }
 
+      let loadingCleared = false;
+      const forceStopLoading = setTimeout(() => {
+        if (!loadingCleared) {
+          loadingCleared = true;
+          setLoading(false);
+        }
+      }, 10000);
+
       try {
         setLoadError(null);
         if (showLoading) setLoading(true);
 
-        // 1) Fetch matches ? support user_id/matched_user_id or user1_id/user2_id (avoid 400 from wrong schema)
+        // 1) Fetch matches – try user1_id/user2_id first (most projects use this), then user_id/matched_user_id
         let matchesData: any[] | null = null;
         let matchesError: any = null;
         let useUser12 = false;
+        let matchesResA: any = null;
 
-        const orFilterA = `user_id.eq.${uid},matched_user_id.eq.${uid}`;
-        const matchesResA = await withTimeout(
-          supabase.from('matches').select('*').or(orFilterA).order('created_at', { ascending: false })
+        const orFilterB = `user1_id.eq.${uid},user2_id.eq.${uid}`;
+        const matchesResB = await withTimeout(
+          supabase.from('matches').select('*').or(orFilterB).order('created_at', { ascending: false })
         );
-        matchesError = matchesResA?.error ?? null;
-        if (matchesError?.code === '42703' || (matchesError?.message && String(matchesError.message).includes('user_id'))) {
-          const orFilterB = `user1_id.eq.${uid},user2_id.eq.${uid}`;
-          const matchesResB = await withTimeout(
-            supabase.from('matches').select('*').or(orFilterB).order('created_at', { ascending: false })
+        matchesError = matchesResB?.error ?? null;
+        if (matchesError?.code === '42703' || matchesError?.status === 400 || (matchesError?.message && String(matchesError.message).includes('user1_id'))) {
+          const orFilterA = `user_id.eq.${uid},matched_user_id.eq.${uid}`;
+          matchesResA = await withTimeout(
+            supabase.from('matches').select('*').or(orFilterA).order('created_at', { ascending: false })
           );
-          matchesError = matchesResB?.error ?? null;
+          matchesError = matchesResA?.error ?? null;
+          matchesData = matchesResA?.data ?? null;
+          useUser12 = false;
+        } else {
           matchesData = matchesResB?.data ?? null;
           useUser12 = true;
-        } else {
-          matchesData = matchesResA?.data ?? null;
         }
 
-        if (matchesResA === null && !useUser12) {
+        if ((useUser12 && matchesResB === null) || (!useUser12 && matchesResA === null)) {
           setLoadError(t('messages.loadFailed') || 'Could not load matches.');
         } else if (matchesError) {
           if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
@@ -166,7 +177,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
         setWalkRequests(activeRequests);
       } catch (error: any) {
         if (import.meta.env.DEV) console.error('Error loading chats:', error);
+        setLoadError(t('messages.loadFailed') || 'Could not load conversations.');
       } finally {
+        clearTimeout(forceStopLoading);
+        loadingCleared = true;
         setLoading(false);
       }
     };
@@ -193,7 +207,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userProfile, currentUser, toast, t, refreshTrigger]);
+  }, [userProfile, currentUser, toast, t, refreshTrigger, retryTrigger]);
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -268,6 +282,15 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
             ? (t('messages.matchDescription') || 'Ensure database migrations are applied (matches and users RLS).')
             : (t('messages.matchDescription') || t('messages.matchToChat') || 'When you match with someone, you can chat here and coordinate services.')}
         </p>
+        {loadError && (
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => { setLoadError(null); setRetryTrigger((r) => r + 1); }}
+          >
+            {t('common.retry') || 'Retry'}
+          </Button>
+        )}
       </div>
     );
   }
