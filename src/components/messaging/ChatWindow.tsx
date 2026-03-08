@@ -292,14 +292,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   }
 
   return (
-    <Card className="h-[calc(100vh-200px)] max-h-[600px] flex flex-col">
-      <CardHeader className="flex-shrink-0 border-b">
+    <Card className="h-[calc(100vh-200px)] max-h-[600px] flex flex-col bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark">
+      <CardHeader className="flex-shrink-0 border-b border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="md:hidden"
+            className="md:hidden text-text-primary-light dark:text-text-primary-dark"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
@@ -307,32 +307,31 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             <AvatarImage src={otherUser.profileImage} />
             <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div className="flex-1">
-            <h3 className="font-semibold">{otherUser.name}</h3>
-            <p className="text-sm text-muted-foreground">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{otherUser.name}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               {walkRequest ? t('messages.walkFor', { dog: walkRequest.dogId }) : t('messages.match')}
             </p>
           </div>
           {matchId && (
             <Button
               onClick={() => {
-                // Navigate to booking page with walker ID
                 navigate(`/booking/request?walkerId=${otherUser.id}&walkerName=${encodeURIComponent(otherUser.name)}&rate=${otherUser.hourlyRate || 15}`);
               }}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 text-white font-medium shrink-0"
             >
-              ?? {t('messages.bookNow')}
+              {t('messages.bookNow')}
             </Button>
           )}
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col p-0">
-        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide p-4">
+      <CardContent className="flex-1 flex flex-col p-0 bg-background-light dark:bg-background-dark">
+        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide p-4 bg-background-light dark:bg-background-dark">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <MessageCircle className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
+              <MessageCircle className="w-12 h-12 text-gray-500 dark:text-gray-400 mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">
                 {t('messages.noMessages')}
               </p>
             </div>
@@ -368,7 +367,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
                         className={`rounded-2xl px-4 py-2.5 shadow-sm ${
                           isOwnMessage
                             ? 'bg-gradient-to-br from-primary to-primary/90 text-white rounded-br-sm'
-                            : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-sm border border-gray-200 dark:border-gray-700'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-sm border border-gray-200 dark:border-gray-600'
                         }`}
                       >
                         <p className={`text-sm leading-relaxed ${isOwnMessage ? 'text-white' : 'text-gray-900 dark:text-gray-100'}`}>
@@ -380,7 +379,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
                       <p
                         className={`text-xs mt-1 px-2 ${
                           isOwnMessage ? 'text-right' : 'text-left'
-                        } text-text-secondary-light dark:text-text-secondary-dark`}
+                        } text-gray-500 dark:text-gray-400`}
                       >
                         {formatTime(messageTime)}
                       </p>
@@ -405,7 +404,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
           )}
         </div>
 
-        <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t space-y-3">
+        <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark space-y-3">
           {!matchId && !walkRequest && (
             <p className="text-xs text-muted-foreground text-center">
               {t('messages.loadingConversation', 'Preparing conversation...')}
