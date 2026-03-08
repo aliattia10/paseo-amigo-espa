@@ -13,6 +13,8 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const diditApiKey = Deno.env.get('DIDIT_API_KEY') ?? ''
 const workflowId = Deno.env.get('DIDIT_WORKFLOW_ID') ?? ''
+/** Optional base URL for redirect after verification (e.g. https://petflik.com). If set, callback becomes {DIDIT_CALLBACK_BASE}/verify-identity-done */
+const diditCallbackBase = Deno.env.get('DIDIT_CALLBACK_BASE') ?? ''
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const corsHeaders = {
@@ -26,45 +28,41 @@ async function tryCreateSession(
   vendorData: string,
   callbackUrl?: string,
 ): Promise<{ ok: boolean; status: number; data: any }> {
-  // Attempt 1: v1 API with Authorization: Bearer (matches Didit docs snippet)
-  const v1Res = await fetch('https://api.didit.me/v1/session', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      workflow_id: wfId,
-      vendor_data: vendorData,
-      ...(callbackUrl ? { callback_url: callbackUrl } : {}),
-    }),
-  }).catch(() => null)
-
-  if (v1Res && v1Res.ok) {
-    const data = await v1Res.json().catch(() => ({}))
-    return { ok: true, status: 200, data }
+  // Didit v3 API (documented): https://verification.didit.me/v3/session/
+  // Auth: x-api-key header. Body: workflow_id, vendor_data (string), callback (optional).
+  // Response: 201 Created with url, session_id, etc.
+  const payload: Record<string, string> = {
+    workflow_id: wfId,
+    vendor_data: vendorData,
+  }
+  if (callbackUrl && callbackUrl.startsWith('http')) {
+    payload.callback = callbackUrl
+    payload.callback_method = 'both'
   }
 
-  // Attempt 2: v3 API with x-api-key header (older format)
-  const v3Res = await fetch('https://verification.didit.me/v3/session/', {
+  const res = await fetch('https://verification.didit.me/v3/session/', {
     method: 'POST',
     headers: {
+      'Accept': 'application/json',
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
     },
-    body: JSON.stringify({
-      workflow_id: wfId,
-      vendor_data: vendorData,
-      ...(callbackUrl ? { callback: callbackUrl } : {}),
-    }),
-  }).catch(() => null)
+    body: JSON.stringify(payload),
+  }).catch((e) => {
+    console.error('Didit fetch error', e)
+    return null
+  })
 
-  if (v3Res) {
-    const data = await v3Res.json().catch(() => ({}))
-    return { ok: v3Res.ok, status: v3Res.status, data }
+  if (!res) {
+    return { ok: false, status: 503, data: { error: 'Could not reach Didit API' } }
   }
 
-  return { ok: false, status: 503, data: { error: 'Could not reach Didit API' } }
+  const data = await res.json().catch(() => ({}))
+  const ok = res.status === 200 || res.status === 201
+  if (!ok) {
+    console.error('Didit API error', res.status, data)
+  }
+  return { ok, status: res.status, data }
 }
 
 serve(async (req) => {
@@ -111,15 +109,20 @@ serve(async (req) => {
     const vendorData = JSON.stringify({
       user_id: user.id,
       user_type: userType,
-      email: user.email,
+      email: user.email ?? undefined,
       source: 'petflik',
     })
+
+    const callbackUrl =
+      (typeof body.callback_url === 'string' && body.callback_url.startsWith('http') ? body.callback_url : null) ||
+      (diditCallbackBase ? `${diditCallbackBase.replace(/\/$/, '')}/verify-identity-done` : null) ||
+      undefined
 
     const { ok, status, data } = await tryCreateSession(
       diditApiKey,
       workflowId,
       vendorData,
-      body.callback_url || undefined,
+      callbackUrl,
     )
 
     if (!ok) {

@@ -50,6 +50,7 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import RefundPolicyPage from "./pages/RefundPolicyPage";
 import CodeOfConductPage from "./pages/CodeOfConductPage";
 import VerifyIdentityPage from "./pages/VerifyIdentityPage";
+import VerifyIdentityDonePage from "./pages/VerifyIdentityDonePage";
 import BlogListPage from "./pages/BlogListPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import AdminPage from "./pages/AdminPage";
@@ -737,6 +738,7 @@ const App = () => (
                 
                 {/* Protected Routes */}
                 <Route path="/verify-identity" element={<ProtectedRoute><VerifyIdentityPage /></ProtectedRoute>} />
+                <Route path="/verify-identity-done" element={<ProtectedRoute><VerifyIdentityDonePage /></ProtectedRoute>} />
                 <Route 
                   path="/dashboard" 
                   element={

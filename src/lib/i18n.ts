@@ -317,6 +317,13 @@ const resources = {
       'verifyIdentity.verify': 'Verify',
       'verifyIdentity.pendingTitle': 'Identity verification pending',
       'verifyIdentity.pendingDescription': 'Verify to earn trust and get more bookings',
+      'verifyIdentity.declinedTitle': 'Verification declined',
+      'verifyIdentity.declinedDesc': 'Your verification was not approved. You can try again from your profile.',
+      'verifyIdentity.inReviewTitle': 'Under review',
+      'verifyIdentity.inReviewDesc': 'Your documents are being reviewed. We will notify you once complete.',
+      'verifyIdentity.completeTitle': 'Verification complete',
+      'verifyIdentity.redirectDesc': 'Redirecting to dashboard...',
+      'verifyIdentity.goToDashboard': 'Go to dashboard',
 
       // Settings
       'settings.darkMode': 'Dark Mode',
@@ -985,6 +992,13 @@ const resources = {
       'verifyIdentity.verify': 'Vérifier',
       'verifyIdentity.pendingTitle': 'Vérification d\'identité en attente',
       'verifyIdentity.pendingDescription': 'Vérifiez-vous pour inspirer confiance et obtenir plus de réservations',
+      'verifyIdentity.declinedTitle': 'Vérification refusée',
+      'verifyIdentity.declinedDesc': 'Votre vérification n\'a pas été approuvée. Vous pouvez réessayer depuis votre profil.',
+      'verifyIdentity.inReviewTitle': 'En cours d\'examen',
+      'verifyIdentity.inReviewDesc': 'Vos documents sont en cours d\'examen. Nous vous notifierons une fois terminé.',
+      'verifyIdentity.completeTitle': 'Vérification terminée',
+      'verifyIdentity.redirectDesc': 'Redirection vers le tableau de bord...',
+      'verifyIdentity.goToDashboard': 'Aller au tableau de bord',
 
       // Settings
       'settings.darkMode': 'Mode sombre',
@@ -1950,6 +1964,13 @@ const resources = {
       'verifyIdentity.verify': 'Verificar',
       'verifyIdentity.pendingTitle': 'Verificación de identidad pendiente',
       'verifyIdentity.pendingDescription': 'Verifica tu identidad para generar confianza y recibir más reservas',
+      'verifyIdentity.declinedTitle': 'Verificación rechazada',
+      'verifyIdentity.declinedDesc': 'Tu verificación no fue aprobada. Puedes intentarlo de nuevo desde tu perfil.',
+      'verifyIdentity.inReviewTitle': 'En revisión',
+      'verifyIdentity.inReviewDesc': 'Tus documentos están siendo revisados. Te notificaremos cuando esté listo.',
+      'verifyIdentity.completeTitle': 'Verificación completada',
+      'verifyIdentity.redirectDesc': 'Redirigiendo al panel...',
+      'verifyIdentity.goToDashboard': 'Ir al panel',
 
       // Settings
       'settings.darkMode': 'Modo oscuro',

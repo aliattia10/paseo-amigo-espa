@@ -27,8 +27,9 @@ const VerifyIdentityPage: React.FC = () => {
     setStarting(true);
     setServiceUnavailable(false);
     try {
+      const callbackUrl = `${window.location.origin}/verify-identity-done`;
       const { data, error } = await supabase.functions.invoke('create-didit-session', {
-        body: { userType: userProfile.userType },
+        body: { userType: userProfile.userType, callback_url: callbackUrl },
       });
       if (error) throw error;
       const url = data?.url;
