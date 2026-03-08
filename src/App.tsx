@@ -41,6 +41,7 @@ import BookingRequestPage from "./pages/BookingRequestPage";
 import PaymentPage from "./pages/PaymentPage";
 import PayoutMethodsPage from "./pages/PayoutMethodsPage";
 import AdminPayoutsPage from "./pages/AdminPayoutsPage";
+import AdminVerificationsPage from "./pages/AdminVerificationsPage";
 import LandingPage from "./pages/LandingPage";
 import AboutUsPage from "./pages/AboutUsPage";
 import ContactPage from "./pages/ContactPage";
@@ -888,6 +889,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <AdminPayoutsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/verifications" 
+                  element={
+                    <ProtectedRoute>
+                      <AdminVerificationsPage />
                     </ProtectedRoute>
                   } 
                 />

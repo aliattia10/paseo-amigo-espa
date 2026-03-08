@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ShieldCheck, ShieldX } from 'lucide-react';
 
 /**
- * Callback page after Didit identity verification.
- * Didit redirects here with ?verificationSessionId=...&status=Approved|Declined|In Review
+ * Callback page after identity verification.
+ * Query params: verificationSessionId, status (Approved|Declined|In Review)
  */
 const VerifyIdentityDonePage: React.FC = () => {
   const { t } = useTranslation();

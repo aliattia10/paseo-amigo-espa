@@ -29,3 +29,8 @@ dist-ssr
 
 # Supabase CLI generated
 supabase/.temp
+
+# Python
+__pycache__
+*.pyc
+*.pyo

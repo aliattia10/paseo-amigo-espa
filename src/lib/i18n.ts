@@ -299,7 +299,7 @@ const resources = {
       'common.next': 'Next',
       'common.previous': 'Previous',
       
-      // Verify identity (Didit)
+      // Verify identity (KYC)
       'verifyIdentity.title': 'Verify your identity',
       'verifyIdentity.description': 'To keep our community safe, we ask you to verify your identity with a quick ID check. This only takes a minute.',
       'verifyIdentity.start': 'Start verification',
@@ -974,7 +974,7 @@ const resources = {
       'common.next': 'Suivant',
       'common.previous': 'Précédent',
 
-      // Verify identity (Didit)
+      // Verify identity (KYC)
       'verifyIdentity.title': 'Vérifiez votre identité',
       'verifyIdentity.description': 'Pour garder notre communauté sûre, nous vous demandons de vérifier votre identité avec une vérification d\'identité rapide. Cela ne prend qu\'une minute.',
       'verifyIdentity.start': 'Commencer la vérification',
@@ -1946,7 +1946,7 @@ const resources = {
       'common.next': 'Siguiente',
       'common.previous': 'Anterior',
       
-      // Verify identity (Didit)
+      // Verify identity (KYC)
       'verifyIdentity.title': 'Verifica tu identidad',
       'verifyIdentity.description': 'Para mantener la comunidad segura, te pedimos que verifiques tu identidad con una comprobación rápida de ID. Solo toma un minuto.',
       'verifyIdentity.start': 'Iniciar verificación',

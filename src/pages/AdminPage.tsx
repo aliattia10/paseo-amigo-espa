@@ -6,7 +6,7 @@ import type { Blog } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye, EyeOff, LayoutDashboard, FileText, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, LayoutDashboard, FileText, Settings, ShieldCheck } from 'lucide-react';
 
 const AdminPage: React.FC = () => {
   const { isAdmin, loading: authLoading } = useAuth();
@@ -77,6 +77,13 @@ const AdminPage: React.FC = () => {
           >
             <FileText className="w-5 h-5" />
             View Blog
+          </button>
+          <button 
+            onClick={() => navigate('/admin/verifications')}
+            className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
+          >
+            <ShieldCheck className="w-5 h-5" />
+            Verifications
           </button>
           <button className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium">
             <Settings className="w-5 h-5" />

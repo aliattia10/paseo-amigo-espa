@@ -50,6 +50,9 @@ export const getUser = async (userId: string): Promise<User | null> => {
       latitude: data.latitude || undefined,
       longitude: data.longitude || undefined,
       verified: data.verified ?? false,
+      verificationStatus: data.verification_status ?? undefined,
+      kycConfidence: data.kyc_confidence ?? undefined,
+      kycData: data.kyc_data ?? undefined,
       createdAt: new Date(data.created_at || new Date()),
       updatedAt: new Date(data.updated_at || new Date()),
     };
@@ -86,6 +89,23 @@ export const switchUserRole = async (userId: string, newRole: 'owner' | 'walker'
     .update({ user_type: newRole })
     .eq('id', userId);
 
+  if (error) throw error;
+};
+
+/** Update user KYC fields after verification (e.g. from Python /verify). */
+export const updateUserKyc = async (
+  userId: string,
+  payload: { verification_status: string; kyc_confidence?: number; kyc_data?: Record<string, unknown>; verified?: boolean }
+) => {
+  const update: Record<string, unknown> = {
+    verification_status: payload.verification_status,
+    updated_at: new Date().toISOString(),
+  };
+  if (payload.kyc_confidence != null) update.kyc_confidence = payload.kyc_confidence;
+  if (payload.kyc_data != null) update.kyc_data = payload.kyc_data;
+  if (payload.verified != null) update.verified = payload.verified;
+
+  const { error } = await supabase.from('users').update(update).eq('id', userId);
   if (error) throw error;
 };
 

@@ -21,6 +21,12 @@ export interface User {
   rating?: number;
   totalWalks?: number;
   verified?: boolean;
+  /** KYC: verified | pending | rejected */
+  verificationStatus?: string | null;
+  /** AI face-match confidence 0..1 */
+  kycConfidence?: number | null;
+  /** KYC payload (e.g. ocr_text, status from /verify) */
+  kycData?: Record<string, unknown> | null;
   distanceKm?: number; // For proximity search results
   createdAt: Date;
   updatedAt: Date;
