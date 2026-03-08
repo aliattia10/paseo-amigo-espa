@@ -786,7 +786,8 @@ const NewHomePage: React.FC = () => {
             <button
               onClick={toggleTheme}
               className="flex items-center justify-center rounded-full h-9 w-9 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              title={theme === 'dark' ? t('home.lightMode', 'Light mode') : t('home.darkMode', 'Dark mode')}
+              aria-label={theme === 'dark' ? t('home.lightMode', 'Light mode') : t('home.darkMode', 'Dark mode')}
             >
               <span className="material-symbols-outlined text-xl">
                 {theme === 'dark' ? 'light_mode' : 'dark_mode'}
