@@ -44,6 +44,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
   const [walkRequests, setWalkRequests] = useState<WalkRequest[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const TIMEOUT_MS = 5000;
@@ -57,6 +58,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
       }
 
       try {
+        setLoadError(null);
         if (showLoading) setLoading(true);
         // 1) Fetch all matches (match row = conversation container; no separate "conversations" table)
         const matchesRes = await withTimeout(
@@ -69,8 +71,11 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
         const matchesData = matchesRes?.data ?? null;
         const matchesError = matchesRes?.error ?? null;
 
-        if (matchesError) {
+        if (matchesRes === null) {
+          setLoadError(t('messages.loadFailed') || 'Could not load matches.');
+        } else if (matchesError) {
           if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
+          setLoadError(t('messages.loadFailed') || 'Could not load matches.');
         } else if (matchesData && matchesData.length > 0) {
           // Only show mutual matches
           const mutualMatches = matchesData.filter((m: any) => m.is_mutual);
@@ -124,7 +129,11 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
               return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
             })
           );
-          setMatches(matchesWithUsers.filter((m: any) => m.otherUser));
+          const validMatches = matchesWithUsers.filter((m: any) => m.otherUser);
+          setMatches(validMatches);
+          if (mutualMatches.length > 0 && validMatches.length === 0) {
+            setLoadError(t('messages.loadFailed') || 'Could not load match details.');
+          }
           }
         } else {
           setMatches([]);
@@ -233,10 +242,12 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
           <Heart className="w-12 h-12 text-pink-400" />
         </div>
         <h3 className="text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
-          {t('messages.noConversations') || 'No conversations yet'}
+          {loadError || t('messages.noConversations') || 'No conversations yet'}
         </h3>
         <p className="text-text-secondary-light dark:text-text-secondary-dark max-w-sm">
-          {t('messages.matchDescription') || t('messages.matchToChat') || 'When you match with someone, you can chat here and coordinate services.'}
+          {loadError
+            ? (t('messages.matchDescription') || 'Ensure database migrations are applied (matches and users RLS).')
+            : (t('messages.matchDescription') || t('messages.matchToChat') || 'When you match with someone, you can chat here and coordinate services.')}
         </p>
       </div>
     );
