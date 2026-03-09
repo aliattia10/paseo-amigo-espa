@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 import i18n from '@/lib/i18n';
 import BottomNavigation from '@/components/ui/BottomNavigation';
+import PetCard from '@/components/dashboard/PetCard';
 
 interface Booking {
   id: string;
@@ -46,7 +47,7 @@ const NewProfilePage: React.FC = () => {
     return 'owner';
   });
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [pets, setPets] = useState<Array<{ id: string; name: string; breed: string; age: string; image_url: string; pet_type: 'dog' | 'cat' }>>([]);
+  const [pets, setPets] = useState<Array<{ id: string; name: string; breed: string; age: string; image_url: string; pet_type: 'dog' | 'cat'; mood?: string; personality_tags?: string[] }>>([]);
   const [loadingPets, setLoadingPets] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
@@ -181,7 +182,7 @@ const NewProfilePage: React.FC = () => {
         const { supabase } = await import('@/integrations/supabase/client');
         if (activeRole !== 'owner') { setLoadingPets(false); return; }
         const res = await withTimeout(
-          supabase.from('pets').select('id, name, breed, age, image_url, pet_type').eq('owner_id', currentUser.id)
+          supabase.from('pets').select('id, name, breed, age, image_url, pet_type, mood, personality_tags').eq('owner_id', currentUser.id)
         );
         if (res?.data) {
           setPets(res.data.map((pet: any) => ({ ...pet, pet_type: (pet.pet_type as 'cat' | 'dog') || 'dog' })));
@@ -479,7 +480,6 @@ const NewProfilePage: React.FC = () => {
                   </div>
                 ) : pets.length > 0 ? (
                   pets.map((pet) => {
-                    // Parse image URL - support both JSON array and single URL
                     let imageUrl = '';
                     if (pet.image_url) {
                       try {
@@ -489,28 +489,20 @@ const NewProfilePage: React.FC = () => {
                         imageUrl = pet.image_url;
                       }
                     }
-                    
                     return (
-                      <div key={pet.id} className="flex items-center gap-2 p-2 rounded-lg bg-background-light dark:bg-background-dark">
-                        <div 
-                          className="w-12 h-12 rounded-full bg-cover bg-center border border-primary/20 flex-shrink-0"
-                          style={{ 
-                            backgroundImage: imageUrl 
-                              ? `url('${imageUrl}')` 
-                              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                          }}
+                      <div key={pet.id} className="relative">
+                        <PetCard
+                          name={pet.name}
+                          breed={pet.breed || undefined}
+                          imageUrl={imageUrl || undefined}
+                          mood={pet.mood || undefined}
+                          personalityTags={Array.isArray(pet.personality_tags) ? pet.personality_tags : undefined}
+                          onMoodClick={() => navigate(`/pet/${pet.id}/edit`)}
                         />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-sm text-text-primary-light dark:text-text-primary-dark truncate">
-                            {pet.pet_type === 'cat' ? '🐱' : '🐶'} {pet.name}
-                          </p>
-                          <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">
-                            {pet.breed || t('profile.mixed')} • {pet.age}
-                          </p>
-                        </div>
-                        <button 
+                        <button
                           onClick={() => navigate(`/pet/${pet.id}/edit`)}
-                          className="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors flex-shrink-0"
+                          className="absolute top-3 left-3 rounded-full bg-black/40 hover:bg-black/60 text-white p-2 transition-colors z-10"
+                          aria-label={t('common.edit')}
                         >
                           <span className="material-symbols-outlined text-lg">edit</span>
                         </button>

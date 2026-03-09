@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import SitterCard from '@/components/sitters/SitterCard';
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams();
@@ -22,22 +23,23 @@ const UserProfilePage: React.FC = () => {
       setLoading(true);
       try {
         const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await supabase
+        const res = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, rating, review_count, city, user_type, verified')
+          .select('id, name, bio, profile_image, hourly_rate, rating, review_count, city, user_type, verified, years_experience, pets_cared_for, hobbies')
           .eq('id', userId)
-          .single();
-        if (error) throw error;
+          .single() as { data: Record<string, unknown> | null; error: Error | null };
+        if (res.error) throw res.error;
+        const data = res.data;
         setUser(data);
         // parse photos
         let parsed: string[] = [];
         try {
           if (data?.profile_image) {
-            const p = JSON.parse(data.profile_image);
-            parsed = Array.isArray(p) ? p : [data.profile_image];
+            const p = JSON.parse(data.profile_image as string);
+            parsed = Array.isArray(p) ? p : [data.profile_image as string];
           }
         } catch {
-          parsed = data?.profile_image ? [data.profile_image] : [];
+          parsed = data?.profile_image ? [data.profile_image as string] : [];
         }
         setPhotos(parsed.filter(Boolean));
       } catch (e: any) {
@@ -119,7 +121,21 @@ const UserProfilePage: React.FC = () => {
               />
             )}
 
-            {/* Name + chips */}
+            {/* Sitter summary card for walkers/sitters */}
+            {(user.user_type === 'walker' || user.user_type === 'sitter' || user.user_type === 'both') && (
+              <SitterCard
+                name={user.name}
+                profileImage={photos[0] || undefined}
+                rating={user.rating != null ? Number(user.rating) : null}
+                petsCaredFor={user.pets_cared_for != null ? Number(user.pets_cared_for) : null}
+                bio={user.bio || undefined}
+                hobbies={Array.isArray(user.hobbies) ? user.hobbies : (user.hobbies ? [user.hobbies] : null)}
+                hourlyRate={user.hourly_rate != null ? Number(user.hourly_rate) : null}
+                verified={user.verified === true}
+              />
+            )}
+
+            {/* Name + chips (for non-sitter or extra details) */}
             <div>
               <h2 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">{user.name}</h2>
               <div className="flex items-center gap-2 flex-wrap">

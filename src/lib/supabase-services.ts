@@ -53,6 +53,12 @@ export const getUser = async (userId: string): Promise<User | null> => {
       verificationStatus: data.verification_status ?? undefined,
       kycConfidence: data.kyc_confidence ?? undefined,
       kycData: data.kyc_data ?? undefined,
+      rating: data.rating != null ? Number(data.rating) : undefined,
+      yearsExperience: data.years_experience ?? undefined,
+      petsCaredFor: data.pets_cared_for ?? undefined,
+      hasPetExperience: data.has_pet_experience ?? undefined,
+      hobbies: data.hobbies ?? undefined,
+      preferences: data.preferences ?? undefined,
       createdAt: new Date(data.created_at || new Date()),
       updatedAt: new Date(data.updated_at || new Date()),
     };
@@ -72,6 +78,12 @@ export const updateUser = async (userId: string, userData: Partial<User>) => {
   if (userData.userType) updateData.user_type = userData.userType;
   if (userData.bio) updateData.bio = userData.bio;
   if (userData.profileImage) updateData.profile_image = userData.profileImage;
+  if (userData.rating != null) updateData.rating = userData.rating;
+  if (userData.yearsExperience != null) updateData.years_experience = userData.yearsExperience;
+  if (userData.petsCaredFor != null) updateData.pets_cared_for = userData.petsCaredFor;
+  if (userData.hasPetExperience != null) updateData.has_pet_experience = userData.hasPetExperience;
+  if (userData.hobbies != null) updateData.hobbies = userData.hobbies;
+  if (userData.preferences != null) updateData.preferences = userData.preferences;
   
   updateData.updated_at = new Date().toISOString();
 

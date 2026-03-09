@@ -35,6 +35,7 @@ import PetProfilePage from "./pages/PetProfilePage";
 import PetEditPage from "./pages/PetEditPage";
 import DogOwnerProfileSetup from "./pages/DogOwnerProfileSetup";
 import SitterProfileSetup from "./pages/SitterProfileSetup";
+import SitterOnboardingWizard from "./components/onboarding/SitterOnboardingWizard";
 import AvailabilityPage from "./pages/AvailabilityPage";
 import BookingsPage from "./pages/BookingsPage";
 import BookingRequestPage from "./pages/BookingRequestPage";
@@ -813,6 +814,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <DogOwnerProfileSetup />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/sitter-onboarding" 
+                  element={
+                    <ProtectedRoute>
+                      <SitterOnboardingWizard onComplete={() => {}} />
                     </ProtectedRoute>
                   } 
                 />

@@ -191,6 +191,13 @@ const SitterProfileSetup: React.FC = () => {
           <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
             Tell pet owners about yourself and set your rate to start getting bookings!
           </p>
+          <button
+            type="button"
+            onClick={() => navigate('/sitter-onboarding')}
+            className="mt-2 text-sm font-medium text-home-primary dark:text-sage-green hover:underline"
+          >
+            Set your preferences first (experience, pets, hobbies) →
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

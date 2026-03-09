@@ -20,6 +20,16 @@ export interface User {
   availability?: string[];
   rating?: number;
   totalWalks?: number;
+  /** Sitter: years of pet care experience */
+  yearsExperience?: number | null;
+  /** Sitter: total pets cared for */
+  petsCaredFor?: number | null;
+  /** Sitter: has prior pet experience */
+  hasPetExperience?: boolean | null;
+  /** Sitter: e.g. ["Hiking", "Reading"] */
+  hobbies?: string[] | null;
+  /** Sitter: e.g. { size: ["small","medium"], type: ["dog","cat"] } */
+  preferences?: Record<string, unknown> | null;
   verified?: boolean;
   /** KYC: verified | pending | rejected */
   verificationStatus?: string | null;
@@ -41,6 +51,10 @@ export interface Pet {
   breed?: string;
   notes: string;
   imageUrl?: string;
+  /** Current status e.g. Happy, Sleepy, Energetic */
+  mood?: string | null;
+  /** e.g. Friendly, Shy, Playful */
+  personalityTags?: string[] | null;
   temperament?: string[];
   specialNeeds?: string;
   energyLevel?: 'low' | 'medium' | 'high';

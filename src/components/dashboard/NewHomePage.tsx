@@ -28,6 +28,11 @@ interface Profile {
   type: 'dog' | 'walker';
   petType?: 'dog' | 'cat';
   verified?: boolean;
+  petsCaredFor?: number | null;
+  hobbies?: string[] | null;
+  breed?: string | null;
+  mood?: string | null;
+  personalityTags?: string[] | null;
 }
 
 const NewHomePage: React.FC = () => {
@@ -166,7 +171,7 @@ const NewHomePage: React.FC = () => {
         const petsPromise = Promise.race([
           supabase
             .from('pets')
-            .select(`id, name, age, image_url, owner_id, pet_type, users!pets_owner_id_fkey (latitude, longitude)`)
+            .select(`id, name, age, image_url, owner_id, pet_type, breed, mood, personality_tags, users!pets_owner_id_fkey (latitude, longitude)`)
             .neq('owner_id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
           new Promise<{ data: null; error: { message: string } }>((resolve) =>
@@ -177,7 +182,7 @@ const NewHomePage: React.FC = () => {
         const sittersPromise = Promise.race([
           supabase
             .from('users')
-            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude, rating, review_count, verified')
+            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude, rating, review_count, verified, years_experience, pets_cared_for, hobbies')
             .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
             .neq('id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
@@ -238,6 +243,9 @@ const NewHomePage: React.FC = () => {
               imageUrls: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'],
               type: 'dog' as const,
               petType: (pet.pet_type as 'dog' | 'cat') || 'dog',
+              breed: pet.breed || null,
+              mood: pet.mood || null,
+              personalityTags: Array.isArray(pet.personality_tags) ? pet.personality_tags : (pet.personality_tags ? [pet.personality_tags] : null),
             };
           });
           setRealPetProfiles(petProfiles);
@@ -279,6 +287,8 @@ const NewHomePage: React.FC = () => {
               hourlyRate: sitter.hourly_rate || 15,
               type: 'walker' as const,
               verified: sitter.verified === true,
+              petsCaredFor: sitter.pets_cared_for != null ? Number(sitter.pets_cared_for) : null,
+              hobbies: Array.isArray(sitter.hobbies) ? sitter.hobbies : (sitter.hobbies ? [sitter.hobbies] : null),
             };
           });
           setRealSitterProfiles(sitterProfiles);
@@ -1030,11 +1040,42 @@ const NewHomePage: React.FC = () => {
                           €{currentProfile.hourlyRate}/hr
                         </span>
                       )}
+                      {/* Experience badge for sitters */}
+                      {currentProfile.type === 'walker' && currentProfile.petsCaredFor != null && currentProfile.petsCaredFor > 0 && (
+                        <span className="text-white/90 text-xs font-medium">
+                          {currentProfile.petsCaredFor}+ pets cared for
+                        </span>
+                      )}
                     </div>
 
-                    {/* Bio - 1 line */}
+                    {/* Breed + mood for pets */}
+                    {currentProfile.type === 'dog' && (currentProfile.breed || currentProfile.mood) && (
+                      <div className="flex items-center gap-2 flex-wrap mt-1">
+                        {currentProfile.breed && (
+                          <span className="text-white/90 text-sm font-medium">{currentProfile.breed}</span>
+                        )}
+                        {currentProfile.mood && (
+                          <span className="rounded-full bg-white/25 text-white text-xs px-2.5 py-0.5 font-medium">
+                            {currentProfile.mood}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Bio - 2 lines for walker, 1 for pet */}
                     {currentProfile.bio && (
-                      <p className="text-white/70 text-sm line-clamp-1">{currentProfile.bio}</p>
+                      <p className={`text-white/70 text-sm ${currentProfile.type === 'walker' ? 'line-clamp-2' : 'line-clamp-1'}`}>{currentProfile.bio}</p>
+                    )}
+
+                    {/* Hobbies pills for sitters */}
+                    {currentProfile.type === 'walker' && Array.isArray(currentProfile.hobbies) && currentProfile.hobbies.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {currentProfile.hobbies.slice(0, 3).map((h: string) => (
+                          <span key={h} className="rounded-full bg-white/20 text-white text-xs px-2.5 py-0.5 font-medium">
+                            {h}
+                          </span>
+                        ))}
+                      </div>
                     )}
 
                     {/* New badge */}
