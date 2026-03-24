@@ -131,7 +131,7 @@ const PublicProfilePage: React.FC = () => {
             <button 
               onClick={() => navigate('/profile/edit')}
               className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-[#0e1b13] dark:text-gray-100 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              title={t('profile.editProfile')}
+              title={t('profile.editProfile', 'Edit Profile')}
             >
               <span className="material-symbols-outlined">edit</span>
             </button>
@@ -326,7 +326,7 @@ const PublicProfilePage: React.FC = () => {
           onClick={() => navigate('/profile/edit')}
           className="w-full bg-gradient-to-r from-[#FD5564] to-[#FF6B7A] hover:from-[#FD4458] hover:to-[#FF5A6E] text-white font-bold py-3 rounded-full transition-colors shadow-lg"
         >
-          {t('profile.editProfile')}
+          {t('profile.editProfile', 'Edit Profile')}
         </button>
       </div>
 

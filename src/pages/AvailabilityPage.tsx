@@ -45,17 +45,30 @@ const AvailabilityPage: React.FC = () => {
       const endOfDay = new Date(selectedDate);
       endOfDay.setHours(23, 59, 59, 999);
 
-      const { data, error } = await supabase
+      const uid = currentUser.id;
+      let data: any[] | null = null;
+      let error: any = null;
+      let res = await supabase
         .from('availability')
         .select('*')
-        .eq('sitter_id', currentUser?.id)
+        .eq('sitter_id', uid)
         .gte('start_time', startOfDay.toISOString())
         .lte('end_time', endOfDay.toISOString())
         .order('start_time');
+      if (res.error && (res.error.code === '42703' || res.error.message?.includes('sitter_id'))) {
+        res = await supabase
+          .from('availability')
+          .select('*')
+          .eq('user_id', uid)
+          .gte('start_time', startOfDay.toISOString())
+          .lte('end_time', endOfDay.toISOString())
+          .order('start_time');
+      }
+      data = res.data;
+      error = res.error;
 
       if (error) {
-        // If table doesn't exist, show empty state instead of error
-        if (error.message.includes('does not exist') || error.message.includes('not find')) {
+        if (error.message?.includes('does not exist') || error.message?.includes('not find')) {
           console.warn('Availability table not found. Please run database migrations.');
           setSlots([]);
           setLoading(false);
@@ -79,7 +92,8 @@ const AvailabilityPage: React.FC = () => {
   };
 
   const handleAddSlot = async () => {
-    if (!currentUser) {
+    const userId = currentUser?.id;
+    if (!userId) {
       toast({
         title: t('common.error'),
         description: t('auth.pleaseLogInAgain', 'Please log in again'),
@@ -87,7 +101,7 @@ const AvailabilityPage: React.FC = () => {
       });
       return;
     }
-    
+
     try {
       const startDateTime = new Date(`${selectedDate}T${newSlot.startTime}`);
       const endDateTime = new Date(`${selectedDate}T${newSlot.endTime}`);
@@ -101,38 +115,41 @@ const AvailabilityPage: React.FC = () => {
         return;
       }
 
-      // Try RPC function first, fallback to direct insert
-      let insertError = null;
+      const base = {
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
+        status: 'available',
+      };
+
+      // Try RPC first if it exists (some deployments have it)
       const { error: rpcError } = await supabase.rpc('add_availability_slot', {
-        p_sitter_id: currentUser?.id,
+        p_sitter_id: userId,
         p_start_time: startDateTime.toISOString(),
         p_end_time: endDateTime.toISOString(),
       });
 
-      // If RPC doesn't exist, use direct insert (support both user_id and sitter_id schemas)
-      if (rpcError && (rpcError.message.includes('does not exist') || rpcError.message.includes('not find'))) {
-        const base = {
-          start_time: startDateTime.toISOString(),
-          end_time: endDateTime.toISOString(),
-          status: 'available',
-        };
-        const userId = currentUser.id;
-        let directError: any = null;
-        const { error: errUser } = await supabase.from('availability').insert({ ...base, user_id: userId });
-        if (errUser) {
-          if (errUser.message?.includes('user_id') || errUser.code === '42703') {
-            const { error: errSitter } = await supabase.from('availability').insert({ ...base, sitter_id: userId });
-            directError = errSitter;
+      if (!rpcError) {
+        // RPC succeeded
+      } else if (rpcError.message?.includes('does not exist') || rpcError.message?.includes('not find') || rpcError.code === '42883') {
+        // RPC missing or wrong signature: direct insert, always set both user_id and sitter_id from auth so either schema works
+        const payloadWithBoth = { ...base, user_id: userId, sitter_id: userId };
+        const { error: errBoth } = await supabase.from('availability').insert(payloadWithBoth as Record<string, unknown>);
+        if (errBoth) {
+          if (errBoth.code === '42703') {
+            const { error: errUser } = await supabase.from('availability').insert({ ...base, user_id: userId });
+            if (errUser && (errUser.message?.includes('user_id') || errUser.code === '42703')) {
+              const { error: errSitter } = await supabase.from('availability').insert({ ...base, sitter_id: userId });
+              if (errSitter) throw errSitter;
+            } else if (errUser) {
+              throw errUser;
+            }
           } else {
-            directError = errUser;
+            throw errBoth;
           }
         }
-        insertError = directError;
       } else {
-        insertError = rpcError;
+        throw rpcError;
       }
-
-      if (insertError) throw insertError;
 
       toast({
         title: t('common.success'),

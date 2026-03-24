@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   Accordion,
   AccordionContent,
@@ -15,6 +16,21 @@ const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { changeLanguage, currentLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+  const languageCycle = ['en', 'es', 'fr'] as const;
+
+  React.useEffect(() => {
+    // Keep /home in the default white theme unless user toggles it.
+    if (theme === 'dark') {
+      toggleTheme();
+    }
+  }, [theme, toggleTheme]);
+
+  const cycleLanguage = () => {
+    const idx = languageCycle.indexOf((currentLanguage as 'en' | 'es' | 'fr') || 'en');
+    const next = languageCycle[(idx + 1) % languageCycle.length];
+    changeLanguage(next);
+  };
 
   const features = [
     { icon: <Heart className="w-6 h-6" />, titleKey: 'landing.trustedSittersTitle', descKey: 'landing.trustedSittersDesc' },
@@ -33,30 +49,26 @@ const LandingPage: React.FC = () => {
   const benefits = ['landing.benefit1', 'landing.benefit2', 'landing.benefit3', 'landing.benefit4', 'landing.benefit5', 'landing.benefit6'];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Language Switcher - Top Right */}
+    <div className="min-h-screen bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20">
+      {/* Compact Controls - Top Right */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         <button
-          onClick={() => changeLanguage('es')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            currentLanguage === 'es'
-              ? 'bg-medium-jungle text-white shadow-md'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
-          }`}
-          title="Español"
+          onClick={toggleTheme}
+          className="h-10 w-10 rounded-full bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors flex items-center justify-center"
+          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
         >
-          🇪🇸 ES
+          <span className="material-symbols-outlined text-xl">
+            {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+          </span>
         </button>
         <button
-          onClick={() => changeLanguage('fr')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            currentLanguage === 'fr'
-              ? 'bg-medium-jungle text-white shadow-md'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
-          }`}
-          title="Français"
+          onClick={cycleLanguage}
+          className="h-10 rounded-full px-3 bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors text-sm font-semibold"
+          title="Change language"
+          aria-label="Change language"
         >
-          🇫🇷 FR
+          {String(currentLanguage || 'en').toUpperCase()}
         </button>
       </div>
 

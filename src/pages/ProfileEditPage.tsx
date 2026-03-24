@@ -369,7 +369,7 @@ const ProfileEditPage: React.FC = () => {
           </span>
         </button>
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-          {t('profile.editProfile')}
+          {t('profile.editProfile', 'Edit Profile')}
         </h2>
         <button
           onClick={() => {

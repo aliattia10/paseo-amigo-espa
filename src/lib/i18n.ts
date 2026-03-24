@@ -394,6 +394,7 @@ const resources = {
       'profile.aboutMe': 'About me',
       'profile.editProfile': 'Edit Profile',
       'profile.notFound': 'Profile not found',
+      'profile.locationNotSet': 'Location not set',
       
       // Bookings & Notifications
       'nav.bookings': 'Bookings',
@@ -1069,6 +1070,7 @@ const resources = {
       'profile.aboutMe': 'À propos de moi',
       'profile.editProfile': 'Modifier le profil',
       'profile.notFound': 'Profil introuvable',
+      'profile.locationNotSet': 'Localisation non renseignée',
       
       // Bookings & Notifications
       'nav.bookings': 'Réservations',
@@ -1586,6 +1588,7 @@ const resources = {
       'profile.aboutMe': 'Über mich',
       'profile.editProfile': 'Profil bearbeiten',
       'profile.notFound': 'Profil nicht gefunden',
+      'profile.locationNotSet': 'Standort nicht festgelegt',
       'profile.reviews': 'Bewertungen',
       
       // Bookings & Notifications
@@ -2039,6 +2042,7 @@ const resources = {
       'profile.aboutMe': 'Sobre mí',
       'profile.editProfile': 'Editar perfil',
       'profile.notFound': 'Perfil no encontrado',
+      'profile.locationNotSet': 'Ubicación no establecida',
       
       // Bookings & Notifications
       'nav.bookings': 'Reservas',
@@ -2584,6 +2588,7 @@ const resources = {
       'profile.aboutMe': 'Sobre mim',
       'profile.editProfile': 'Editar perfil',
       'profile.notFound': 'Perfil não encontrado',
+      'profile.locationNotSet': 'Localização não definida',
       'profile.reviews': 'avaliações',
       
       // Bookings & Notifications
@@ -2759,6 +2764,7 @@ const resources = {
       'profile.aboutMe': 'Chi sono',
       'profile.editProfile': 'Modifica profilo',
       'profile.notFound': 'Profilo non trovato',
+      'profile.locationNotSet': 'Posizione non impostata',
       'profile.reviews': 'recensioni',
       
       // Bookings & Notifications
@@ -2934,6 +2940,7 @@ const resources = {
       'profile.aboutMe': 'Обо мне',
       'profile.editProfile': 'Редактировать профиль',
       'profile.notFound': 'Профиль не найден',
+      'profile.locationNotSet': 'Местоположение не указано',
       'profile.reviews': 'отзывов',
       
       // Bookings & Notifications
@@ -3109,6 +3116,7 @@ const resources = {
       'profile.aboutMe': 'O mnie',
       'profile.editProfile': 'Edytuj profil',
       'profile.notFound': 'Profil nie znaleziony',
+      'profile.locationNotSet': 'Lokalizacja nie ustawiona',
       'profile.reviews': 'opinie',
       
       // Bookings & Notifications

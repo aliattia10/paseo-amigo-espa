@@ -22,6 +22,7 @@ const BookingRequestPage: React.FC = () => {
     duration: 1,
     notes: '',
     dogId: '',
+    referralCode: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -52,8 +53,10 @@ const BookingRequestPage: React.FC = () => {
   // Calculate pricing
   const subtotal = hourlyRate * formData.duration; // Base price (sitter's hourly rate × hours)
   const platformFee = subtotal * 0.20; // 20% platform fee
-  const total = subtotal + platformFee; // Total price (what owner pays)
-  const sitterPayout = subtotal; // What sitter receives (subtotal without platform fee)
+  const hasReferralCode = formData.referralCode.trim().length > 0;
+  const discountEligibleHours = Math.min(formData.duration, 10); // up to 10 hours
+  const referralDiscount = hasReferralCode ? hourlyRate * discountEligibleHours * 0.05 : 0;
+  const total = subtotal + platformFee - referralDiscount; // Total price (what owner pays)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +79,14 @@ const BookingRequestPage: React.FC = () => {
       const startDateTime = new Date(`${formData.date}T${formData.startTime}`);
       const endDateTime = new Date(startDateTime.getTime() + formData.duration * 60 * 60 * 1000);
 
+      // Persist referral details in notes for downstream billing/support.
+      const referralCode = formData.referralCode.trim().toUpperCase();
+      const bookingNotes = [
+        formData.notes?.trim() || '',
+        referralCode ? `Referral code: ${referralCode}` : '',
+        referralCode ? `Referral discount: €${referralDiscount.toFixed(2)} (5% for up to 10h)` : '',
+      ].filter(Boolean).join('\n');
+
       // Create booking using RPC function or direct insert
       let bookingError = null;
       
@@ -88,7 +99,7 @@ const BookingRequestPage: React.FC = () => {
         p_end_time: endDateTime.toISOString(),
         p_service_type: 'walk',
         p_location: 'TBD',
-        p_notes: formData.notes || '',
+        p_notes: bookingNotes,
         p_total_price: total,
       });
 
@@ -104,7 +115,7 @@ const BookingRequestPage: React.FC = () => {
             end_time: endDateTime.toISOString(),
             service_type: 'walk',
             location: 'TBD',
-            notes: formData.notes || '',
+            notes: bookingNotes,
             total_price: total,
             commission_fee: platformFee,
             status: 'requested',
@@ -267,6 +278,22 @@ const BookingRequestPage: React.FC = () => {
             />
           </div>
 
+          {/* Referral Code */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+              Referral Code (optional)
+            </label>
+            <Input
+              value={formData.referralCode}
+              onChange={(e) => setFormData({ ...formData, referralCode: e.target.value.toUpperCase() })}
+              placeholder="Enter referral code"
+              className="w-full"
+            />
+            <p className="text-xs mt-2 text-text-secondary-light dark:text-text-secondary-dark">
+              Add any valid referral code to get 5% off (up to 10 sitting hours).
+            </p>
+          </div>
+
           {/* Price Breakdown */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm space-y-3">
             <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
@@ -289,6 +316,12 @@ const BookingRequestPage: React.FC = () => {
                 <span>Platform Fee (20%)</span>
                 <span>€{platformFee.toFixed(2)}</span>
               </div>
+              {hasReferralCode && (
+                <div className="flex justify-between text-green-600 dark:text-green-400 text-sm">
+                  <span>Referral Discount (5%, max 10h)</span>
+                  <span>-€{referralDiscount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="border-t border-border-light dark:border-border-dark pt-2 mt-2"></div>
               <div className="flex justify-between text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
                 <span>Total</span>

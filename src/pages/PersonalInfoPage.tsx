@@ -220,6 +220,7 @@ const PersonalInfoPage: React.FC = () => {
       });
 
       setHasChanges(false);
+      navigate('/profile');
     } catch (error: any) {
       console.error('Save changes error:', error);
       toast({

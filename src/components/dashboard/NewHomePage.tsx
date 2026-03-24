@@ -527,14 +527,40 @@ const NewHomePage: React.FC = () => {
     // Save to Supabase and check for match (works for all users: mutual like creates match; demos get instant match)
     try {
       if (userRole === 'owner' && profile.type === 'walker') {
-        const { data: isMatch, error } = await (supabase as any).rpc('save_like_and_check_match', {
-          p_liker_id: currentUser.id,
-          p_liked_id: profile.id
+        const likerId = currentUser.id;
+        const likedId = profile.id;
+        let isMatch = false;
+        const { data: rpcMatch, error: rpcError } = await (supabase as any).rpc('save_like_and_check_match', {
+          p_liker_id: likerId,
+          p_liked_id: likedId
         });
-        
-        if (error) {
-          console.error('Error saving like / match:', error);
-          throw error;
+        if (rpcError) {
+          console.warn('RPC save_like_and_check_match failed, trying direct insert:', rpcError.message);
+          const { error: insertErr } = await supabase.from('likes').insert({
+            liker_id: likerId,
+            liked_id: likedId
+          });
+          if (insertErr) {
+            if (insertErr.code === '23505') {
+              // Unique violation = already liked, treat as success and check match
+              const { data: mutual } = await supabase.from('likes').select('id').eq('liker_id', likedId).eq('liked_id', likerId).maybeSingle();
+              isMatch = !!mutual?.id;
+              if (isMatch) {
+                await supabase.rpc('check_and_create_match', { liker_user_id: likerId, liked_user_id: likedId });
+              }
+            } else {
+              console.error('Error saving like:', insertErr);
+              throw insertErr;
+            }
+          } else {
+            const { data: mutual } = await supabase.from('likes').select('id').eq('liker_id', likedId).eq('liked_id', likerId).maybeSingle();
+            isMatch = !!mutual?.id;
+            if (isMatch) {
+              await supabase.rpc('check_and_create_match', { liker_user_id: likerId, liked_user_id: likedId });
+            }
+          }
+        } else {
+          isMatch = !!rpcMatch;
         }
         
         // If it's a match, show the modal
