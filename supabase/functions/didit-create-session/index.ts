@@ -56,7 +56,7 @@ serve(async (req) => {
       });
     }
 
-    const callback = `${publicAppUrl}/verify-identity-done`;
+    const callback = `${publicAppUrl}/verify-identity`;
 
     const diditRes = await fetch('https://verification.didit.me/v3/session/', {
       method: 'POST',

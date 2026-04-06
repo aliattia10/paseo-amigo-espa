@@ -17,12 +17,12 @@ Petflik integrates **[Didit ID Verification](https://docs.didit.me/core-technolo
 2. Create a **Workflow** (e.g. KYC template) and copy **Workflow ID**.
 3. Create **API Key** and **Webhook secret** (Settings → API & Webhooks).
 4. Set webhook URL to your deployed function:  
-   `https://<YOUR_PROJECT_REF>.supabase.co/functions/v1/didit-webhook`
+   `https://zxbfygofxxmfivddwdqt.supabase.co/functions/v1/didit-webhook`
 
 ## Supabase secrets
 
 ```bash
-supabase secrets set DIDIT_API_KEY=your_key DIDIT_WORKFLOW_ID=your_workflow_uuid DIDIT_WEBHOOK_SECRET=your_webhook_secret PUBLIC_APP_URL=https://petflik.com
+supabase secrets set DIDIT_API_KEY=your_key DIDIT_WORKFLOW_ID=5c14e830-cb48-433c-bcdc-6025fe4a1828 DIDIT_WEBHOOK_SECRET=H0Rtsg7hY0c1RSePLuz_OfN9S4WjvMZiKALYCPUdT7s PUBLIC_APP_URL=https://petflik.com
 ```
 
 Deploy functions:
@@ -34,8 +34,8 @@ supabase functions deploy didit-webhook
 
 ## Frontend
 
-- **Verify identity** (`/verify-identity`): primary button **Verify with Didit**; legacy upload remains below.
-- Callback after redirect: `/verify-identity-done` (configured in create-session as `callback`).
+- **Verify identity** (`https://petflik.com/verify-identity`): primary button **Verify with Didit**; legacy upload is under an expandable “Alternative” section.
+- **Didit redirect callback** (configured in `didit-create-session` as `callback`): `https://petflik.com/verify-identity` — users return here with query params (`status`, `verificationSessionId`). The route `/verify-identity-done` redirects to `/verify-identity` with the same query string for old links.
 
 ## References
 

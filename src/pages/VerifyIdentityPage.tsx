@@ -1,16 +1,28 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import KycUploadForm from '@/components/kyc/KycUploadForm';
 import DiditVerifyButton from '@/components/kyc/DiditVerifyButton';
+import VerifyIdentityOutcome from '@/components/kyc/VerifyIdentityOutcome';
 
 const VerifyIdentityPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser, userProfile, loading: authLoading, refreshUserProfile } = useAuth();
+
+  const statusParam = searchParams.get('status') ?? '';
+  const sessionIdParam = searchParams.get('verificationSessionId') ?? '';
+  const isDiditReturn = Boolean(statusParam || sessionIdParam);
+
+  const clearParamsAndGoDashboard = useCallback(() => {
+    setSearchParams({}, { replace: true });
+    void refreshUserProfile();
+    navigate('/dashboard', { replace: true });
+  }, [navigate, refreshUserProfile, setSearchParams]);
 
   useEffect(() => {
     if (!authLoading && !currentUser) {
@@ -23,6 +35,12 @@ const VerifyIdentityPage: React.FC = () => {
     refreshUserProfile();
     navigate('/dashboard');
   };
+
+  useEffect(() => {
+    if (isDiditReturn && currentUser?.id) {
+      void refreshUserProfile();
+    }
+  }, [isDiditReturn, refreshUserProfile, currentUser?.id]);
 
   const handleSkip = () => {
     if (userProfile?.userType === 'owner') navigate('/pet-profile-setup');
@@ -48,6 +66,12 @@ const VerifyIdentityPage: React.FC = () => {
     );
   }
 
+  if (isDiditReturn) {
+    return (
+      <VerifyIdentityOutcome status={statusParam} sessionId={sessionIdParam} onContinue={clearParamsAndGoDashboard} />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-6">
@@ -67,14 +91,26 @@ const VerifyIdentityPage: React.FC = () => {
           )}
         </p>
 
-        <div className="pt-4 text-left space-y-6">
+        <div className="pt-4 text-left space-y-4">
           <DiditVerifyButton userId={currentUser.id} onSuccess={handleSuccess} />
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              {t('verifyIdentity.legacyUpload', 'Or upload documents (legacy / self-hosted check)')}
-            </p>
-            <KycUploadForm userId={currentUser.id} onSuccess={handleSuccess} />
-          </div>
+          <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+            <a
+              href="https://docs.didit.me/core-technology/id-verification/overview"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-medium-jungle"
+            >
+              {t('verifyIdentity.diditDocsLink', 'How Didit verifies your ID')}
+            </a>
+          </p>
+          <details className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-left">
+            <summary className="text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer list-none flex items-center justify-between gap-2">
+              <span>{t('verifyIdentity.legacyUpload', 'Alternative: upload documents (legacy)')}</span>
+            </summary>
+            <div className="pt-3 mt-3 border-t border-gray-100 dark:border-gray-800">
+              <KycUploadForm userId={currentUser.id} onSuccess={handleSuccess} />
+            </div>
+          </details>
         </div>
 
         <Button variant="ghost" className="w-full text-gray-600 dark:text-gray-400" onClick={handleSkip}>
