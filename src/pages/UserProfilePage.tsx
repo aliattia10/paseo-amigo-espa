@@ -27,9 +27,14 @@ const UserProfilePage: React.FC = () => {
           .from('users')
           .select('id, name, bio, profile_image, hourly_rate, rating, review_count, city, user_type, verified, years_experience, pets_cared_for, hobbies')
           .eq('id', userId)
-          .single() as { data: Record<string, unknown> | null; error: Error | null };
+          .maybeSingle() as { data: Record<string, unknown> | null; error: Error | null };
         if (res.error) throw res.error;
         const data = res.data;
+        if (!data) {
+          setUser(null);
+          setPhotos([]);
+          return;
+        }
         setUser(data);
         // parse photos
         let parsed: string[] = [];
@@ -44,13 +49,17 @@ const UserProfilePage: React.FC = () => {
         setPhotos(parsed.filter(Boolean));
       } catch (e: any) {
         console.error('Failed to load user profile', e);
-        toast({ title: 'Error', description: e.message || 'Failed to load profile', variant: 'destructive' });
+        const isNoRows = e?.code === 'PGRST116' || String(e?.message || '').includes('0 rows');
+        if (!isNoRows) {
+          toast({ title: 'Error', description: e.message || 'Failed to load profile', variant: 'destructive' });
+        }
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
     loadUser();
-  }, [userId, toast]);
+  }, [userId]);
 
   // Load reviews for this user (handles both reviewee_id and reviewed_id column names)
   React.useEffect(() => {

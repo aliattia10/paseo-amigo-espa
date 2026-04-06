@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import KycUploadForm from '@/components/kyc/KycUploadForm';
+import DiditVerifyButton from '@/components/kyc/DiditVerifyButton';
 
 const VerifyIdentityPage: React.FC = () => {
   const { t } = useTranslation();
@@ -59,12 +60,21 @@ const VerifyIdentityPage: React.FC = () => {
         <p className="text-gray-600 dark:text-gray-300">
           {t('verifyIdentity.description', 'To keep our community safe, we ask you to verify your identity with a quick ID check. This only takes a minute.')}
         </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          {t(
+            'verifyIdentity.diditHint',
+            'We use Didit for ID verification (document capture, OCR/MRZ, liveness). See didit.me for security details.'
+          )}
+        </p>
 
-        <div className="pt-4 text-left">
-          <KycUploadForm
-            userId={currentUser.id}
-            onSuccess={handleSuccess}
-          />
+        <div className="pt-4 text-left space-y-6">
+          <DiditVerifyButton userId={currentUser.id} onSuccess={handleSuccess} />
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              {t('verifyIdentity.legacyUpload', 'Or upload documents (legacy / self-hosted check)')}
+            </p>
+            <KycUploadForm userId={currentUser.id} onSuccess={handleSuccess} />
+          </div>
         </div>
 
         <Button variant="ghost" className="w-full text-gray-600 dark:text-gray-400" onClick={handleSkip}>

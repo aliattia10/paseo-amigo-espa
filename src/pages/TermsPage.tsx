@@ -53,6 +53,63 @@ const TermsPage: React.FC = () => {
                 to protect both owners and sitters. Petflik charges a service fee for facilitating the match 
                 and payment processing.
               </p>
+              <p className="mt-3">
+                Funds may be <strong>held</strong> until the scheduled service is completed and the owner has had the 
+                opportunity to leave a review, after which release to the sitter can proceed according to our payment rules.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">5. Cancellations and no-shows</h2>
+              <p>
+                If an owner cancels <strong>late</strong> (for example within a few hours of the scheduled start time), 
+                the sitter may be entitled to payment for a <strong>minimum billable duration</strong> as shown at booking 
+                or in your booking confirmation, unless applicable law requires otherwise.
+              </p>
+              <p className="mt-3">
+                If a sitter <strong>does not show</strong> for a confirmed booking, the owner should not be charged for 
+                that session; any amounts held may be released back to the owner in line with our refund process.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">6. Communication and bookings</h2>
+              <p>
+                After you match with another user, you should use Petflik&apos;s <strong>in-app messaging</strong> for 
+                coordination. Pet-sitting arrangements should be made <strong>through the platform</strong> so we can 
+                support trust, safety, and dispute handling where appropriate.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">7. Veterinary and emergency costs</h2>
+              <p>
+                If a pet requires <strong>necessary</strong> veterinary care during a sitting and the sitter acted 
+                <strong> reasonably and without negligence</strong>, the <strong>owner</strong> is responsible for 
+                reimbursing documented, reasonable costs that were agreed or clearly required for the animal&apos;s 
+                welfare. Sitters should seek owner contact when practicable; owners should provide emergency instructions 
+                in the booking or profile where possible.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">8. Referrals and promotions</h2>
+              <p>
+                Petflik may offer referral or promotional discounts (for example a percentage off eligible sitting hours). 
+                Terms of each offer are shown at checkout or in the offer details and may change over time.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">9. Identity verification</h2>
+              <p>
+                We may require identity verification (for example via our partner <strong>Didit</strong>) to increase trust. 
+                Verification is subject to the provider&apos;s process and acceptable use. See our verification screen and{' '}
+                <a href="https://docs.didit.me/core-technology/id-verification/overview" className="text-medium-jungle underline" target="_blank" rel="noopener noreferrer">
+                  Didit ID Verification overview
+                </a>
+                {' '}for how document and liveness checks work at a high level.
+              </p>
             </section>
           </div>
         </div>

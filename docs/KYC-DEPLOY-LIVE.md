@@ -1,6 +1,8 @@
 # Run KYC service live on petflik.com
 
-The KYC service is **lightweight** (pytesseract + DeepFace Facenet512) and fits **Render free tier (512MB RAM)**.
+**Primary path (recommended):** [Didit ID Verification](./KYC-DIDIT.md) — deploy Supabase Edge Functions `didit-create-session` and `didit-webhook`, configure Didit Console secrets. No Python service required for the hosted Didit UI.
+
+**Legacy / optional:** The KYC service below is **lightweight** (pytesseract + DeepFace Facenet512) and fits **Render free tier (512MB RAM)** for self-hosted document + selfie checks.
 
 To use identity verification on **petflik.com**, you need to:
 

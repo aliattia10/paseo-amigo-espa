@@ -747,6 +747,10 @@ const NewHomePage: React.FC = () => {
 
   const handleInfo = () => {
     const profile = profiles[currentIndex];
+    if (profile.type === 'dog') {
+      navigate(`/pet/${profile.id}`);
+      return;
+    }
     navigate(`/u/${profile.id}`);
   };
 
