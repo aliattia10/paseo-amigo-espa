@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
+const OAUTH_SIGNUP_ROLE_KEY = 'oauth_signup_role';
+
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -14,14 +16,71 @@ const AuthCallback: React.FC = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    const applySignupRoleFromStorage = async (userId: string) => {
+      const raw = sessionStorage.getItem(OAUTH_SIGNUP_ROLE_KEY);
+      sessionStorage.removeItem(OAUTH_SIGNUP_ROLE_KEY);
+      if (!raw) return;
+      const dbRole = raw === 'both' ? 'owner' : raw === 'walker' || raw === 'owner' ? raw : 'owner';
+      try {
+        await supabase.from('users').update({ user_type: dbRole, updated_at: new Date().toISOString() }).eq('id', userId);
+        await supabase.auth.updateUser({ data: { user_type: dbRole, role: dbRole } });
+      } catch (e) {
+        console.warn('OAuth signup role update:', e);
+      }
+    };
+
+    const isOAuthUser = (user: { identities?: { provider: string }[] } | null) =>
+      Boolean(user?.identities?.some((i) => i.provider === 'google' || i.provider === 'apple'));
+
     const handleAuthCallback = async () => {
       try {
-        console.log('AuthCallback: Starting callback handling...');
-        
-        // Wait a moment for URL to be fully loaded
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Get the current URL hash parameters
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+
+        // PKCE OAuth (Google, etc.): ?code=...
+        if (code) {
+          const { error: exchangeErr } = await supabase.auth.exchangeCodeForSession(window.location.href);
+          if (exchangeErr) {
+            console.error('exchangeCodeForSession:', exchangeErr);
+            setStatus('error');
+            setMessage(exchangeErr.message || t('auth.sessionError'));
+            toast({
+              title: t('auth.confirmationError'),
+              description: exchangeErr.message,
+              variant: 'destructive',
+            });
+            setTimeout(() => navigate('/auth?mode=login'), 3000);
+            return;
+          }
+          window.history.replaceState({}, '', url.pathname);
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (user?.id) {
+            await applySignupRoleFromStorage(user.id);
+          }
+          // PKCE: Google OAuth uses ?code=; email magic links may also use ?code= (no OAuth identity)
+          if (isOAuthUser(user)) {
+            toast({
+              title: t('auth.welcome', 'Welcome!'),
+              description: t('auth.loginSuccess', 'You have successfully logged in.'),
+            });
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+          setStatus('success');
+          setMessage(t('auth.emailConfirmed'));
+          toast({
+            title: t('auth.emailConfirmed'),
+            description: t('auth.welcomeToApp'),
+          });
+          setTimeout(() => navigate('/profile/edit?prompt=complete'), 1500);
+          return;
+        }
+
+        // Implicit / hash (email confirmation, some flows)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const error = hashParams.get('error');
         const errorDescription = hashParams.get('error_description');
@@ -29,153 +88,111 @@ const AuthCallback: React.FC = () => {
         const refreshToken = hashParams.get('refresh_token');
         const type = hashParams.get('type');
 
-        console.log('AuthCallback: URL params:', { error, errorDescription, type, hasTokens: !!(accessToken && refreshToken) });
-
         if (error) {
-          // Handle error cases
-          console.error('Auth callback error:', error, errorDescription);
-          
           let errorMessage = t('auth.confirmationError');
           if (error === 'access_denied') {
-            if (errorDescription?.includes('expired')) {
-              errorMessage = t('auth.emailExpired');
-            } else {
-              errorMessage = t('auth.accessDenied');
-            }
+            errorMessage = errorDescription?.includes('expired') ? t('auth.emailExpired') : t('auth.accessDenied');
           } else if (errorDescription) {
             errorMessage = errorDescription;
           }
-          
           setStatus('error');
           setMessage(errorMessage);
-          
-          // Show error toast
           toast({
             title: t('auth.confirmationError'),
             description: errorMessage,
-            variant: "destructive",
+            variant: 'destructive',
           });
-          
-          // Redirect to home after showing error
-          setTimeout(() => {
-            navigate('/');
-          }, 3000);
+          setTimeout(() => navigate('/'), 3000);
           return;
         }
 
-        // Handle email confirmation or password reset
-        if (type === 'signup' || type === 'recovery' || accessToken) {
-          console.log('AuthCallback: Handling email confirmation/password reset...');
-          
-          if (accessToken && refreshToken) {
-            // Set the session with the tokens
-            const { error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
+        if (accessToken && refreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (sessionError) {
+            setStatus('error');
+            setMessage(t('auth.sessionError'));
+            toast({
+              title: t('auth.confirmationError'),
+              description: sessionError.message,
+              variant: 'destructive',
             });
-
-            if (sessionError) {
-              console.error('Session error:', sessionError);
-              setStatus('error');
-              setMessage(t('auth.sessionError'));
-              
-              toast({
-                title: t('auth.confirmationError'),
-                description: sessionError.message,
-                variant: "destructive",
-              });
-              
-              setTimeout(() => {
-                navigate('/');
-              }, 3000);
-              return;
-            }
-
-            // Check if this is a password reset or email confirmation
-            if (type === 'recovery') {
-              // This is a password reset, redirect to reset password page
-              console.log('AuthCallback: Password reset detected, redirecting to reset page...');
-              navigate('/auth/reset-password');
-              return;
-            } else {
-              // This is email confirmation
-              setStatus('success');
-              setMessage(t('auth.emailConfirmed'));
-              
-              toast({
-                title: t('auth.emailConfirmed'),
-                description: t('auth.welcomeToApp'),
-              });
-              
-              // After confirmation, nudge user to complete profile (photos, hourly rate)
-              setTimeout(() => {
-                navigate('/profile/edit?prompt=complete');
-              }, 1500);
-            }
-          } else {
-            // No tokens in URL, try to get current session
-            console.log('AuthCallback: No tokens in URL, checking current session...');
-            const { data, error } = await supabase.auth.getSession();
-            
-            if (error) {
-              console.error('Get session error:', error);
-              setStatus('error');
-              setMessage(t('auth.sessionError'));
-              
-              setTimeout(() => {
-                navigate('/');
-              }, 3000);
-              return;
-            }
-            
-            if (data.session) {
-              // Session exists, success!
-              console.log('AuthCallback: Session found, success!');
-              setStatus('success');
-              setMessage(t('auth.emailConfirmed'));
-              
-              toast({
-                title: t('auth.emailConfirmed'),
-                description: t('auth.welcomeToApp'),
-              });
-              
-              setTimeout(() => {
-                navigate('/profile/edit?prompt=complete');
-              }, 1500);
-            } else {
-              // No session found
-              console.log('AuthCallback: No session found');
-              setStatus('error');
-              setMessage(t('auth.noSession'));
-              
-              setTimeout(() => {
-                navigate('/');
-              }, 3000);
-            }
+            setTimeout(() => navigate('/'), 3000);
+            return;
           }
-        } else {
-          // Unknown callback type
-          console.log('AuthCallback: Unknown callback type, redirecting to home...');
+
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          if (type === 'recovery') {
+            navigate('/auth/reset-password');
+            return;
+          }
+
+          if (user?.id) {
+            await applySignupRoleFromStorage(user.id);
+          }
+
+          if (isOAuthUser(user)) {
+            toast({
+              title: t('auth.welcome', 'Welcome!'),
+              description: t('auth.loginSuccess', 'You have successfully logged in.'),
+            });
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+
           setStatus('success');
-          setMessage('Redirecting...');
-          setTimeout(() => {
-            navigate('/');
-          }, 1000);
+          setMessage(t('auth.emailConfirmed'));
+          toast({
+            title: t('auth.emailConfirmed'),
+            description: t('auth.welcomeToApp'),
+          });
+          setTimeout(() => navigate('/profile/edit?prompt=complete'), 1500);
+          return;
         }
-      } catch (error: any) {
+
+        const { data, error: sessionErr } = await supabase.auth.getSession();
+        if (sessionErr) {
+          setStatus('error');
+          setMessage(t('auth.sessionError'));
+          setTimeout(() => navigate('/'), 3000);
+          return;
+        }
+
+        if (data.session?.user) {
+          const u = data.session.user;
+          if (isOAuthUser(u)) {
+            await applySignupRoleFromStorage(u.id);
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+          setStatus('success');
+          setMessage(t('auth.emailConfirmed'));
+          setTimeout(() => navigate('/profile/edit?prompt=complete'), 1500);
+          return;
+        }
+
+        setStatus('error');
+        setMessage(t('auth.noSession'));
+        setTimeout(() => navigate('/'), 3000);
+      } catch (error: unknown) {
         console.error('Callback error:', error);
         setStatus('error');
         setMessage(t('auth.confirmationError'));
-        
+        const msg = error instanceof Error ? error.message : t('auth.tryAgain');
         toast({
           title: t('auth.confirmationError'),
-          description: error.message || t('auth.tryAgain'),
-          variant: "destructive",
+          description: msg,
+          variant: 'destructive',
         });
-        
-        setTimeout(() => {
-          navigate('/');
-        }, 3000);
+        setTimeout(() => navigate('/'), 3000);
       }
     };
 
@@ -192,7 +209,7 @@ const AuthCallback: React.FC = () => {
             <p className="text-sm text-muted-foreground">{t('auth.pleaseWait')}</p>
           </div>
         );
-      
+
       case 'success':
         return (
           <div className="flex flex-col items-center space-y-4">
@@ -201,7 +218,7 @@ const AuthCallback: React.FC = () => {
             <p className="text-sm text-muted-foreground">{t('auth.redirectingHome')}</p>
           </div>
         );
-      
+
       case 'error':
         return (
           <div className="flex flex-col items-center space-y-4">
@@ -210,7 +227,7 @@ const AuthCallback: React.FC = () => {
             <p className="text-sm text-muted-foreground">{t('auth.redirectingHome')}</p>
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -219,9 +236,7 @@ const AuthCallback: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
-        <CardContent className="pt-6">
-          {renderStatus()}
-        </CardContent>
+        <CardContent className="pt-6">{renderStatus()}</CardContent>
       </Card>
     </div>
   );

@@ -34,6 +34,8 @@ const resources = {
       
       // Auth
       'auth.login': 'Login',
+      'auth.continueWithGoogle': 'Continue with Google',
+      'auth.orContinueWithEmail': 'or continue with email',
       'auth.signup': 'Sign Up',
       'auth.logout': 'Logout',
       'auth.email': 'Email',
@@ -791,6 +793,8 @@ const resources = {
       
       // Auth
       'auth.login': 'Connexion',
+      'auth.continueWithGoogle': 'Continuer avec Google',
+      'auth.orContinueWithEmail': 'ou continuer avec l’e-mail',
       'auth.signup': 'S\'inscrire',
       'auth.logout': 'Déconnexion',
       'auth.email': 'Email',
@@ -1420,6 +1424,8 @@ const resources = {
       
       // Auth
       'auth.login': 'Anmelden',
+      'auth.continueWithGoogle': 'Mit Google fortfahren',
+      'auth.orContinueWithEmail': 'oder mit E-Mail fortfahren',
       'auth.signup': 'Registrieren',
       'auth.logout': 'Abmelden',
       'auth.email': 'E-Mail',
@@ -1686,6 +1692,8 @@ const resources = {
       
       // Auth
       'auth.login': 'Iniciar Sesión',
+      'auth.continueWithGoogle': 'Continuar con Google',
+      'auth.orContinueWithEmail': 'o continuar con el correo',
       'auth.signup': 'Registrarse',
       'auth.logout': 'Cerrar Sesión',
       'auth.email': 'Correo Electrónico',
@@ -2420,6 +2428,8 @@ const resources = {
       
       // Auth
       'auth.login': 'Entrar',
+      'auth.continueWithGoogle': 'Continuar com o Google',
+      'auth.orContinueWithEmail': 'ou continuar com e-mail',
       'auth.signup': 'Registrar',
       'auth.logout': 'Sair',
       'auth.email': 'E-mail',

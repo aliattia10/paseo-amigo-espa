@@ -8,6 +8,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import RoleSelection from '@/components/auth/RoleSelection';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { playNotificationSound } from '@/lib/sounds';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
+import { signInWithGoogle } from '@/lib/google-auth';
+
+const OAUTH_SIGNUP_ROLE_KEY = 'oauth_signup_role';
 
 const AuthNew = () => {
   const [searchParams] = useSearchParams();
@@ -20,6 +24,7 @@ const AuthNew = () => {
   const [step, setStep] = useState<'role' | 'form'>('role');
   const [selectedRole, setSelectedRole] = useState<'owner' | 'walker' | 'both' | null>(null);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
 
   // Form state
@@ -109,6 +114,27 @@ const AuthNew = () => {
   const handleRoleSelect = (role: 'owner' | 'walker' | 'both') => {
     setSelectedRole(role);
     setStep('form');
+  };
+
+  const handleGoogleSignIn = async () => {
+    setOauthLoading(true);
+    try {
+      if (mode === 'signup') {
+        const role = selectedRole === 'both' ? 'owner' : selectedRole || 'owner';
+        sessionStorage.setItem(OAUTH_SIGNUP_ROLE_KEY, role);
+      } else {
+        sessionStorage.removeItem(OAUTH_SIGNUP_ROLE_KEY);
+      }
+      await signInWithGoogle();
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      toast({
+        title: t('auth.loginError', 'Login error'),
+        description: msg || t('auth.tryAgain', 'Please try again.'),
+        variant: 'destructive',
+      });
+      setOauthLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -309,6 +335,25 @@ const AuthNew = () => {
               </p>
             </div>
           )}
+
+          <div className="space-y-4 mb-6">
+            <GoogleSignInButton
+              onClick={handleGoogleSignIn}
+              loading={oauthLoading}
+              disabled={loading}
+            />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border-light dark:border-border-dark" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-role-background-light dark:bg-role-background-dark px-3 text-role-text-light/60 dark:text-role-text-dark/60 uppercase tracking-wide">
+                  {t('auth.orContinueWithEmail', 'or continue with email')}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
               <>
@@ -438,7 +483,7 @@ const AuthNew = () => {
 
             <button
               type="submit"
-              disabled={loading || (mode === 'signup' && !agreed)}
+              disabled={loading || oauthLoading || (mode === 'signup' && !agreed)}
               className="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-role-primary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? t('common.loading') : mode === 'login' ? t('auth.login') : t('auth.createAccount')}
