@@ -22,8 +22,10 @@ Petflik integrates **[Didit ID Verification](https://docs.didit.me/core-technolo
 ## Supabase secrets
 
 ```bash
-supabase secrets set DIDIT_API_KEY=your_key DIDIT_WORKFLOW_ID=5c14e830-cb48-433c-bcdc-6025fe4a1828 DIDIT_WEBHOOK_SECRET=H0Rtsg7hY0c1RSePLuz_OfN9S4WjvMZiKALYCPUdT7s PUBLIC_APP_URL=https://petflik.com/verify-identity
+supabase secrets set DIDIT_API_KEY=your_key DIDIT_WORKFLOW_ID=your_workflow_uuid DIDIT_WEBHOOK_SECRET=your_webhook_secret PUBLIC_APP_URL=https://petflik.com
 ```
+
+Use **`PUBLIC_APP_URL` = site origin only** (e.g. `https://petflik.com`, no path). The function appends `/verify-identity` for the Didit callback.
 
 Deploy functions:
 
@@ -45,6 +47,10 @@ The Edge Function returns **502** when [Didit’s create-session API](https://do
    `supabase functions deploy didit-create-session`
 2. **Callback URL** — `PUBLIC_APP_URL` should be `https://petflik.com` (no trailing slash). The function sends `callback`: `https://petflik.com/verify-identity`. If Didit or your workflow requires **allowed redirect/callback URLs**, add that exact URL in the Didit Console for the workflow/application.
 3. **Read the real error** — After deploying the latest app + function, the verify page toast should show Didit’s message (e.g. `Invalid or missing API key`, `401`). Check **Supabase → Edge Functions → didit-create-session → Logs** for the full Didit response body.
+
+### `You do not have permission to perform this action`
+
+Didit returns this when the **API key is not allowed** to create a session for the given workflow (or the workflow does not belong to the same [Didit Application](https://business.didit.me/) as the key). Fix: copy **Workflow ID** and **API key** from the **same** application in Didit Console; update Supabase secrets and redeploy `didit-create-session`. If it persists, check Didit account/billing or contact [support@didit.me](mailto:support@didit.me).
 
 **Ignore** unrelated browser console noise: `content.js`, `WebAssembly`, `localhost:8081` WebSocket, `MutationObserver` — those come from **Chrome extensions**, not from Petflik.
 

@@ -6,6 +6,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/** Turn Didit error JSON into a single human-readable string for clients. */
+function parseDiditErrorBody(text: string): string {
+  const raw = text.trim();
+  if (!raw) return 'Unknown Didit error';
+  try {
+    const j = JSON.parse(raw) as Record<string, unknown>;
+    const d = j.detail ?? j.message ?? j.error;
+    if (typeof d === 'string') return d;
+    if (Array.isArray(d) && d.length > 0) {
+      const first = d[0] as { msg?: string; message?: string };
+      if (typeof first?.msg === 'string') return first.msg;
+      if (typeof first?.message === 'string') return first.message;
+    }
+    if (d != null && typeof d === 'object') {
+      return JSON.stringify(d);
+    }
+  } catch {
+    /* not JSON */
+  }
+  return raw.length > 800 ? `${raw.slice(0, 800)}…` : raw;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -76,13 +98,7 @@ serve(async (req) => {
     const text = await diditRes.text();
     if (!diditRes.ok) {
       console.error('Didit create session failed:', diditRes.status, text);
-      let detail = text;
-      try {
-        const j = JSON.parse(text) as { detail?: string; message?: string };
-        detail = j.detail || j.message || text;
-      } catch {
-        /* keep raw text */
-      }
+      const detail = parseDiditErrorBody(text);
       return new Response(
         JSON.stringify({
           error: 'Didit session creation failed',

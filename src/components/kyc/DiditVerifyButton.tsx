@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { updateUserKyc } from '@/lib/supabase-services';
+import { humanizeDiditErrorMessage } from '@/lib/didit-error-format';
 import { Loader2, Shield } from 'lucide-react';
 
 interface DiditVerifyButtonProps {
@@ -97,9 +98,15 @@ const DiditVerifyButton: React.FC<DiditVerifyButtonProps> = ({ userId, onSuccess
         const ctx = (error as { context?: Response }).context;
         if (ctx instanceof Response) {
           try {
-            const body = (await ctx.json()) as { details?: string; error?: string };
-            const hint = body.details || body.error;
-            if (typeof hint === 'string' && hint.length > 0) {
+            const body = (await ctx.json()) as { details?: unknown; error?: unknown };
+            const raw = body.details ?? body.error;
+            const hint =
+              typeof raw === 'string'
+                ? humanizeDiditErrorMessage(raw)
+                : raw != null
+                  ? String(raw)
+                  : '';
+            if (hint.length > 0) {
               messageFromBody = hint;
             }
           } catch {
@@ -138,7 +145,7 @@ const DiditVerifyButton: React.FC<DiditVerifyButtonProps> = ({ userId, onSuccess
         configuration: { loggingEnabled: import.meta.env.DEV },
       });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = humanizeDiditErrorMessage(e instanceof Error ? e.message : String(e));
       toast({
         title: t('common.error'),
         description: msg,
