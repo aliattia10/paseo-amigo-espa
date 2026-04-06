@@ -61,13 +61,14 @@ serve(async (req) => {
     const diditRes = await fetch('https://verification.didit.me/v3/session/', {
       method: 'POST',
       headers: {
+        Accept: 'application/json',
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
       },
       body: JSON.stringify({
         workflow_id: workflowId,
         callback,
-        vendor_data: user.id,
+        vendor_data: String(user.id),
         metadata: { source: 'petflik-web' },
       }),
     });
@@ -75,13 +76,28 @@ serve(async (req) => {
     const text = await diditRes.text();
     if (!diditRes.ok) {
       console.error('Didit create session failed:', diditRes.status, text);
+      let detail = text;
+      try {
+        const j = JSON.parse(text) as { detail?: string; message?: string };
+        detail = j.detail || j.message || text;
+      } catch {
+        /* keep raw text */
+      }
       return new Response(
-        JSON.stringify({ error: 'Didit session creation failed', details: text }),
+        JSON.stringify({
+          error: 'Didit session creation failed',
+          details: detail,
+          didit_status: diditRes.status,
+        }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const session = JSON.parse(text);
+    const session = JSON.parse(text) as {
+      verification_url?: string;
+      session_token?: string;
+      session_id?: string;
+    };
     return new Response(
       JSON.stringify({
         verification_url: session.verification_url,

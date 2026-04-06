@@ -22,7 +22,7 @@ Petflik integrates **[Didit ID Verification](https://docs.didit.me/core-technolo
 ## Supabase secrets
 
 ```bash
-supabase secrets set DIDIT_API_KEY=your_key DIDIT_WORKFLOW_ID=5c14e830-cb48-433c-bcdc-6025fe4a1828 DIDIT_WEBHOOK_SECRET=H0Rtsg7hY0c1RSePLuz_OfN9S4WjvMZiKALYCPUdT7s PUBLIC_APP_URL=https://petflik.com
+supabase secrets set DIDIT_API_KEY=your_key DIDIT_WORKFLOW_ID=5c14e830-cb48-433c-bcdc-6025fe4a1828 DIDIT_WEBHOOK_SECRET=H0Rtsg7hY0c1RSePLuz_OfN9S4WjvMZiKALYCPUdT7s PUBLIC_APP_URL=https://petflik.com/verify-identity
 ```
 
 Deploy functions:
@@ -36,6 +36,17 @@ supabase functions deploy didit-webhook
 
 - **Verify identity** (`https://petflik.com/verify-identity`): primary button **Verify with Didit**; legacy upload is under an expandable “Alternative” section.
 - **Didit redirect callback** (configured in `didit-create-session` as `callback`): `https://petflik.com/verify-identity` — users return here with query params (`status`, `verificationSessionId`). The route `/verify-identity-done` redirects to `/verify-identity` with the same query string for old links.
+
+## Troubleshooting `502` on `didit-create-session`
+
+The Edge Function returns **502** when [Didit’s create-session API](https://docs.didit.me/integration/api-full-flow.md) responds with an error (wrong key, workflow, or callback). It is **not** a Petflik frontend bug.
+
+1. **Secrets** — In Supabase: **Project Settings → Edge Functions → Secrets**, confirm `DIDIT_API_KEY` and `DIDIT_WORKFLOW_ID` match the **same Application** in [Didit Console](https://business.didit.me/) → **API & Webhooks** (workflow ID must be from **Workflows** for that app). Redeploy after changing secrets:  
+   `supabase functions deploy didit-create-session`
+2. **Callback URL** — `PUBLIC_APP_URL` should be `https://petflik.com` (no trailing slash). The function sends `callback`: `https://petflik.com/verify-identity`. If Didit or your workflow requires **allowed redirect/callback URLs**, add that exact URL in the Didit Console for the workflow/application.
+3. **Read the real error** — After deploying the latest app + function, the verify page toast should show Didit’s message (e.g. `Invalid or missing API key`, `401`). Check **Supabase → Edge Functions → didit-create-session → Logs** for the full Didit response body.
+
+**Ignore** unrelated browser console noise: `content.js`, `WebAssembly`, `localhost:8081` WebSocket, `MutationObserver` — those come from **Chrome extensions**, not from Petflik.
 
 ## References
 

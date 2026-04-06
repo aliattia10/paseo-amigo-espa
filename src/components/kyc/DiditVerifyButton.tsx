@@ -92,7 +92,23 @@ const DiditVerifyButton: React.FC<DiditVerifyButtonProps> = ({ userId, onSuccess
         body: {},
       });
 
-      if (error) throw error;
+      if (error) {
+        let messageFromBody: string | null = null;
+        const ctx = (error as { context?: Response }).context;
+        if (ctx instanceof Response) {
+          try {
+            const body = (await ctx.json()) as { details?: string; error?: string };
+            const hint = body.details || body.error;
+            if (typeof hint === 'string' && hint.length > 0) {
+              messageFromBody = hint;
+            }
+          } catch {
+            /* response body not JSON */
+          }
+        }
+        if (messageFromBody) throw new Error(messageFromBody);
+        throw error;
+      }
       const verificationUrl = (data as { verification_url?: string })?.verification_url;
       if (!verificationUrl) {
         throw new Error((data as { error?: string })?.error || 'No verification URL');
