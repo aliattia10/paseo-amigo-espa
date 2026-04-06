@@ -34,6 +34,10 @@ supabase functions deploy didit-create-session
 supabase functions deploy didit-webhook
 ```
 
+## Content Security Policy (production)
+
+The Didit web SDK loads **`https://verify.didit.me`** in an iframe. **CSP** must allow `frame-src` and `connect-src` for `https://*.didit.me` (see `index.html`, `netlify.toml`, `public/_headers`). **Permissions-Policy** must allow `camera` and `microphone` for `https://verify.didit.me` (document + ID capture). Redeploy the site after changing headers.
+
 ## Frontend
 
 - **Verify identity** (`https://petflik.com/verify-identity`): primary button **Verify with Didit**; legacy upload is under an expandable “Alternative” section.
