@@ -116,9 +116,10 @@ const DiditVerifyButton: React.FC<DiditVerifyButtonProps> = ({ userId, onSuccess
         if (messageFromBody) throw new Error(messageFromBody);
         throw error;
       }
-      const verificationUrl = (data as { verification_url?: string })?.verification_url;
+      const payload = data as { verification_url?: string; url?: string; error?: string };
+      const verificationUrl = payload.verification_url ?? payload.url;
       if (!verificationUrl) {
-        throw new Error((data as { error?: string })?.error || 'No verification URL');
+        throw new Error(payload.error || 'No verification URL');
       }
 
       const { DiditSdk } = await import('@didit-protocol/sdk-web');

@@ -6,7 +6,7 @@ Petflik integrates **[Didit ID Verification](https://docs.didit.me/core-technolo
 
 | Piece | Role |
 |--------|------|
-| `supabase/functions/didit-create-session` | `POST` with user JWT → `POST https://verification.didit.me/v3/session/` → returns `verification_url`, `session_token` |
+| `supabase/functions/didit-create-session` | `POST` with user JWT → `POST https://verification.didit.me/v3/session/` → Didit returns `url` + `session_token`; function maps to `verification_url` for the SDK |
 | `@didit-protocol/sdk-web` | Opens Didit UI (modal) from the returned URL |
 | `supabase/functions/didit-webhook` | Receives Didit status updates; updates `public.users` via service role |
 | `kyc_service` (optional) | Legacy self-hosted `/verify` flow still available under “Upload documents” |

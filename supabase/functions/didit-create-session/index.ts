@@ -109,14 +109,30 @@ serve(async (req) => {
       );
     }
 
-    const session = JSON.parse(text) as {
-      verification_url?: string;
-      session_token?: string;
-      session_id?: string;
-    };
+    // Didit v3 OpenAPI returns `url` (not `verification_url`) for the flow URL.
+    // See https://docs.didit.me/sessions-api/create-session
+    const session = JSON.parse(text) as Record<string, unknown>;
+    const verificationUrl =
+      typeof session.url === 'string'
+        ? session.url
+        : typeof session.verification_url === 'string'
+          ? session.verification_url
+          : undefined;
+
+    if (!verificationUrl) {
+      console.error('Didit session response missing url:', text);
+      return new Response(
+        JSON.stringify({
+          error: 'Didit response missing verification URL',
+          didit_keys: Object.keys(session),
+        }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({
-        verification_url: session.verification_url,
+        verification_url: verificationUrl,
         session_token: session.session_token,
         session_id: session.session_id,
       }),
