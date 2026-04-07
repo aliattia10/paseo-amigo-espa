@@ -18,6 +18,19 @@ const TinderPhotoGallery: React.FC<TinderPhotoGalleryProps> = ({
   const { toast } = useToast();
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
+  const extractStorageRef = (publicUrl: string): { bucket: string; path: string } | null => {
+    try {
+      const match = publicUrl.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+      if (!match) return null;
+      return {
+        bucket: decodeURIComponent(match[1]),
+        path: decodeURIComponent(match[2]),
+      };
+    } catch {
+      return null;
+    }
+  };
+
   const handleUpload = async (file: File, index: number) => {
     if (!currentUser) return;
 
@@ -34,15 +47,28 @@ const TinderPhotoGallery: React.FC<TinderPhotoGalleryProps> = ({
       // Upload
       const fileExt = file.name.split('.').pop();
       const fileName = `${currentUser.id}/photo-${index}-${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { cacheControl: '3600', upsert: true });
+      const candidateBuckets = ['avatars', 'profile-images'] as const;
 
-      if (uploadError) throw uploadError;
+      let usedBucket: (typeof candidateBuckets)[number] | null = null;
+      let lastUploadError: Error | null = null;
+
+      for (const bucket of candidateBuckets) {
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(fileName, file, { cacheControl: '3600', upsert: true });
+        if (!uploadError) {
+          usedBucket = bucket;
+          break;
+        }
+        lastUploadError = uploadError as unknown as Error;
+      }
+
+      if (!usedBucket) {
+        throw lastUploadError ?? new Error('Unable to upload image to storage');
+      }
 
       const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
+        .from(usedBucket)
         .getPublicUrl(fileName);
 
       // Update photos array
@@ -69,8 +95,10 @@ const TinderPhotoGallery: React.FC<TinderPhotoGalleryProps> = ({
     if (!photos[index]) return;
 
     try {
-      const oldPath = photos[index].split('/').slice(-2).join('/');
-      await supabase.storage.from('avatars').remove([oldPath]);
+      const ref = extractStorageRef(photos[index]);
+      if (ref) {
+        await supabase.storage.from(ref.bucket).remove([ref.path]);
+      }
 
       const newPhotos = [...photos];
       newPhotos[index] = '';

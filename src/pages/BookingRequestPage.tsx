@@ -6,6 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
+const resolvePrimaryPetImage = (raw?: string | null): string | undefined => {
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      const first = parsed.find((v) => typeof v === 'string' && v.length > 0);
+      return typeof first === 'string' ? first : undefined;
+    }
+    if (typeof parsed === 'string' && parsed.length > 0) return parsed;
+  } catch {
+    // legacy single-url value
+  }
+  return raw;
+};
+
 const BookingRequestPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -26,7 +41,7 @@ const BookingRequestPage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [dogs, setDogs] = useState<Array<{ id: string; name: string; image_url?: string; pet_type?: 'dog' | 'cat' }>>([]);
+  const [dogs, setDogs] = useState<Array<{ id: string; name: string; image_url?: string; image_preview?: string; pet_type?: 'dog' | 'cat' }>>([]);
 
   // Fetch user's dogs
   React.useEffect(() => {
@@ -42,7 +57,13 @@ const BookingRequestPage: React.FC = () => {
         if (!res || !res.data) return;
         const { data, error } = res as any;
         if (error) return; // silent empty state on any error
-        setDogs((data || []).map((dog: any) => ({ ...dog, pet_type: (dog.pet_type as 'cat' | 'dog') || 'dog' })));
+        setDogs(
+          (data || []).map((dog: any) => ({
+            ...dog,
+            pet_type: (dog.pet_type as 'cat' | 'dog') || 'dog',
+            image_preview: resolvePrimaryPetImage(dog.image_url),
+          }))
+        );
         if (data && data.length === 1) setFormData(prev => ({ ...prev, dogId: data[0].id }));
       } catch { /* silent */ }
     };
@@ -199,8 +220,8 @@ const BookingRequestPage: React.FC = () => {
                     <div 
                       className="w-12 h-12 rounded-full bg-cover bg-center"
                       style={{
-                        backgroundImage: dog.image_url 
-                          ? `url("${dog.image_url}")`
+                        backgroundImage: dog.image_preview
+                          ? `url("${dog.image_preview}")`
                           : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                       }}
                     />

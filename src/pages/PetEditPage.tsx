@@ -124,20 +124,31 @@ const PetEditPage: React.FC = () => {
       const filePath = `pets/${fileName}`;
 
       console.log('Uploading to:', filePath);
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      const candidateBuckets = ['avatars', 'profile-images'] as const;
+      let usedBucket: (typeof candidateBuckets)[number] | null = null;
+      let lastUploadError: Error | null = null;
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
+      for (const bucket of candidateBuckets) {
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        if (!uploadError) {
+          usedBucket = bucket;
+          break;
+        }
+        lastUploadError = uploadError as unknown as Error;
+      }
+
+      if (!usedBucket) {
+        console.error('Upload error:', lastUploadError);
+        throw lastUploadError ?? new Error('Failed to upload image');
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
+        .from(usedBucket)
         .getPublicUrl(filePath);
 
       console.log('Public URL:', publicUrl);
