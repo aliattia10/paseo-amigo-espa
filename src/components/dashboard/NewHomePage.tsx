@@ -50,7 +50,7 @@ const NewHomePage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, userProfile } = useAuth();
   const currentUserId = currentUser?.id;
-  const { location, locationEnabled, isGlobalMode, requestLocation, toggleGlobalMode } = useLocation();
+  const { location, locationEnabled, requestLocation } = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const unreadNotifications = useUnreadNotificationCount();
@@ -177,7 +177,7 @@ const NewHomePage: React.FC = () => {
         let userLat: number | null = null;
         let userLon: number | null = null;
 
-        const locPromise: Promise<{ data: any; error: any } | null> = (location && locationEnabled && !isGlobalMode)
+        const locPromise: Promise<{ data: any; error: any } | null> = (location && locationEnabled)
           ? Promise.resolve(null) // already have coords from browser
           : Promise.race([
               supabase.from('users').select('latitude, longitude').eq('id', currentUser.id).single(),
@@ -213,7 +213,7 @@ const NewHomePage: React.FC = () => {
         const [locRes, petsRes, sittersRes] = await Promise.all([locPromise, petsPromise, sittersPromise]);
 
         // Resolve user location
-        if (location && locationEnabled && !isGlobalMode) {
+        if (location && locationEnabled) {
           userLat = location.latitude;
           userLon = location.longitude;
         } else if (locRes?.data?.latitude != null) {
@@ -358,7 +358,7 @@ const NewHomePage: React.FC = () => {
       usersSubscription.unsubscribe();
     };
     // Use stable location key to avoid re-running on every location object reference change
-  }, [currentUserId, userRole, locationEnabled, isGlobalMode, profileRetryKey, location?.latitude, location?.longitude]);
+  }, [currentUserId, userRole, locationEnabled, profileRetryKey, location?.latitude, location?.longitude]);
 
   const handleRetryProfiles = () => {
     setProfileLoadError(null);
@@ -391,28 +391,27 @@ const NewHomePage: React.FC = () => {
       }
     }
     
-    // Show location prompt if not enabled and not in global mode
-    if (!locationEnabled && !isGlobalMode) {
+    if (!locationEnabled) {
       setShowLocationPrompt(true);
     }
   }, [currentUserId]);
   
   // Show location prompt after a delay if not enabled
   React.useEffect(() => {
-    if (!locationEnabled && !isGlobalMode) {
+    if (!locationEnabled) {
       const timer = setTimeout(() => {
         setShowLocationPrompt(true);
       }, 1000); // Show prompt after 1 second
       return () => clearTimeout(timer);
     }
-  }, [locationEnabled, isGlobalMode]);
+  }, [locationEnabled]);
   
-  // Close location prompt when location is enabled or global mode is activated
+  // Close location prompt when location is enabled
   React.useEffect(() => {
-    if (locationEnabled || isGlobalMode) {
+    if (locationEnabled) {
       setShowLocationPrompt(false);
     }
-  }, [locationEnabled, isGlobalMode]);
+  }, [locationEnabled]);
 
   // Count active filters
   React.useEffect(() => {
@@ -460,8 +459,8 @@ const NewHomePage: React.FC = () => {
       // For now, we'll keep all profiles
     }
 
-    // Distance filter (only in local mode)
-    if (!isGlobalMode && filters.maxDistance && locationEnabled) {
+    // Distance filter when location is on
+    if (filters.maxDistance && locationEnabled) {
       filtered = filtered.filter(p => {
         // Only filter if distance is valid (not Infinity)
         if (p.distance === Infinity || p.distance === undefined) {
@@ -484,16 +483,7 @@ const NewHomePage: React.FC = () => {
     // Sort profiles
     switch (filters.sortBy) {
       case 'distance':
-        if (isGlobalMode) {
-          filtered.sort((a, b) => {
-            const da = Number.isFinite(a.distance) && a.distance !== Infinity ? a.distance : 1e12;
-            const db = Number.isFinite(b.distance) && b.distance !== Infinity ? b.distance : 1e12;
-            if (da !== db) return da - db;
-            return a.id.localeCompare(b.id);
-          });
-        } else {
-          filtered.sort((a, b) => a.distance - b.distance);
-        }
+        filtered.sort((a, b) => a.distance - b.distance);
         break;
       case 'rating':
         filtered.sort((a, b) => b.rating - a.rating);
@@ -890,19 +880,6 @@ const NewHomePage: React.FC = () => {
                 </span>
               )}
             </button>
-            <button
-              onClick={toggleGlobalMode}
-              className={`flex items-center justify-center rounded-full h-9 w-9 transition-colors ${
-                isGlobalMode
-                  ? 'bg-home-primary text-white'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-              }`}
-              title={isGlobalMode ? t('home.globalMode') : t('home.localMode')}
-            >
-              <span className="material-symbols-outlined text-xl">
-                {isGlobalMode ? 'public' : 'near_me'}
-              </span>
-            </button>
           </div>
         </div>
 
@@ -1082,11 +1059,9 @@ const NewHomePage: React.FC = () => {
                       {/* Distance */}
                       <span className="flex items-center gap-0.5">
                         <span className="material-symbols-outlined text-base">near_me</span>
-                        {isGlobalMode
-                          ? t('home.global')
-                          : currentProfile.distance === Infinity
-                            ? '--'
-                            : `${currentProfile.distance.toFixed(0)} km`}
+                        {currentProfile.distance === Infinity
+                          ? '--'
+                          : `${currentProfile.distance.toFixed(0)} km`}
                       </span>
 
                       {/* Rating */}
@@ -1222,7 +1197,7 @@ const NewHomePage: React.FC = () => {
       )}
 
       {/* Location Permission Prompt */}
-      {showLocationPrompt && !locationEnabled && !isGlobalMode && (
+      {showLocationPrompt && !locationEnabled && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <div className="text-center mb-4">
@@ -1244,13 +1219,6 @@ const NewHomePage: React.FC = () => {
               >
                 <span className="material-symbols-outlined text-lg">location_on</span>
                 {t('home.enableLocation')}
-              </button>
-              <button
-                onClick={() => { toggleGlobalMode(); setShowLocationPrompt(false); }}
-                className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
-              >
-                <span className="material-symbols-outlined text-lg">public</span>
-                {t('home.browseGlobally')}
               </button>
               <button
                 onClick={() => setShowLocationPrompt(false)}

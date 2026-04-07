@@ -7,9 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 interface LocationContextType {
   location: { latitude: number; longitude: number } | null;
   locationEnabled: boolean;
-  isGlobalMode: boolean;
   requestLocation: () => Promise<void>;
-  toggleGlobalMode: () => void;
   updateUserLocation: (lat: number, lon: number) => Promise<void>;
 }
 
@@ -21,13 +19,9 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { toast } = useToast();
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationEnabled, setLocationEnabled] = useState(false);
-  const [isGlobalMode, setIsGlobalMode] = useState(false);
 
   // Load saved preferences
   useEffect(() => {
-    const savedGlobalMode = localStorage.getItem('globalMode') === 'true';
-    setIsGlobalMode(savedGlobalMode);
-    
     const savedLocationEnabled = localStorage.getItem('locationEnabled') === 'true';
     if (savedLocationEnabled) {
       setLocationEnabled(true);
@@ -153,7 +147,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.error('Error getting location:', error);
       
       let errorMessage = t('location.unableToGet');
-      let errorDescription = t('location.tryAgainOrGlobal');
+      let errorDescription = t('location.tryAgainShort');
       
       if (error?.code === 1) {
         errorMessage = t('location.denied');
@@ -199,28 +193,12 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  // Toggle between local and global mode
-  const toggleGlobalMode = () => {
-    const newMode = !isGlobalMode;
-    setIsGlobalMode(newMode);
-    localStorage.setItem('globalMode', String(newMode));
-    
-    toast({
-      title: newMode ? t('location.globalMode') : t('location.localMode'),
-      description: newMode 
-        ? t('location.globalModeDesc') 
-        : t('location.localModeDesc'),
-    });
-  };
-
   return (
     <LocationContext.Provider
       value={{
         location,
         locationEnabled,
-        isGlobalMode,
         requestLocation,
-        toggleGlobalMode,
         updateUserLocation,
       }}
     >
