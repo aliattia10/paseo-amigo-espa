@@ -15,6 +15,17 @@ import i18n from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { calculateDistance } from '@/lib/distance';
 
+/** Seed/demo users from SQL migrations (a1000000-* sitters, b2000000-* owners) — exclude from discovery */
+function isDemoUserId(id: string | undefined | null): boolean {
+  if (!id) return false;
+  return /^a1000000-/i.test(id) || /^b2000000-/i.test(id);
+}
+
+function isDemoUserEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return /@demo\.petflik\.com$/i.test(email) || /@example\.com$/i.test(email);
+}
+
 interface Profile {
   id: string;
   name: string;
@@ -57,7 +68,14 @@ const NewHomePage: React.FC = () => {
   const [passedProfiles, setPassedProfiles] = useState<Set<string>>(new Set());
   const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
   const [showMatchModal, setShowMatchModal] = useState(false);
-  const [matchedUser, setMatchedUser] = useState<{ id: string; name: string; imageUrl: string; petType?: 'dog' | 'cat' } | null>(null);
+  const [matchedUser, setMatchedUser] = useState<{
+    id: string;
+    name: string;
+    imageUrl: string;
+    petType?: 'dog' | 'cat';
+    /** Sitter flow: card is a pet; keep this id visible until match modal closes */
+    petCardId?: string;
+  } | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -218,7 +236,8 @@ const NewHomePage: React.FC = () => {
           setProfileLoadError('fetch');
         }
         if (!petsError && pets) {
-          const petProfiles: Profile[] = pets.map((pet: any) => {
+          const petsNoDemo = pets.filter((pet: { owner_id?: string }) => !isDemoUserId(pet.owner_id));
+          const petProfiles: Profile[] = petsNoDemo.map((pet: any) => {
             let imageUrls: string[] = [];
             try {
               imageUrls = JSON.parse(pet.image_url || '[]');
@@ -256,11 +275,9 @@ const NewHomePage: React.FC = () => {
           setProfileLoadError('fetch');
         }
         if (!sittersError && sitters && sitters.length > 0) {
-          const realSitters = sitters.filter((sitter: any) => {
-            const isTestEmail = sitter.email?.includes('@example.com');
-            const isDefaultName = ['María García', 'Carlos López', 'Ana Rodríguez', 'David Martín'].includes(sitter.name);
-            return !isTestEmail && !isDefaultName;
-          });
+          const realSitters = sitters.filter(
+            (sitter: { id: string; email?: string | null }) => !isDemoUserId(sitter.id) && !isDemoUserEmail(sitter.email)
+          );
           const sitterProfiles: Profile[] = realSitters.map((sitter: any) => {
             let imageUrls: string[] = [];
             try {
@@ -423,8 +440,17 @@ const NewHomePage: React.FC = () => {
       if (import.meta.env.DEV) console.log('=== APPLYING FILTERS ===', 'Total profiles:', profiles.length);
     }
     
-    // Filter out profiles user has already interacted with (from Supabase)
-    let filtered = profiles.filter(p => !passedProfileIds.has(p.id) && !likedProfileIds.has(p.id));
+    // Filter out profiles user has already interacted with — keep the matched card visible until the match modal closes (Tinder-style)
+    let filtered = profiles.filter((p) => {
+      const keepForMatchModal =
+        showMatchModal &&
+        matchedUser &&
+        (userRole === 'owner'
+          ? p.id === matchedUser.id
+          : matchedUser.petCardId != null && p.id === matchedUser.petCardId);
+      if (keepForMatchModal) return true;
+      return !passedProfileIds.has(p.id) && !likedProfileIds.has(p.id);
+    });
     
     if (import.meta.env.DEV) console.log('Profiles after filter:', filtered.length);
 
@@ -458,7 +484,16 @@ const NewHomePage: React.FC = () => {
     // Sort profiles
     switch (filters.sortBy) {
       case 'distance':
-        filtered.sort((a, b) => a.distance - b.distance);
+        if (isGlobalMode) {
+          filtered.sort((a, b) => {
+            const da = Number.isFinite(a.distance) && a.distance !== Infinity ? a.distance : 1e12;
+            const db = Number.isFinite(b.distance) && b.distance !== Infinity ? b.distance : 1e12;
+            if (da !== db) return da - db;
+            return a.id.localeCompare(b.id);
+          });
+        } else {
+          filtered.sort((a, b) => a.distance - b.distance);
+        }
         break;
       case 'rating':
         filtered.sort((a, b) => b.rating - a.rating);
@@ -509,7 +544,8 @@ const NewHomePage: React.FC = () => {
 
   const handleLike = async () => {
     const profile = profiles[currentIndex];
-    
+    let showedMatchModal = false;
+
     if (!currentUser?.id) {
       toast({
         title: t('common.error'),
@@ -586,9 +622,10 @@ const NewHomePage: React.FC = () => {
             id: profile.id,
             name: profile.name,
             imageUrl: profile.imageUrls[0],
-            petType: petTypeForSound
+            petType: petTypeForSound,
           });
           setShowMatchModal(true);
+          showedMatchModal = true;
         } else {
           // No match yet, just show success toast
           playLikeSound(); // Play like sound
@@ -659,9 +696,11 @@ const NewHomePage: React.FC = () => {
               id: petData.owner_id,
               name: ownerData?.name || t('home.petOwner'),
               imageUrl: ownerImageUrl,
-              petType: petType
+              petType: petType,
+              petCardId: profile.id,
             });
             setShowMatchModal(true);
+            showedMatchModal = true;
           }
         }
         
@@ -687,10 +726,10 @@ const NewHomePage: React.FC = () => {
       });
       return;
     }
-    
-    // Move to next profile
-    if (currentIndex < profiles.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+
+    // Tinder-style: on match, stay on this card until the match modal is dismissed (no advance under the modal)
+    if (!showedMatchModal) {
+      setCurrentIndex(0);
     }
   };
 
@@ -738,11 +777,8 @@ const NewHomePage: React.FC = () => {
     } catch (error) {
       console.error('Error recording pass:', error);
     }
-    
-    // Move to next profile
-    if (currentIndex < profiles.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
+
+    setCurrentIndex(0);
   };
 
   const handleInfo = () => {
@@ -1164,7 +1200,11 @@ const NewHomePage: React.FC = () => {
       {matchedUser && (
         <MatchModal
           isOpen={showMatchModal}
-          onClose={() => setShowMatchModal(false)}
+          onClose={() => {
+            setShowMatchModal(false);
+            setMatchedUser(null);
+            setCurrentIndex(0);
+          }}
           matchedUser={matchedUser}
           petType={matchedUser.petType}
           currentUserName={userProfile?.name}

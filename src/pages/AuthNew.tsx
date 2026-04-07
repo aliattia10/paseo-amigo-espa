@@ -206,15 +206,18 @@ const AuthNew = () => {
         if (data.user && data.session) {
           const { error: profileError } = await supabase
             .from('users')
-            .insert({
-              id: data.user.id,
-              name,
-              email,
-              phone,
-              city,
-              postal_code: postalCode,
-              user_type: selectedRole || 'owner',
-            });
+            .upsert(
+              {
+                id: data.user.id,
+                name,
+                email,
+                phone,
+                city,
+                postal_code: postalCode,
+                user_type: selectedRole || 'owner',
+              },
+              { onConflict: 'id' }
+            );
           
           if (profileError) {
             // Log error but don't block signup if table doesn't exist

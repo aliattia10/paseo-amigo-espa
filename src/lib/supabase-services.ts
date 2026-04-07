@@ -5,16 +5,19 @@ import type { Dog, User, WalkerProfile } from '@/types';
 export const createUser = async (userId: string, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => {
   const { data, error } = await supabase
     .from('users')
-    .insert({
-      id: userId,
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone,
-      city: userData.city,
-      postal_code: userData.postalCode,
-      user_type: userData.userType,
-      bio: userData.bio,
-    })
+    .upsert(
+      {
+        id: userId,
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        city: userData.city,
+        postal_code: userData.postalCode,
+        user_type: userData.userType,
+        bio: userData.bio,
+      },
+      { onConflict: 'id' }
+    )
     .select()
     .single();
 
