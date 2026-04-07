@@ -45,7 +45,7 @@ const NotificationsPage: React.FC = () => {
         const { supabase } = await import('@/integrations/supabase/client');
         await supabase
           .from('notifications')
-          .update({ read: true, is_read: true })
+          .update({ read: true })
           .eq('user_id', currentUser.id)
           .in('id', unread.map(n => n.id));
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -115,7 +115,7 @@ const NotificationsPage: React.FC = () => {
         title: notif.title,
         description: notif.message,
         time: relativeDay(notif.created_at),
-        isRead: notif.read === true || notif.is_read === true,
+        isRead: notif.read === true,
         icon: getIconForType(notif.type),
         iconColor: getIconColorForType(notif.type),
         relatedId: notif.related_id ?? null,

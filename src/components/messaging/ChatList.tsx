@@ -110,7 +110,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
             setMatches([]);
           } else {
             const matchIds = mutualMatches.map((m: any) => m.id);
-            let messagesByMatch = new Map<string, string>();
+            const messagesByMatch = new Map<string, string>();
             try {
               const messagesRes = await withTimeout(
                 supabase

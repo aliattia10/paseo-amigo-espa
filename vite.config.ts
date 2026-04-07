@@ -9,7 +9,6 @@ export default defineConfig(({ mode }) => {
   const devPlugins: any[] = [];
   if (mode === 'development') {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { componentTagger } = require('lovable-tagger');
       devPlugins.push(componentTagger());
     } catch {

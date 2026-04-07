@@ -41,6 +41,11 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
   const changeLanguage = (language: string) => {
     i18n.changeLanguage(language);
+    try {
+      localStorage.setItem('i18nextLng', language);
+    } catch {
+      /* ignore */
+    }
     setCurrentLanguage(language);
   };
 

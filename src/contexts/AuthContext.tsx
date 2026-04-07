@@ -193,7 +193,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       Object.keys(localStorage)
         .filter(k => k.startsWith('sb-'))
         .forEach(k => localStorage.removeItem(k));
-    } catch {}
+    } catch {
+      /* ignore localStorage errors */
+    }
 
     try {
       await Promise.race([

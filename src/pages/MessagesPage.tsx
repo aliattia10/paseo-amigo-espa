@@ -317,7 +317,7 @@ export default function MessagesPage() {
   const markAllRead = async () => {
     if (!currentUser) return;
     try {
-      await supabase.from('notifications').update({ read: true, is_read: true }).eq('user_id', currentUser.id).eq('type', 'message');
+      await supabase.from('notifications').update({ read: true }).eq('user_id', currentUser.id).eq('type', 'message');
       toast({ title: t('common.success'), description: t('notifications.allRead', 'All marked as read') });
     } catch {
       toast({ title: t('common.error'), description: t('messages.markAllFailed'), variant: 'destructive' });

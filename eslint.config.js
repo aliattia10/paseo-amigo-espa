@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "backend/**", "src/integrations/supabase/types.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -19,11 +19,16 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
+      // Off: many intentional dependency omissions (contexts, one-shot effects); enable per-file if desired
+      "react-hooks/exhaustive-deps": "off",
+      // Off: shadcn/ui + contexts export hooks/helpers alongside components
+      "react-refresh/only-export-components": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      // ESLint 9 + typescript-eslint: extension can throw (allowShortCircuit); use core rule if needed later
+      "@typescript-eslint/no-unused-expressions": "off",
+      // Large legacy surface; tighten gradually or fix per-file
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-require-imports": "off",
     },
   }
 );

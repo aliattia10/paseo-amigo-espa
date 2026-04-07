@@ -135,7 +135,7 @@ const BookingsPage: React.FC = () => {
               : { data: [] };
             const nameById = new Map<string, string>();
             (userRows || []).forEach((u: any) => { if (u?.id && u?.name) nameById.set(u.id, u.name); });
-            let petNameById = new Map<string, string>();
+            const petNameById = new Map<string, string>();
             if (petIds.size) {
               const { data: petRows } = await supabase.from('pets').select('id, name').in('id', [...petIds]);
               (petRows || []).forEach((p: any) => { if (p?.id && p?.name) petNameById.set(p.id, p.name); });

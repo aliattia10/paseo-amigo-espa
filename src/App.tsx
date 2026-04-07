@@ -897,8 +897,8 @@ const App = () => (
                     </ProtectedRoute>
                   } 
                 />
-                <Route 
-path="/admin/payouts"
+                <Route
+                  path="/admin/payouts"
                   element={
                     <AdminGuard>
                       <AdminPayoutsPage />

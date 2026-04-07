@@ -20,14 +20,14 @@ export function useUnreadNotificationCount(): number {
       try {
         const { data, error } = await supabase
           .from('notifications')
-          .select('id, read, is_read')
+          .select('id, read')
           .eq('user_id', currentUser.id);
 
         if (error) {
           setCount(0);
           return;
         }
-        const unread = (data || []).filter((n: any) => n.read !== true && n.is_read !== true);
+        const unread = (data || []).filter((n: { read?: boolean | null }) => n.read !== true);
         setCount(unread.length);
       } catch {
         setCount(0);

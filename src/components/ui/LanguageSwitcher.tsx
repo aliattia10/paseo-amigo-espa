@@ -17,6 +17,11 @@ export const LanguageSwitcher: React.FC = () => {
 
   const toggleLanguage = () => {
     i18n.changeLanguage(nextLanguage.code);
+    try {
+      localStorage.setItem('i18nextLng', nextLanguage.code);
+    } catch {
+      /* ignore */
+    }
   };
 
   return (

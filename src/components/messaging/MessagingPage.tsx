@@ -198,7 +198,7 @@ const MessagingPage: React.FC = () => {
     try {
       await supabase
         .from('notifications')
-        .update({ read: true, is_read: true })
+        .update({ read: true })
         .eq('user_id', currentUser.id)
         .eq('type', 'message');
       toast({ title: t('common.success'), description: t('notifications.allRead', 'All marked as read') });

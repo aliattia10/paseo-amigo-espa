@@ -97,7 +97,6 @@ const HomePage: React.FC = () => {
     if (previouslyEnabled) {
       requestLocation();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

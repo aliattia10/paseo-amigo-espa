@@ -3165,84 +3165,171 @@ const resources = {
   }
 };
 
-// Enhanced language detection based on location and browser
-const detectLanguageFromLocation = () => {
-  // Try multiple methods to detect user's location and language
-  let detectedLanguage = 'en'; // Default fallback
-  
-  // Method 1: Try to get country from browser locale
+/** Must match `resources` keys in this file. */
+export const SUPPORTED_APP_LANGS = ['en', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'pl'] as const;
+
+function isSupportedAppLang(code: string): code is (typeof SUPPORTED_APP_LANGS)[number] {
+  return (SUPPORTED_APP_LANGS as readonly string[]).includes(code);
+}
+
+/** Map ISO 3166-1 alpha-2 region → app language (only languages we ship). */
+const REGION_TO_LANG: Record<string, (typeof SUPPORTED_APP_LANGS)[number]> = {
+  US: 'en',
+  GB: 'en',
+  CA: 'en',
+  AU: 'en',
+  NZ: 'en',
+  IE: 'en',
+  ZA: 'en',
+  FR: 'fr',
+  BE: 'fr',
+  DE: 'de',
+  AT: 'de',
+  LU: 'de',
+  LI: 'de',
+  CH: 'de',
+  ES: 'es',
+  PT: 'pt',
+  IT: 'it',
+  RU: 'ru',
+  PL: 'pl',
+  BR: 'pt',
+  MX: 'es',
+  AR: 'es',
+  CL: 'es',
+  CO: 'es',
+  PE: 'es',
+  VE: 'es',
+  UY: 'es',
+  BO: 'es',
+  PY: 'es',
+  EC: 'es',
+};
+
+/**
+ * Infer language from IANA timezone (reflects where the device thinks the user is).
+ */
+function languageFromTimeZone(tz: string): (typeof SUPPORTED_APP_LANGS)[number] | null {
+  const u = tz.toUpperCase();
+
+  const exact: Record<string, (typeof SUPPORTED_APP_LANGS)[number]> = {
+    'EUROPE/MADRID': 'es',
+    'ATLANTIC/CANARY': 'es',
+    'AFRICA/CEUTA': 'es',
+    'EUROPE/PARIS': 'fr',
+    'EUROPE/MONACO': 'fr',
+    'EUROPE/BRUSSELS': 'fr',
+    'EUROPE/LUXEMBOURG': 'de',
+    'EUROPE/BERLIN': 'de',
+    'EUROPE/VIENNA': 'de',
+    'EUROPE/ZURICH': 'de',
+    'EUROPE/LISBON': 'pt',
+    'ATLANTIC/MADEIRA': 'pt',
+    'ATLANTIC/AZORES': 'pt',
+    'EUROPE/ROME': 'it',
+    'EUROPE/VATICAN': 'it',
+    'EUROPE/WARSAW': 'pl',
+    'EUROPE/MOSCOW': 'ru',
+    'AMERICA/SAO_PAULO': 'pt',
+    'AMERICA/BELEM': 'pt',
+    'AMERICA/FORTALEZA': 'pt',
+    'AMERICA/RECIFE': 'pt',
+    'AMERICA/BAHIA': 'pt',
+    'AMERICA/BOGOTA': 'es',
+    'AMERICA/LIMA': 'es',
+    'AMERICA/MEXICO_CITY': 'es',
+    'AMERICA/CANCUN': 'es',
+    'AMERICA/LA_PAZ': 'es',
+    'AMERICA/SANTIAGO': 'es',
+    'AMERICA/CARACAS': 'es',
+    'AMERICA/MONTEVIDEO': 'es',
+    'AMERICA/GUAYAQUIL': 'es',
+    'AMERICA/NEW_YORK': 'en',
+    'AMERICA/CHICAGO': 'en',
+    'AMERICA/DENVER': 'en',
+    'AMERICA/LOS_ANGELES': 'en',
+    'AMERICA/PHOENIX': 'en',
+    'AMERICA/TORONTO': 'en',
+    'AMERICA/VANCOUVER': 'en',
+    'AMERICA/ANCHORAGE': 'en',
+    'AMERICA/MONTREAL': 'fr',
+    'EUROPE/LONDON': 'en',
+    'EUROPE/DUBLIN': 'en',
+    'AMERICA/ARGENTINA/BUENOS_AIRES': 'es',
+    'AMERICA/ARGENTINA/CORDOBA': 'es',
+  };
+
+  if (exact[u]) return exact[u];
+
+  if (u.startsWith('AMERICA/ARGENTINA/')) return 'es';
+  if (/^AMERICA\/(CAMPO_GRANDE|CUIABA|MANAUS|RIO_BRANCO|BRASILIA|PORTO_VELHO|BOA_VISTA|ARAGUAINA|MACEIO|MACAPA|NATAL|FORTALEZA|BELEM|SAO_PAULO)/i.test(tz)) {
+    return 'pt';
+  }
+  if (/^AMERICA\/(TIJUANA|HERMOSILLO|MAZATLAN|OJINAGA|CHIHUAHUA|MERIDA|MONTERREY|BAJASUR|BAJANORTE)/i.test(tz)) {
+    return 'es';
+  }
+  if (/^AMERICA\/(DETROIT|INDIANAPOLIS|KENTUCKY|LOUISVILLE|WINNIPEG|REGINA|EDMONTON|HALIFAX|ST_JOHNS|MONCTON|WHITEHORSE|YELLOWKNIFE|IQALUIT|RESOLUTE|THUNDER_BAY|RAINY_RIVER|NIPIGON|ATIKOKAN|CORAL_HARBOUR|RANKIN_INLET|SWIFT_CURRENT|DAWSON|DAWSON_CREEK|INUVIK|CAMBRIDGE_BAY|PANGNIRTUNG|CAPE_DORSET|RESOLUTE|GLACE_BAY|GOOSE_BAY|BLANC-SABLON)/i.test(tz)) {
+    return 'en';
+  }
+
+  return null;
+}
+
+/**
+ * When the user has not chosen a language yet, infer from timezone (location),
+ * then browser language list, then locale region. Only returns shipped languages.
+ */
+export function detectLanguageFromLocation(): (typeof SUPPORTED_APP_LANGS)[number] {
+  if (typeof window === 'undefined' || typeof Intl === 'undefined') return 'en';
+
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const fromTz = tz ? languageFromTimeZone(tz) : null;
+    if (fromTz) return fromTz;
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    const candidates =
+      typeof navigator !== 'undefined' && navigator.languages?.length
+        ? navigator.languages
+        : typeof navigator !== 'undefined' && navigator.language
+          ? [navigator.language]
+          : [];
+    for (const lang of candidates) {
+      const base = lang.split('-')[0].toLowerCase();
+      if (isSupportedAppLang(base)) return base;
+    }
+  } catch {
+    /* ignore */
+  }
+
   try {
     const locale = Intl.DateTimeFormat().resolvedOptions().locale;
-    const country = locale.split('-')[1];
-    
-    if (country) {
-  const countryLanguageMap: { [key: string]: string } = {
-        // Existing languages
-        'US': 'en', 'GB': 'en', 'CA': 'en', 'AU': 'en', 'NZ': 'en', 'IE': 'en', 'ZA': 'en',
-        'FR': 'fr', 'BE': 'fr', // France, Belgium
-        'DE': 'de', 'AT': 'de', 'LU': 'de', 'LI': 'de', // German-speaking countries
-        'CH': 'de', // Switzerland (German as default)
-        
-        // New languages - Spain and others
-        'ES': 'es', // Spain - Spanish
-        'PT': 'pt', // Portugal - Portuguese
-        'IT': 'it', // Italy - Italian
-        'RU': 'ru', // Russia - Russian
-        'PL': 'pl', // Poland - Polish
-        
-        // Additional countries
-        'NL': 'nl', // Netherlands - Dutch
-        'SE': 'sv', // Sweden - Swedish
-        'NO': 'no', // Norway - Norwegian
-        'DK': 'da', // Denmark - Danish
-        'FI': 'fi', // Finland - Finnish
-        'BR': 'pt', // Brazil - Portuguese
-        'MX': 'es', // Mexico - Spanish
-        'AR': 'es', // Argentina - Spanish
-        'CL': 'es', // Chile - Spanish
-        'CO': 'es', // Colombia - Spanish
-        'PE': 'es', // Peru - Spanish
-        'VE': 'es', // Venezuela - Spanish
-        'UA': 'uk', // Ukraine - Ukrainian
-        'CZ': 'cs', // Czech Republic - Czech
-        'SK': 'sk', // Slovakia - Slovak
-        'HU': 'hu', // Hungary - Hungarian
-        'RO': 'ro', // Romania - Romanian
-        'BG': 'bg', // Bulgaria - Bulgarian
-        'HR': 'hr', // Croatia - Croatian
-        'SI': 'sl', // Slovenia - Slovenian
-        'EE': 'et', // Estonia - Estonian
-        'LV': 'lv', // Latvia - Latvian
-        'LT': 'lt', // Lithuania - Lithuanian
-      };
-      
-      detectedLanguage = countryLanguageMap[country] || detectedLanguage;
-    }
-  } catch (error) {
-    console.log('Error detecting country from locale:', error);
+    const parts = locale.split('-');
+    const region = parts[1]?.toUpperCase();
+    if (region && REGION_TO_LANG[region]) return REGION_TO_LANG[region];
+  } catch {
+    /* ignore */
   }
-  
-  // Method 2: Try to get language from browser
+
+  return 'en';
+}
+
+function getInitialLanguage(): string {
+  if (typeof window === 'undefined') return 'en';
   try {
-    const browserLang = navigator.language || (navigator as any).userLanguage;
-    if (browserLang) {
-      const langCode = browserLang.split('-')[0];
-      // If we have a supported language from browser, use it
-      const supportedLanguages = ['en', 'fr', 'de', 'es', 'pt', 'it', 'ru', 'pl', 'nl', 'sv', 'no', 'da', 'fi', 'uk', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'et', 'lv', 'lt'];
-      if (supportedLanguages.includes(langCode)) {
-        detectedLanguage = langCode;
-      }
+    const raw = localStorage.getItem('i18nextLng');
+    if (raw) {
+      const base = raw.split('-')[0].toLowerCase();
+      if (isSupportedAppLang(base)) return base;
     }
-  } catch (error) {
-    console.log('Error detecting browser language:', error);
+  } catch {
+    /* ignore */
   }
-  
-  // Method 3: Try geolocation API (if available and user allows)
-  // This would require user permission, so we'll skip for now
-  
-  console.log('Detected language:', detectedLanguage);
-  return detectedLanguage;
-};
+  return detectLanguageFromLocation();
+}
 
 i18n
   .use(LanguageDetector)
@@ -3250,20 +3337,22 @@ i18n
   .init({
     resources,
     fallbackLng: 'en',
-    lng: localStorage.getItem('i18nextLng') || 'en', // Default to English, respect user's choice
-    
+    lng: getInitialLanguage(),
+
     detection: {
-      order: ['localStorage'], // Only use localStorage, ignore browser/location detection
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
     },
-    
-    supportedLngs: ['en', 'es', 'fr', 'de'], // English, Spanish, French, and German
-    
+
+    supportedLngs: [...SUPPORTED_APP_LANGS],
+
+    load: 'languageOnly',
+
     interpolation: {
       escapeValue: false,
     },
-    
+
     react: {
       useSuspense: false,
     },
