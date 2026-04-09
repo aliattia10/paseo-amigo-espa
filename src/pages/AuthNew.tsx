@@ -182,6 +182,18 @@ const AuthNew = () => {
         return;
       } else {
         // Signup
+        const {
+          data: { session: existingSession },
+        } = await supabase.auth.getSession();
+        if (existingSession?.user) {
+          toast({
+            title: t('auth.alreadyLoggedInTitle', 'Already signed in'),
+            description: t('auth.alreadyLoggedInDesc', 'You already have an account and an active session.'),
+          });
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -270,6 +282,17 @@ const AuthNew = () => {
       }
     } catch (error: any) {
       const msg = error?.message || '';
+      const alreadyRegistered = /already registered|user already exists|already been registered/i.test(msg);
+      if (alreadyRegistered) {
+        toast({
+          title: t('auth.accountExistsTitle', 'Account already exists'),
+          description: t('auth.accountExistsDesc', 'Use login or reset password for this email.'),
+          variant: 'default',
+        });
+        navigate('/auth?mode=login', { replace: true });
+        setLoading(false);
+        return;
+      }
       const isOffline = /failed to fetch|network error|load failed|503|service unavailable/i.test(msg);
       const isTimeout = /timed out|timeout/i.test(msg) && !isOffline;
       const isConnection = isOffline || isTimeout || /connection/i.test(msg);

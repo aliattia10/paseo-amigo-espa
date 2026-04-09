@@ -12,6 +12,8 @@ interface Pet {
   pet_type: 'dog' | 'cat';
   age: string;
   breed: string;
+  breed_custom?: string | null;
+  pet_size?: 'small' | 'medium' | 'large' | null;
   notes: string;
   image_url: string;
   owner_id: string;
@@ -238,7 +240,15 @@ const PetProfilePage: React.FC = () => {
                 {t('profile.breed')}
               </p>
               <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
-                {pet.breed || t('profile.mixed')}
+                {pet.breed_custom || pet.breed || t('profile.mixed')}
+              </p>
+            </div>
+            <div className="text-center col-span-2">
+              <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                {t('pet.size', 'Size')}
+              </p>
+              <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark capitalize">
+                {pet.pet_size ? t(`pet.size.${pet.pet_size}`, pet.pet_size) : '--'}
               </p>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
+import BreedSelector from '@/components/pet/BreedSelector';
 
 const PetEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -25,6 +26,8 @@ const PetEditPage: React.FC = () => {
     petType: 'dog' as 'dog' | 'cat',
     age: '',
     breed: '',
+    customBreed: '',
+    petSize: 'medium' as 'small' | 'medium' | 'large',
     notes: '',
     imageUrls: [] as string[], // Changed to array for multiple images
   });
@@ -70,7 +73,9 @@ const PetEditPage: React.FC = () => {
             name: dogData.name || '',
             petType: 'dog',
             age: dogData.age || '',
-            breed: dogData.breed || '',
+            breed: dogData.breed_custom ? 'Other' : (dogData.breed || ''),
+            customBreed: dogData.breed_custom || '',
+            petSize: (dogData.pet_size as 'small' | 'medium' | 'large') || 'medium',
             notes: dogData.notes || '',
             imageUrls: imageUrls,
           });
@@ -94,7 +99,9 @@ const PetEditPage: React.FC = () => {
           name: data.name || '',
           petType: (data.pet_type as 'cat' | 'dog') || 'dog',
           age: data.age || '',
-          breed: data.breed || '',
+          breed: data.breed_custom ? 'Other' : (data.breed || ''),
+          customBreed: data.breed_custom || '',
+          petSize: (data.pet_size as 'small' | 'medium' | 'large') || 'medium',
           notes: data.notes || '',
           imageUrls: imageUrls,
         });
@@ -275,6 +282,9 @@ const PetEditPage: React.FC = () => {
       
       // Convert image URLs array to JSON string
       const imageUrlJson = JSON.stringify(petData.imageUrls);
+      const resolvedBreed = petData.breed === 'Other'
+        ? (petData.customBreed.trim() || 'Other')
+        : (petData.breed || null);
       
       const { error } = await supabase
         .from('pets')
@@ -282,7 +292,9 @@ const PetEditPage: React.FC = () => {
           name: petData.name,
           pet_type: petData.petType,
           age: petData.age,
-          breed: petData.breed || null,
+          breed: resolvedBreed,
+          breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
+          pet_size: petData.petSize,
           notes: petData.notes,
           image_url: imageUrlJson,
           updated_at: new Date().toISOString(),
@@ -298,7 +310,9 @@ const PetEditPage: React.FC = () => {
             .update({
               name: petData.name,
               age: petData.age,
-              breed: petData.breed || null,
+              breed: resolvedBreed,
+              breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
+              pet_size: petData.petSize,
               notes: petData.notes,
               image_url: imageUrlJson,
               updated_at: new Date().toISOString(),
@@ -621,16 +635,36 @@ const PetEditPage: React.FC = () => {
 
           {/* Pet Breed */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
-            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-              Breed (Optional)
-            </label>
-            <Input
-              type="text"
+            <BreedSelector
+              petType={petData.petType}
               value={petData.breed}
-              onChange={(e) => setPetData({ ...petData, breed: e.target.value })}
-              className="w-full"
-              placeholder={petData.petType === 'cat' ? 'e.g., Persian, Siamese, Mixed' : 'e.g., Golden Retriever, Mixed'}
+              onChange={(breed) => setPetData({ ...petData, breed })}
+              customBreed={petData.customBreed}
+              onCustomBreedChange={(customBreed) => setPetData({ ...petData, customBreed })}
             />
+          </div>
+
+          {/* Pet Size */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+              {t('pet.size', 'Size')} <span className="text-red-500">*</span>
+            </label>
+            <div className="flex gap-2">
+              {(['small', 'medium', 'large'] as const).map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setPetData({ ...petData, petSize: size })}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors capitalize ${
+                    petData.petSize === size
+                      ? 'bg-primary text-white'
+                      : 'bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark border border-border-light dark:border-border-dark'
+                  }`}
+                >
+                  {t(`pet.size.${size}`, size)}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Notes */}

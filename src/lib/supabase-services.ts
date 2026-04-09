@@ -133,6 +133,8 @@ export const createDog = async (dogData: Omit<Dog, 'id' | 'createdAt' | 'updated
       name: dogData.name,
       age: dogData.age,
       breed: dogData.breed,
+      breed_custom: dogData.customBreed,
+      pet_size: dogData.petSize,
       notes: dogData.notes,
       image_url: dogData.imageUrl,
     })
@@ -160,6 +162,8 @@ export const getDogsByOwner = async (ownerId: string): Promise<Dog[]> => {
     name: dog.name,
     age: dog.age || '0',
     breed: dog.breed || '',
+    customBreed: dog.breed_custom || undefined,
+    petSize: (dog.pet_size as 'small' | 'medium' | 'large' | null) || undefined,
     notes: dog.notes || '',
     imageUrl: dog.image_url || undefined,
     createdAt: new Date(dog.created_at),
@@ -173,6 +177,8 @@ export const updateDog = async (dogId: string, dogData: Partial<Dog>) => {
   if (dogData.name) updateData.name = dogData.name;
   if (dogData.age) updateData.age = dogData.age;
   if (dogData.breed !== undefined) updateData.breed = dogData.breed;
+  if (dogData.customBreed !== undefined) updateData.breed_custom = dogData.customBreed;
+  if (dogData.petSize !== undefined) updateData.pet_size = dogData.petSize;
   if (dogData.notes) updateData.notes = dogData.notes;
   if (dogData.imageUrl !== undefined) updateData.image_url = dogData.imageUrl;
   

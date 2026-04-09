@@ -1,4 +1,5 @@
 import React from 'react';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Popular dog breeds
@@ -24,10 +25,19 @@ interface BreedSelectorProps {
   petType: 'dog' | 'cat';
   value: string;
   onChange: (breed: string) => void;
+  customBreed?: string;
+  onCustomBreedChange?: (value: string) => void;
   required?: boolean;
 }
 
-const BreedSelector: React.FC<BreedSelectorProps> = ({ petType, value, onChange, required }) => {
+const BreedSelector: React.FC<BreedSelectorProps> = ({
+  petType,
+  value,
+  onChange,
+  customBreed = '',
+  onCustomBreedChange,
+  required,
+}) => {
   const breeds = petType === 'dog' ? DOG_BREEDS : CAT_BREEDS;
   
   return (
@@ -47,6 +57,15 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({ petType, value, onChange,
           ))}
         </SelectContent>
       </Select>
+      {value === 'Other' && (
+        <Input
+          type="text"
+          value={customBreed}
+          onChange={(e) => onCustomBreedChange?.(e.target.value)}
+          placeholder={`Write your ${petType} breed`}
+          className="mt-2"
+        />
+      )}
     </div>
   );
 };

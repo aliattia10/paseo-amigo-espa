@@ -24,6 +24,8 @@ const DogOwnerProfileSetup: React.FC = () => {
     name: '',
     age: '',
     breed: '',
+    customBreed: '',
+    petSize: 'medium' as 'small' | 'medium' | 'large',
     notes: '',
     imageUrl: '',
     temperament: [] as string[],
@@ -134,6 +136,9 @@ const DogOwnerProfileSetup: React.FC = () => {
       
       // Use photos array for multi-image support
       const imageUrlJson = JSON.stringify(photos.filter(p => p));
+      const resolvedBreed = petData.breed === 'Other'
+        ? (petData.customBreed.trim() || 'Other')
+        : (petData.breed || null);
       
       // Verify user is logged in
       if (!currentUser) {
@@ -151,7 +156,9 @@ const DogOwnerProfileSetup: React.FC = () => {
           name: petData.name,
           pet_type: petType,
           age: petData.age,
-          breed: petData.breed || null,
+          breed: resolvedBreed,
+          breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
+          pet_size: petData.petSize,
           notes: petData.notes,
           image_url: imageUrlJson,
           temperament: petData.temperament,
@@ -180,7 +187,9 @@ const DogOwnerProfileSetup: React.FC = () => {
               owner_id: currentUser!.id,
               name: petData.name,
               age: petData.age,
-              breed: petData.breed || null,
+              breed: resolvedBreed,
+              breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
+              pet_size: petData.petSize,
               notes: petData.notes,
               image_url: imageUrlJson,
               temperament: petData.temperament,
@@ -352,7 +361,32 @@ const DogOwnerProfileSetup: React.FC = () => {
               petType={petType} 
               value={petData.breed} 
               onChange={(breed) => setPetData({ ...petData, breed })}
+              customBreed={petData.customBreed}
+              onCustomBreedChange={(customBreed) => setPetData({ ...petData, customBreed })}
             />
+          </div>
+
+          {/* Pet Size */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+              {t('pet.size', 'Size')} <span className="text-red-500">*</span>
+            </label>
+            <div className="flex gap-2">
+              {(['small', 'medium', 'large'] as const).map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setPetData({ ...petData, petSize: size })}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors capitalize ${
+                    petData.petSize === size
+                      ? 'bg-primary text-white'
+                      : 'bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark border border-border-light dark:border-border-dark'
+                  }`}
+                >
+                  {t(`pet.size.${size}`, size)}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Energy Level - Required */}
