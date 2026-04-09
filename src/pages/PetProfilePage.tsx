@@ -5,15 +5,21 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { formatPetAge, parseLegacyAge } from '@/lib/pet-age';
 
 interface Pet {
   id: string;
   name: string;
   pet_type: 'dog' | 'cat';
   age: string;
+  age_years?: number | null;
+  age_months?: number | null;
   breed: string;
   breed_custom?: string | null;
   pet_size?: 'small' | 'medium' | 'large' | null;
+  allergies?: string | null;
+  health_issues?: string | null;
+  special_needs?: string | null;
   notes: string;
   image_url: string;
   owner_id: string;
@@ -117,6 +123,12 @@ const PetProfilePage: React.FC = () => {
   }
 
   const mainPhoto = imageUrls[currentImageIndex] || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + pet.name;
+  const parsedLegacyAge = parseLegacyAge(pet.age);
+  const displayAge = formatPetAge(
+    pet.age_years ?? parsedLegacyAge.ageYears,
+    pet.age_months ?? parsedLegacyAge.ageMonths,
+    pet.age
+  );
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark max-w-md mx-auto">
@@ -232,7 +244,7 @@ const PetProfilePage: React.FC = () => {
                 {t('profile.age')}
               </p>
               <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
-                {pet.age}
+                {displayAge}
               </p>
             </div>
             <div className="text-center">
@@ -253,6 +265,32 @@ const PetProfilePage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Health & Care */}
+        {(pet.allergies || pet.health_issues || pet.special_needs) && (
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+            <h3 className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark mb-3">
+              {t('pet.healthAndCare', 'Health & Care')}
+            </h3>
+            <div className="space-y-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+              {pet.allergies && (
+                <p>
+                  <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{t('pet.allergies', 'Allergies')}:</span> {pet.allergies}
+                </p>
+              )}
+              {pet.health_issues && (
+                <p>
+                  <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{t('pet.healthIssues', 'Health Issues')}:</span> {pet.health_issues}
+                </p>
+              )}
+              {pet.special_needs && (
+                <p>
+                  <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{t('pet.specialNeeds', 'Special Needs')}:</span> {pet.special_needs}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Notes Section */}
         {pet.notes && (

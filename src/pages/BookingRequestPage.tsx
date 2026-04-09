@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { formatPetAge, parseLegacyAge } from '@/lib/pet-age';
 
 const resolvePrimaryPetImage = (raw?: string | null): string | undefined => {
   if (!raw) return undefined;
@@ -41,7 +42,19 @@ const BookingRequestPage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [dogs, setDogs] = useState<Array<{ id: string; name: string; image_url?: string; image_preview?: string; pet_type?: 'dog' | 'cat' }>>([]);
+  const [dogs, setDogs] = useState<Array<{
+    id: string;
+    name: string;
+    age?: string | null;
+    age_years?: number | null;
+    age_months?: number | null;
+    allergies?: string | null;
+    health_issues?: string | null;
+    special_needs?: string | null;
+    image_url?: string;
+    image_preview?: string;
+    pet_type?: 'dog' | 'cat';
+  }>>([]);
 
   // Fetch user's dogs
   React.useEffect(() => {
@@ -51,7 +64,7 @@ const BookingRequestPage: React.FC = () => {
       try {
         const { supabase } = await import('@/integrations/supabase/client');
         const res = await Promise.race([
-          supabase.from('pets').select('id, name, image_url, pet_type').eq('owner_id', currentUser.id),
+          supabase.from('pets').select('id, name, age, age_years, age_months, allergies, health_issues, special_needs, image_url, pet_type').eq('owner_id', currentUser.id),
           new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
         ]);
         if (!res || !res.data) return;
@@ -78,6 +91,7 @@ const BookingRequestPage: React.FC = () => {
   const discountEligibleHours = Math.min(formData.duration, 10); // up to 10 hours
   const referralDiscount = hasReferralCode ? hourlyRate * discountEligibleHours * 0.05 : 0;
   const total = subtotal + platformFee - referralDiscount; // Total price (what owner pays)
+  const selectedPet = dogs.find((d) => d.id === formData.dogId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,11 +242,44 @@ const BookingRequestPage: React.FC = () => {
                     <span className="font-medium">
                       {dog.pet_type === 'cat' ? '🐱' : '🐶'} {dog.name}
                     </span>
+                    <span className="text-xs opacity-80 ml-auto">
+                      {formatPetAge(
+                        dog.age_years ?? parseLegacyAge(dog.age).ageYears,
+                        dog.age_months ?? parseLegacyAge(dog.age).ageMonths,
+                        dog.age
+                      )}
+                    </span>
                   </button>
                 ))}
               </div>
             )}
           </div>
+
+          {/* Selected Pet Health & Care */}
+          {selectedPet && (selectedPet.allergies || selectedPet.health_issues || selectedPet.special_needs) && (
+            <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+                {t('pet.healthAndCare', 'Health & Care')}
+              </h3>
+              <div className="space-y-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                {selectedPet.allergies && (
+                  <p>
+                    <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{t('pet.allergies', 'Allergies')}:</span> {selectedPet.allergies}
+                  </p>
+                )}
+                {selectedPet.health_issues && (
+                  <p>
+                    <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{t('pet.healthIssues', 'Health Issues')}:</span> {selectedPet.health_issues}
+                  </p>
+                )}
+                {selectedPet.special_needs && (
+                  <p>
+                    <span className="font-semibold text-text-primary-light dark:text-text-primary-dark">{t('pet.specialNeeds', 'Special Needs')}:</span> {selectedPet.special_needs}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Date Selection */}
           <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">

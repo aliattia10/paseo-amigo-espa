@@ -48,9 +48,13 @@ export interface Pet {
   name: string;
   petType: 'dog' | 'cat';
   age: string;
+  ageYears?: number | null;
+  ageMonths?: number | null;
   breed?: string;
   customBreed?: string;
   petSize?: 'small' | 'medium' | 'large';
+  allergies?: string;
+  healthIssues?: string;
   notes: string;
   imageUrl?: string;
   /** Current status e.g. Happy, Sleepy, Energetic */

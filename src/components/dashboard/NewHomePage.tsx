@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import i18n from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { calculateDistance } from '@/lib/distance';
+import { parseLegacyAge } from '@/lib/pet-age';
 
 /** Seed/demo users from SQL migrations (a1000000-* sitters, b2000000-* owners) — exclude from discovery */
 function isDemoUserId(id: string | undefined | null): boolean {
@@ -187,9 +188,9 @@ const NewHomePage: React.FC = () => {
             ]).catch(() => null); // never throw — location is optional
 
         const petsPromise = Promise.race([
-          supabase
+          (supabase as any)
             .from('pets')
-            .select(`id, name, age, image_url, owner_id, pet_type, breed, mood, personality_tags, users!pets_owner_id_fkey (latitude, longitude)`)
+            .select(`id, name, age, age_years, age_months, image_url, owner_id, pet_type, breed, mood, personality_tags, users!pets_owner_id_fkey (latitude, longitude)`)
             .neq('owner_id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
           new Promise<{ data: null; error: { message: string } }>((resolve) =>
@@ -198,7 +199,7 @@ const NewHomePage: React.FC = () => {
         ]);
 
         const sittersPromise = Promise.race([
-          supabase
+          (supabase as any)
             .from('users')
             .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude, rating, review_count, verified, years_experience, pets_cared_for, hobbies')
             .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
@@ -255,7 +256,12 @@ const NewHomePage: React.FC = () => {
             return {
               id: pet.id,
               name: pet.name,
-              age: pet.age ? parseInt(pet.age) : undefined,
+              age: (() => {
+                if (pet.age_years != null && Number.isFinite(Number(pet.age_years))) return Number(pet.age_years);
+                if (pet.age_months != null && Number.isFinite(Number(pet.age_months)) && Number(pet.age_months) > 0) return 0;
+                const legacy = parseLegacyAge(pet.age);
+                return legacy.ageYears ?? undefined;
+              })(),
               distance,
               rating: 0,
               reviewCount: 0,

@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
 import BreedSelector from '@/components/pet/BreedSelector';
+import { formatPetAge, parseLegacyAge } from '@/lib/pet-age';
 
 const PetEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -25,9 +26,14 @@ const PetEditPage: React.FC = () => {
     name: '',
     petType: 'dog' as 'dog' | 'cat',
     age: '',
+    ageYears: '' as string,
+    ageMonths: '' as string,
     breed: '',
     customBreed: '',
     petSize: 'medium' as 'small' | 'medium' | 'large',
+    allergies: '',
+    healthIssues: '',
+    specialNeeds: '',
     notes: '',
     imageUrls: [] as string[], // Changed to array for multiple images
   });
@@ -73,9 +79,14 @@ const PetEditPage: React.FC = () => {
             name: dogData.name || '',
             petType: 'dog',
             age: dogData.age || '',
+            ageYears: dogData.age_years != null ? String(dogData.age_years) : '',
+            ageMonths: dogData.age_months != null ? String(dogData.age_months) : '',
             breed: dogData.breed_custom ? 'Other' : (dogData.breed || ''),
             customBreed: dogData.breed_custom || '',
             petSize: (dogData.pet_size as 'small' | 'medium' | 'large') || 'medium',
+            allergies: dogData.allergies || '',
+            healthIssues: dogData.health_issues || '',
+            specialNeeds: dogData.special_needs || '',
             notes: dogData.notes || '',
             imageUrls: imageUrls,
           });
@@ -95,13 +106,19 @@ const PetEditPage: React.FC = () => {
           }
         }
         
+        const parsedLegacy = parseLegacyAge(data.age);
         setPetData({
           name: data.name || '',
           petType: (data.pet_type as 'cat' | 'dog') || 'dog',
           age: data.age || '',
+          ageYears: data.age_years != null ? String(data.age_years) : (parsedLegacy.ageYears != null ? String(parsedLegacy.ageYears) : ''),
+          ageMonths: data.age_months != null ? String(data.age_months) : (parsedLegacy.ageMonths != null ? String(parsedLegacy.ageMonths) : ''),
           breed: data.breed_custom ? 'Other' : (data.breed || ''),
           customBreed: data.breed_custom || '',
           petSize: (data.pet_size as 'small' | 'medium' | 'large') || 'medium',
+          allergies: data.allergies || '',
+          healthIssues: data.health_issues || '',
+          specialNeeds: data.special_needs || '',
           notes: data.notes || '',
           imageUrls: imageUrls,
         });
@@ -266,7 +283,12 @@ const PetEditPage: React.FC = () => {
       return;
     }
     
-    if (!petData.age.trim()) {
+    const parsedYears = petData.ageYears.trim() === '' ? null : Number(petData.ageYears);
+    const parsedMonths = petData.ageMonths.trim() === '' ? null : Number(petData.ageMonths);
+    const validYears = parsedYears == null || (Number.isInteger(parsedYears) && parsedYears >= 0);
+    const validMonths = parsedMonths == null || (Number.isInteger(parsedMonths) && parsedMonths >= 0 && parsedMonths <= 11);
+    const hasAge = (parsedYears != null && parsedYears > 0) || (parsedMonths != null && parsedMonths > 0);
+    if (!validYears || !validMonths || !hasAge) {
       toast({
         title: t('common.error'),
         description: `Please enter your ${petData.petType}'s age`,
@@ -285,16 +307,22 @@ const PetEditPage: React.FC = () => {
       const resolvedBreed = petData.breed === 'Other'
         ? (petData.customBreed.trim() || 'Other')
         : (petData.breed || null);
+      const legacyAgeText = formatPetAge(parsedYears, parsedMonths, petData.age);
       
       const { error } = await supabase
         .from('pets')
         .update({
           name: petData.name,
           pet_type: petData.petType,
-          age: petData.age,
+          age: legacyAgeText,
+          age_years: parsedYears,
+          age_months: parsedMonths,
           breed: resolvedBreed,
           breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
           pet_size: petData.petSize,
+          allergies: petData.allergies || null,
+          health_issues: petData.healthIssues || null,
+          special_needs: petData.specialNeeds || null,
           notes: petData.notes,
           image_url: imageUrlJson,
           updated_at: new Date().toISOString(),
@@ -309,10 +337,15 @@ const PetEditPage: React.FC = () => {
             .from('dogs')
             .update({
               name: petData.name,
-              age: petData.age,
+              age: legacyAgeText,
+              age_years: parsedYears,
+              age_months: parsedMonths,
               breed: resolvedBreed,
               breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
               pet_size: petData.petSize,
+              allergies: petData.allergies || null,
+              health_issues: petData.healthIssues || null,
+              special_needs: petData.specialNeeds || null,
               notes: petData.notes,
               image_url: imageUrlJson,
               updated_at: new Date().toISOString(),
@@ -623,14 +656,30 @@ const PetEditPage: React.FC = () => {
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
               Age <span className="text-red-500">*</span>
             </label>
-            <Input
-              type="text"
-              value={petData.age}
-              onChange={(e) => setPetData({ ...petData, age: e.target.value })}
-              className="w-full"
-              placeholder="e.g., 2 years, 6 months"
-              required
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                value={petData.ageYears}
+                onChange={(e) => setPetData({ ...petData, ageYears: e.target.value })}
+                className="w-full"
+                placeholder={t('pet.ageYears', 'Years')}
+              />
+              <Input
+                type="number"
+                min={0}
+                max={11}
+                step={1}
+                value={petData.ageMonths}
+                onChange={(e) => setPetData({ ...petData, ageMonths: e.target.value })}
+                className="w-full"
+                placeholder={t('pet.ageMonths', 'Months')}
+              />
+            </div>
+            <p className="text-xs mt-2 text-text-secondary-light dark:text-text-secondary-dark">
+              {t('pet.ageHint', 'Provide years and/or months.')}
+            </p>
           </div>
 
           {/* Pet Breed */}
@@ -664,6 +713,46 @@ const PetEditPage: React.FC = () => {
                   {t(`pet.size.${size}`, size)}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Health & Care */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm space-y-3">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark">
+              {t('pet.healthAndCare', 'Health & Care')}
+            </label>
+            <div>
+              <label className="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                {t('pet.allergies', 'Allergies')}
+              </label>
+              <textarea
+                value={petData.allergies}
+                onChange={(e) => setPetData({ ...petData, allergies: e.target.value })}
+                className="w-full min-h-[70px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
+                placeholder={t('pet.allergiesPlaceholder', 'e.g., chicken allergy, pollen allergy')}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                {t('pet.healthIssues', 'Health Issues')}
+              </label>
+              <textarea
+                value={petData.healthIssues}
+                onChange={(e) => setPetData({ ...petData, healthIssues: e.target.value })}
+                className="w-full min-h-[70px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
+                placeholder={t('pet.healthIssuesPlaceholder', 'e.g., daily medication, chronic condition')}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                {t('pet.specialNeeds', 'Special Needs')}
+              </label>
+              <textarea
+                value={petData.specialNeeds}
+                onChange={(e) => setPetData({ ...petData, specialNeeds: e.target.value })}
+                className="w-full min-h-[70px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
+                placeholder={t('pet.specialNeedsPlaceholder', 'General care instructions')}
+              />
             </div>
           </div>
 

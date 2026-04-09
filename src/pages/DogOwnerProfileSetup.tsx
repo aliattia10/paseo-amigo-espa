@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import PetTypeSelector from '@/components/pet/PetTypeSelector';
 import BreedSelector from '@/components/pet/BreedSelector';
 import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
+import { formatPetAge } from '@/lib/pet-age';
 
 const DogOwnerProfileSetup: React.FC = () => {
   const { t } = useTranslation();
@@ -22,7 +23,8 @@ const DogOwnerProfileSetup: React.FC = () => {
   const [petType, setPetType] = useState<'dog' | 'cat'>('dog');
   const [petData, setPetData] = useState({
     name: '',
-    age: '',
+    ageYears: '' as string,
+    ageMonths: '' as string,
     breed: '',
     customBreed: '',
     petSize: 'medium' as 'small' | 'medium' | 'large',
@@ -30,6 +32,8 @@ const DogOwnerProfileSetup: React.FC = () => {
     imageUrl: '',
     temperament: [] as string[],
     specialNeeds: '',
+    allergies: '',
+    healthIssues: '',
     energyLevel: 'medium' as 'low' | 'medium' | 'high',
   });
   const [photos, setPhotos] = useState<string[]>([]);
@@ -111,7 +115,13 @@ const DogOwnerProfileSetup: React.FC = () => {
       return;
     }
     
-    if (!petData.age.trim()) {
+    const parsedYears = petData.ageYears.trim() === '' ? null : Number(petData.ageYears);
+    const parsedMonths = petData.ageMonths.trim() === '' ? null : Number(petData.ageMonths);
+    const validYears = parsedYears == null || (Number.isInteger(parsedYears) && parsedYears >= 0);
+    const validMonths = parsedMonths == null || (Number.isInteger(parsedMonths) && parsedMonths >= 0 && parsedMonths <= 11);
+    const hasAge = (parsedYears != null && parsedYears > 0) || (parsedMonths != null && parsedMonths > 0);
+
+    if (!validYears || !validMonths || !hasAge) {
       toast({
         title: t('common.error'),
         description: t('pet.enterAge', { type: petType === 'dog' ? t('pet.dog') : t('pet.cat') }),
@@ -139,6 +149,7 @@ const DogOwnerProfileSetup: React.FC = () => {
       const resolvedBreed = petData.breed === 'Other'
         ? (petData.customBreed.trim() || 'Other')
         : (petData.breed || null);
+      const legacyAgeText = formatPetAge(parsedYears, parsedMonths, null);
       
       // Verify user is logged in
       if (!currentUser) {
@@ -155,7 +166,9 @@ const DogOwnerProfileSetup: React.FC = () => {
           owner_id: currentUser.id,
           name: petData.name,
           pet_type: petType,
-          age: petData.age,
+          age: legacyAgeText,
+          age_years: parsedYears,
+          age_months: parsedMonths,
           breed: resolvedBreed,
           breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
           pet_size: petData.petSize,
@@ -163,6 +176,8 @@ const DogOwnerProfileSetup: React.FC = () => {
           image_url: imageUrlJson,
           temperament: petData.temperament,
           special_needs: petData.specialNeeds || null,
+          allergies: petData.allergies || null,
+          health_issues: petData.healthIssues || null,
           energy_level: petData.energyLevel,
         })
         .select()
@@ -186,7 +201,9 @@ const DogOwnerProfileSetup: React.FC = () => {
             .insert({
               owner_id: currentUser!.id,
               name: petData.name,
-              age: petData.age,
+              age: legacyAgeText,
+              age_years: parsedYears,
+              age_months: parsedMonths,
               breed: resolvedBreed,
               breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
               pet_size: petData.petSize,
@@ -194,6 +211,8 @@ const DogOwnerProfileSetup: React.FC = () => {
               image_url: imageUrlJson,
               temperament: petData.temperament,
               special_needs: petData.specialNeeds || null,
+              allergies: petData.allergies || null,
+              health_issues: petData.healthIssues || null,
               energy_level: petData.energyLevel,
             });
           
@@ -345,14 +364,30 @@ const DogOwnerProfileSetup: React.FC = () => {
             <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
               {t('pet.age')} <span className="text-red-500">*</span>
             </label>
-            <Input
-              type="text"
-              value={petData.age}
-              onChange={(e) => setPetData({ ...petData, age: e.target.value })}
-              className="w-full"
-              placeholder={t('pet.agePlaceholder')}
-              required
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                value={petData.ageYears}
+                onChange={(e) => setPetData({ ...petData, ageYears: e.target.value })}
+                className="w-full"
+                placeholder={t('pet.ageYears', 'Years')}
+              />
+              <Input
+                type="number"
+                min={0}
+                max={11}
+                step={1}
+                value={petData.ageMonths}
+                onChange={(e) => setPetData({ ...petData, ageMonths: e.target.value })}
+                className="w-full"
+                placeholder={t('pet.ageMonths', 'Months')}
+              />
+            </div>
+            <p className="text-xs mt-2 text-text-secondary-light dark:text-text-secondary-dark">
+              {t('pet.ageHint', 'Provide years and/or months.')}
+            </p>
           </div>
 
           {/* Pet Breed - Optional */}
@@ -437,6 +472,35 @@ const DogOwnerProfileSetup: React.FC = () => {
                   {t(`pet.trait.${trait.replace(/\s+/g, '')}` as any) || trait}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Health & Care - Optional */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm space-y-3">
+            <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark">
+              {t('pet.healthAndCare', 'Health & Care')}
+            </label>
+            <div>
+              <label className="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                {t('pet.allergies', 'Allergies')}
+              </label>
+              <textarea
+                value={petData.allergies}
+                onChange={(e) => setPetData({ ...petData, allergies: e.target.value })}
+                className="w-full min-h-[70px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
+                placeholder={t('pet.allergiesPlaceholder', 'e.g., chicken allergy, pollen allergy')}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                {t('pet.healthIssues', 'Health Issues')}
+              </label>
+              <textarea
+                value={petData.healthIssues}
+                onChange={(e) => setPetData({ ...petData, healthIssues: e.target.value })}
+                className="w-full min-h-[70px] p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark"
+                placeholder={t('pet.healthIssuesPlaceholder', 'e.g., daily medication, chronic condition')}
+              />
             </div>
           </div>
 

@@ -132,9 +132,13 @@ export const createDog = async (dogData: Omit<Dog, 'id' | 'createdAt' | 'updated
       owner_id: dogData.ownerId,
       name: dogData.name,
       age: dogData.age,
+      age_years: dogData.ageYears,
+      age_months: dogData.ageMonths,
       breed: dogData.breed,
       breed_custom: dogData.customBreed,
       pet_size: dogData.petSize,
+      allergies: dogData.allergies,
+      health_issues: dogData.healthIssues,
       notes: dogData.notes,
       image_url: dogData.imageUrl,
     })
@@ -161,9 +165,13 @@ export const getDogsByOwner = async (ownerId: string): Promise<Dog[]> => {
     ownerId: dog.owner_id,
     name: dog.name,
     age: dog.age || '0',
+    ageYears: dog.age_years ?? null,
+    ageMonths: dog.age_months ?? null,
     breed: dog.breed || '',
     customBreed: dog.breed_custom || undefined,
     petSize: (dog.pet_size as 'small' | 'medium' | 'large' | null) || undefined,
+    allergies: dog.allergies || undefined,
+    healthIssues: dog.health_issues || undefined,
     notes: dog.notes || '',
     imageUrl: dog.image_url || undefined,
     createdAt: new Date(dog.created_at),
@@ -176,9 +184,13 @@ export const updateDog = async (dogId: string, dogData: Partial<Dog>) => {
   
   if (dogData.name) updateData.name = dogData.name;
   if (dogData.age) updateData.age = dogData.age;
+  if (dogData.ageYears !== undefined) updateData.age_years = dogData.ageYears;
+  if (dogData.ageMonths !== undefined) updateData.age_months = dogData.ageMonths;
   if (dogData.breed !== undefined) updateData.breed = dogData.breed;
   if (dogData.customBreed !== undefined) updateData.breed_custom = dogData.customBreed;
   if (dogData.petSize !== undefined) updateData.pet_size = dogData.petSize;
+  if (dogData.allergies !== undefined) updateData.allergies = dogData.allergies;
+  if (dogData.healthIssues !== undefined) updateData.health_issues = dogData.healthIssues;
   if (dogData.notes) updateData.notes = dogData.notes;
   if (dogData.imageUrl !== undefined) updateData.image_url = dogData.imageUrl;
   
