@@ -269,19 +269,29 @@ const NotificationsPage: React.FC = () => {
   return (
     <div className="relative mx-auto flex h-screen max-w-md flex-col bg-background-light dark:bg-background-dark overflow-y-auto">
       {/* Top App Bar */}
-      <header className="sticky top-0 z-10 flex items-center justify-between bg-card-light/80 dark:bg-card-dark/80 px-4 py-3 backdrop-blur-sm">
-        <h1 className="text-text-primary-light dark:text-text-primary-dark text-xl font-bold leading-tight tracking-[-0.015em]">
+      <header className="sticky top-0 z-10 flex items-center gap-2 bg-card-light/95 dark:bg-card-dark/95 px-4 py-3 backdrop-blur-sm border-b border-border-light dark:border-border-dark">
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard')}
+          className="shrink-0 -ml-1 rounded-lg p-1 text-text-primary-light dark:text-text-primary-dark hover:bg-black/5 dark:hover:bg-white/10"
+          aria-label={t('common.back', 'Back')}
+        >
+          <span className="material-symbols-outlined text-2xl leading-none">arrow_back</span>
+        </button>
+        <h1 className="min-w-0 flex-1 text-center text-text-primary-light dark:text-text-primary-dark text-xl font-bold leading-tight tracking-[-0.015em] truncate">
           {t('notifications.title')}
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
+            type="button"
             onClick={markAllAsRead}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors text-sm font-medium"
+            className="flex items-center gap-1 px-2 py-1.5 sm:px-3 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors text-xs sm:text-sm font-medium"
           >
             <span className="material-symbols-outlined text-base">done_all</span>
-            {t('notifications.markAllRead', 'Mark all read')}
+            <span className="hidden sm:inline">{t('notifications.markAllRead', 'Mark all read')}</span>
           </button>
           <button
+            type="button"
             onClick={() => {
               const languages = ['en', 'es', 'fr'];
               const currentIndex = languages.indexOf(i18n.language);

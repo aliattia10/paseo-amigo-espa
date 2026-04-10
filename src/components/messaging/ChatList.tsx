@@ -253,7 +253,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex min-h-[12rem] flex-1 items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta mx-auto mb-2"></div>
           <p className="text-muted-foreground">{t('messages.loadingMessages') || t('common.loading') || 'Loading...'}</p>

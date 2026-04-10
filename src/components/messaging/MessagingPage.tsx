@@ -186,9 +186,9 @@ const MessagingPage: React.FC = () => {
 
   if (authLoading || !currentUser?.id) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-stitch-bg-light dark:bg-background-dark">
+      <div className="relative mx-auto flex h-screen w-full max-w-md flex-col items-center justify-center bg-background-light dark:bg-background-dark p-6">
         <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent" />
-        <p className="mt-4 text-stitch-text-secondary-light dark:text-text-secondary-dark">{t('common.loading', 'Loading...')}</p>
+        <p className="mt-4 text-text-secondary-light dark:text-text-secondary-dark">{t('common.loading', 'Loading...')}</p>
       </div>
     );
   }
@@ -208,40 +208,38 @@ const MessagingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-stitch-bg-light dark:bg-background-dark pb-20 w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="bg-stitch-card-light dark:bg-card-dark shadow-md border-b border-stitch-border-light dark:border-border-dark sticky top-0 z-50">
-        <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/dashboard')}
-                className="rounded-xl"
-              >
-                <span className="material-symbols-outlined">arrow_back</span>
-              </Button>
-              <h1 className="text-xl font-bold text-stitch-text-primary-light dark:text-text-primary-dark font-display">
-                {t('dashboard.messages')}
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={markAllMessagesRead}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors text-xs font-medium"
-              >
-                <span className="material-symbols-outlined text-sm">done_all</span>
-                {t('notifications.markAllRead', 'Mark all read')}
-              </button>
-              <LanguageSwitcher />
-            </div>
+    <div className="relative mx-auto flex h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark">
+      <header className="sticky top-0 z-20 shrink-0 border-b border-border-light dark:border-border-dark bg-card-light/95 dark:bg-card-dark/95 backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-2 px-4 py-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/dashboard')}
+              className="shrink-0 rounded-xl"
+              aria-label={t('common.back', 'Back')}
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+            </Button>
+            <h1 className="truncate text-xl font-bold text-text-primary-light dark:text-text-primary-dark">
+              {t('dashboard.messages')}
+            </h1>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              onClick={markAllMessagesRead}
+              className="flex items-center gap-1 px-2 py-1.5 sm:px-2.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors text-xs font-medium"
+            >
+              <span className="material-symbols-outlined text-sm">done_all</span>
+              <span className="hidden sm:inline">{t('notifications.markAllRead', 'Mark all read')}</span>
+            </button>
+            <LanguageSwitcher />
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="flex-1 flex flex-col min-h-0 w-full px-4 pt-4 pb-1">
-        {/* Chat List or Chat Window */}
+      <div className="flex min-h-0 flex-1 flex-col px-4 pb-24 pt-4">
         {selectedChat ? (
           <ChatWindow
             walkRequest={selectedChat.walkRequest}
@@ -254,7 +252,6 @@ const MessagingPage: React.FC = () => {
         )}
       </div>
 
-      {/* Bottom Navigation */}
       <BottomNavigation unreadNotifications={unreadNotifications} />
     </div>
   );

@@ -309,7 +309,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex min-h-[12rem] flex-1 items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta mx-auto mb-2"></div>
           <p className="text-muted-foreground">{t('messages.loadingMessages')}</p>
@@ -319,7 +319,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   }
 
   return (
-    <Card className="flex flex-col flex-1 min-h-[400px] h-[calc(100vh-180px)] md:max-h-[none] max-h-[calc(100vh-160px)] bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark w-full">
+    <Card className="flex min-h-0 flex-1 flex-col overflow-hidden bg-card-light dark:bg-card-dark border-border-light dark:border-border-dark w-full">
       <CardHeader className="flex-shrink-0 border-b border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark">
         <div className="flex items-center gap-3">
           <Button
