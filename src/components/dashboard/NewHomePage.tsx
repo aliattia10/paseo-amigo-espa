@@ -59,7 +59,7 @@ const NewHomePage: React.FC = () => {
   const [realPetProfiles, setRealPetProfiles] = useState<any[]>([]);
   const [realSitterProfiles, setRealSitterProfiles] = useState<any[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
-  const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
+  const [profileLoadError, setProfileLoadError] = useState(false);
   const [profileRetryKey, setProfileRetryKey] = useState(0);
   const loadingProfilesRef = useRef(false);
   const [likedProfileIds, setLikedProfileIds] = useState<Set<string>>(new Set());
@@ -90,21 +90,6 @@ const NewHomePage: React.FC = () => {
     sortBy: 'distance',
   });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
-
-  // One-time safety: stop loading after 8s so UI never sticks on spinner
-  React.useEffect(() => {
-    const SAFETY_MS = 8000;
-    const id = setTimeout(() => {
-      setLoadingProfiles((prev) => {
-        if (prev) {
-          setProfileLoadError((e) => (e ? e : 'fetch'));
-          return false;
-        }
-        return prev;
-      });
-    }, SAFETY_MS);
-    return () => clearTimeout(id);
-  }, []);
 
   // Load user's likes and passes from Supabase
   React.useEffect(() => {
@@ -161,17 +146,17 @@ const NewHomePage: React.FC = () => {
 
   // Load real profiles from Supabase
   React.useEffect(() => {
-    // Aggressive timeouts: fail fast when Supabase is offline/paused
-    const REQUEST_TIMEOUT_MS = 5000;
+    // Per-query timeout — keep above typical mobile latency to avoid false failures
+    const REQUEST_TIMEOUT_MS = 15000;
 
     const loadProfiles = async () => {
       if (!currentUser?.id) {
         setLoadingProfiles(false);
-        setProfileLoadError(null);
+        setProfileLoadError(false);
         loadingProfilesRef.current = false;
         return;
       }
-      setProfileLoadError(null);
+      setProfileLoadError(false);
       loadingProfilesRef.current = true;
       try {
         // Fetch user location AND both profile sets in parallel so total wait = max(each)
@@ -227,14 +212,18 @@ const NewHomePage: React.FC = () => {
         const sitters = sittersRes?.data ?? null;
         const sittersError = sittersRes?.error ?? null;
 
-        const isOffline = (err: { message?: string } | null) => {
-          const msg = err?.message ?? '';
-          return /failed to fetch|network|blocked|load failed|timed out|service unavailable|503/i.test(msg);
-        };
-
         if (petsError) {
           if (import.meta.env.DEV) console.warn('[NewHomePage] Pets fetch failed:', petsError.message);
-          setProfileLoadError('fetch');
+        }
+
+        const needPetsList = userRole === 'sitter';
+        const needSittersList = userRole === 'owner';
+        const failedForCurrentRole =
+          (needPetsList && !!petsError) || (needSittersList && !!sittersError);
+        if (failedForCurrentRole) {
+          setProfileLoadError(true);
+          if (needSittersList) setRealSitterProfiles([]);
+          if (needPetsList) setRealPetProfiles([]);
         }
         if (!petsError && pets) {
           const petsNoDemo = pets.filter((pet: { owner_id?: string }) => !isDemoUserId(pet.owner_id));
@@ -278,7 +267,6 @@ const NewHomePage: React.FC = () => {
 
         if (sittersError) {
           if (import.meta.env.DEV) console.warn('[NewHomePage] Sitters fetch failed:', sittersError.message);
-          setProfileLoadError('fetch');
         }
         if (!sittersError && sitters && sitters.length > 0) {
           const realSitters = sitters.filter(
@@ -317,13 +305,11 @@ const NewHomePage: React.FC = () => {
           setRealSitterProfiles(sitterProfiles);
         }
 
-        // If BOTH failed with network/offline errors, mark isOffline for cleaner UI
-        if (petsError && sittersError && isOffline(petsError) && isOffline(sittersError)) {
-          setProfileLoadError('fetch');
-        }
       } catch (error) {
         if (import.meta.env.DEV) console.error('[NewHomePage] Error loading profiles:', error);
-        setProfileLoadError('fetch');
+        setProfileLoadError(true);
+        setRealPetProfiles([]);
+        setRealSitterProfiles([]);
       } finally {
         loadingProfilesRef.current = false;
         setLoadingProfiles(false);
@@ -333,9 +319,11 @@ const NewHomePage: React.FC = () => {
     const timeoutId = setTimeout(() => {
       setLoadingProfiles(false);
       if (loadingProfilesRef.current) {
-        setProfileLoadError('fetch');
+        setProfileLoadError(true);
+        setRealPetProfiles([]);
+        setRealSitterProfiles([]);
       }
-    }, 15000);
+    }, 20000);
 
     loadProfiles();
 
@@ -367,14 +355,14 @@ const NewHomePage: React.FC = () => {
   }, [currentUserId, userRole, locationEnabled, profileRetryKey, location?.latitude, location?.longitude]);
 
   const handleRetryProfiles = () => {
-    setProfileLoadError(null);
+    setProfileLoadError(false);
     setLoadingProfiles(true);
     setRealPetProfiles([]);
     setRealSitterProfiles([]);
     setCurrentIndex(0);
     setProfileRetryKey((k) => k + 1);
   };
-  
+
   // No mock data - only show real profiles from database
 
   // Load saved preferences from localStorage on mount (only UI preferences, not swipe data)
@@ -916,16 +904,6 @@ const NewHomePage: React.FC = () => {
         </div>
       </header>
 
-      {/* Network error hint */}
-      {profileLoadError === 'fetch' && (
-        <div className="shrink-0 mx-4 mb-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 max-w-md mx-auto w-full">
-          <p className="text-sm text-red-700 dark:text-red-300 mb-2">{t('common.networkBlockedHint')}</p>
-          <Button size="sm" variant="outline" className="text-red-700 dark:text-red-300 border-red-300 dark:border-red-700" onClick={handleRetryProfiles}>
-            {t('common.retry')}
-          </Button>
-        </div>
-      )}
-
       {/* Card Stack */}
       <main className="flex-1 flex flex-col items-center px-3 overflow-hidden max-w-md mx-auto w-full">
         <div className="relative w-full flex-1 flex items-center justify-center" style={{ maxHeight: 'calc(100vh - 240px)' }}>
@@ -933,6 +911,21 @@ const NewHomePage: React.FC = () => {
             <div className="flex flex-col items-center justify-center h-full">
               <div className="animate-spin rounded-full h-10 w-10 border-2 border-home-primary border-t-transparent mb-3"></div>
               <p className="text-gray-500 dark:text-gray-400 text-sm">{t('home.loadingProfiles')}</p>
+            </div>
+          ) : profileLoadError && profiles.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center max-w-sm w-full">
+              <span className="material-symbols-outlined text-5xl text-amber-500/90 mb-3">wifi_off</span>
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">
+                {t('home.profilesLoadTitle')}
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-5">{t('home.profilesLoadHint')}</p>
+              <Button
+                size="sm"
+                className="bg-home-primary hover:opacity-90 text-white"
+                onClick={handleRetryProfiles}
+              >
+                {t('common.retry')}
+              </Button>
             </div>
           ) : profiles.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
