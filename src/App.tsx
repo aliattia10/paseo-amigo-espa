@@ -64,6 +64,8 @@ import { useLocation } from 'react-router-dom';
 import { createUser } from "@/lib/supabase-services";
 import { useToast } from "@/hooks/use-toast";
 import { checkSupabaseConnectivity, logConnectivityResult } from "@/lib/supabase-connectivity";
+import { requiresEmailVerification } from "@/lib/auth-email-verification";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 
 const queryClient = new QueryClient();
 
@@ -627,8 +629,11 @@ const OnboardingFlow = () => {
 
 // Protected Route Component – never show loading longer than 5s
 const PROTECTED_ROUTE_MAX_LOADING_MS = 5000;
+const VERIFY_EMAIL_PATH = '/verify-email';
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
+  const location = useLocation();
   const [giveUpLoading, setGiveUpLoading] = useState(false);
 
   useEffect(() => {
@@ -653,7 +658,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  return currentUser ? <>{children}</> : <Navigate to="/auth" />;
+  if (!currentUser) {
+    return <Navigate to="/auth" />;
+  }
+  if (requiresEmailVerification(currentUser) && location.pathname !== VERIFY_EMAIL_PATH) {
+    return <Navigate to={VERIFY_EMAIL_PATH} replace />;
+  }
+  return <>{children}</>;
 };
 
 // Dashboard Router Component
@@ -743,6 +754,7 @@ const App = () => (
                 <Route path="/admin/blog/edit/:id" element={<AdminGuard><AdminBlogPage /></AdminGuard>} />
                 
                 {/* Protected Routes */}
+                <Route path="/verify-email" element={<ProtectedRoute><VerifyEmailPage /></ProtectedRoute>} />
                 <Route path="/verify-identity" element={<ProtectedRoute><VerifyIdentityPage /></ProtectedRoute>} />
                 <Route path="/verify-identity-done" element={<ProtectedRoute><VerifyIdentityDonePage /></ProtectedRoute>} />
                 <Route 

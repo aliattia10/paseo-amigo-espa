@@ -10,6 +10,7 @@ import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { playNotificationSound } from '@/lib/sounds';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import { signInWithGoogle } from '@/lib/google-auth';
+import { requiresEmailVerification } from '@/lib/auth-email-verification';
 
 const OAUTH_SIGNUP_ROLE_KEY = 'oauth_signup_role';
 
@@ -26,6 +27,7 @@ const AuthNew = () => {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
+  const [resendVerificationBusy, setResendVerificationBusy] = useState(false);
 
   // Form state
   const [email, setEmail] = useState('');
@@ -47,7 +49,11 @@ const AuthNew = () => {
         );
         const { data } = await Promise.race([sessionPromise, timeoutPromise]);
         if (data?.session?.user && mode === 'login') {
-          navigate('/dashboard');
+          if (requiresEmailVerification(data.session.user)) {
+            navigate('/verify-email', { replace: true });
+          } else {
+            navigate('/dashboard');
+          }
         }
       } catch {
         // Ignore; show login form
@@ -59,7 +65,11 @@ const AuthNew = () => {
   // When auth state arrives late (e.g. after loading timeout), redirect to dashboard if on login
   useEffect(() => {
     if (currentUser && mode === 'login') {
-      navigate('/dashboard');
+      if (requiresEmailVerification(currentUser)) {
+        navigate('/verify-email', { replace: true });
+      } else {
+        navigate('/dashboard');
+      }
     }
   }, [currentUser, mode, navigate]);
 
@@ -168,9 +178,34 @@ const AuthNew = () => {
           setTimeout(() => reject(new Error(timeoutMsg)), LOGIN_TIMEOUT_MS)
         );
         const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
-        if (error) throw error;
+        if (error) {
+          const msg = (error as { message?: string }).message || '';
+          if (/email not confirmed|not been confirmed|confirm your email/i.test(msg)) {
+            clearTimeout(safetyTimer);
+            toast({
+              title: t('auth.verifyEmailTitle', 'Confirm your email'),
+              description: t(
+                'auth.emailNotConfirmedLogin',
+                'Confirm your email using the link we sent. You can resend the email from the login screen using your address below.'
+              ),
+            });
+            setLoading(false);
+            return;
+          }
+          throw error;
+        }
 
         if (import.meta.env.DEV) console.log('Login successful, user:', data.user?.id);
+
+        if (requiresEmailVerification(data.user)) {
+          toast({
+            title: t('auth.verifyEmailTitle', 'Confirm your email'),
+            description: t('auth.checkEmailForConfirm', 'We sent you a verification link. Click it to activate your account, then sign in.'),
+          });
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          navigate('/verify-email', { replace: true });
+          return;
+        }
 
         toast({
           title: "Success!",
@@ -186,11 +221,15 @@ const AuthNew = () => {
           data: { session: existingSession },
         } = await supabase.auth.getSession();
         if (existingSession?.user) {
-          toast({
-            title: t('auth.alreadyLoggedInTitle', 'Already signed in'),
-            description: t('auth.alreadyLoggedInDesc', 'You already have an account and an active session.'),
-          });
-          navigate('/dashboard', { replace: true });
+          if (requiresEmailVerification(existingSession.user)) {
+            navigate('/verify-email', { replace: true });
+          } else {
+            toast({
+              title: t('auth.alreadyLoggedInTitle', 'Already signed in'),
+              description: t('auth.alreadyLoggedInDesc', 'You already have an account and an active session.'),
+            });
+            navigate('/dashboard', { replace: true });
+          }
           return;
         }
 
@@ -475,6 +514,46 @@ const AuthNew = () => {
                 </label>
               </div>
             </div>
+
+            {mode === 'login' && (
+              <div className="text-center -mt-1">
+                <button
+                  type="button"
+                  className="text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none"
+                  disabled={!email.trim() || resendVerificationBusy}
+                  onClick={async () => {
+                    setResendVerificationBusy(true);
+                    try {
+                      const { error: resendErr } = await supabase.auth.resend({
+                        type: 'signup',
+                        email: email.trim(),
+                        options: {
+                          emailRedirectTo: `${window.location.origin}/auth?confirmed=true`,
+                        },
+                      });
+                      if (resendErr) throw resendErr;
+                      toast({
+                        title: t('auth.checkEmailTitle', 'Check your email'),
+                        description: t('auth.resendVerificationSent', 'Verification email sent. Check your inbox.'),
+                      });
+                    } catch (e: unknown) {
+                      const msg = e instanceof Error ? e.message : String(e);
+                      toast({
+                        title: t('common.error', 'Error'),
+                        description: msg,
+                        variant: 'destructive',
+                      });
+                    } finally {
+                      setResendVerificationBusy(false);
+                    }
+                  }}
+                >
+                  {resendVerificationBusy
+                    ? t('common.loading', 'Loading...')
+                    : t('auth.resendVerificationEmail', 'Resend verification email')}
+                </button>
+              </div>
+            )}
 
             {mode === 'signup' && (
               <div className="flex items-start gap-3 px-1 mt-4">
