@@ -229,6 +229,17 @@ const PublicProfilePage: React.FC = () => {
               </div>
             )}
 
+            {(userProfile as any)?.hasPetExperience && (userProfile as any)?.experienceDescription && (
+              <div className="mb-4 p-3 bg-sage-green/10 dark:bg-sage-green/20 border border-sage-green/30 rounded-xl">
+                <p className="text-xs text-medium-jungle dark:text-sage-green font-semibold mb-1">
+                  Pet-sitting experience
+                </p>
+                <p className="text-sm text-text-primary-light dark:text-text-primary-dark">
+                  {(userProfile as any).experienceDescription}
+                </p>
+              </div>
+            )}
+
             {/* Hourly Rate - for sitters */}
             {userProfile?.hourlyRate && (userProfile?.userType === 'walker' || (userProfile?.userType as any) === 'sitter' || (userProfile?.userType as any) === 'both') && (
               <div className="bg-primary/10 dark:bg-primary/20 border-2 border-primary/30 rounded-xl p-3 mb-3 text-center">

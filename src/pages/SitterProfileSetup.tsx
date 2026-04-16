@@ -22,7 +22,8 @@ const SitterProfileSetup: React.FC = () => {
   const [sitterData, setSitterData] = useState<{
     bio: string;
     hourlyRate: number | '';
-    yearsExperience: number | '';
+    hasPetExperience: boolean;
+    experienceDescription: string;
     petsCaredFor: number | '';
     sitterAge: number | '';
     avatarUrl: string;
@@ -34,7 +35,8 @@ const SitterProfileSetup: React.FC = () => {
   }>({
     bio: '',
     hourlyRate: 15,
-    yearsExperience: 0,
+    hasPetExperience: false,
+    experienceDescription: '',
     petsCaredFor: 0,
     sitterAge: 18,
     avatarUrl: '',
@@ -56,10 +58,14 @@ const SitterProfileSetup: React.FC = () => {
       bio: typeof userProfile.bio === 'string' ? userProfile.bio : prev.bio,
       hourlyRate:
         typeof userProfile.hourlyRate === 'number' ? userProfile.hourlyRate : prev.hourlyRate,
-      yearsExperience:
-        typeof anyProfile.yearsExperience === 'number'
-          ? (anyProfile.yearsExperience as number)
-          : prev.yearsExperience,
+      hasPetExperience:
+        typeof anyProfile.hasPetExperience === 'boolean'
+          ? (anyProfile.hasPetExperience as boolean)
+          : prev.hasPetExperience,
+      experienceDescription:
+        typeof anyProfile.experienceDescription === 'string'
+          ? (anyProfile.experienceDescription as string)
+          : prev.experienceDescription,
       petsCaredFor:
         typeof anyProfile.petsCaredFor === 'number'
           ? (anyProfile.petsCaredFor as number)
@@ -155,7 +161,6 @@ const SitterProfileSetup: React.FC = () => {
     
     const rate = typeof sitterData.hourlyRate === 'number' ? sitterData.hourlyRate : NaN;
     const age = typeof sitterData.sitterAge === 'number' ? sitterData.sitterAge : NaN;
-    const years = typeof sitterData.yearsExperience === 'number' ? sitterData.yearsExperience : 0;
     const petsCount = typeof sitterData.petsCaredFor === 'number' ? sitterData.petsCaredFor : 0;
 
     if (!Number.isFinite(rate) || rate < 5 || rate > 500) {
@@ -170,14 +175,6 @@ const SitterProfileSetup: React.FC = () => {
       toast({
         title: t('common.error'),
         description: 'Sitter age must be between 18 and 90',
-        variant: 'destructive',
-      });
-      return;
-    }
-    if (years < 0 || years > 60) {
-      toast({
-        title: t('common.error'),
-        description: 'Years of experience must be between 0 and 60',
         variant: 'destructive',
       });
       return;
@@ -202,10 +199,13 @@ const SitterProfileSetup: React.FC = () => {
     
     setLoading(true);
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         bio: sitterData.bio,
         hourly_rate: rate,
-        years_experience: years,
+        has_pet_experience: sitterData.hasPetExperience,
+        experience_description: sitterData.hasPetExperience
+          ? sitterData.experienceDescription.trim().slice(0, 200) || null
+          : null,
         pets_cared_for: petsCount,
         sitter_age: age,
       };
@@ -217,32 +217,44 @@ const SitterProfileSetup: React.FC = () => {
         updateData.profile_image = JSON.stringify([sitterData.avatarUrl]);
       }
 
-      const { error } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', currentUser!.id);
-
-      if (error) {
-        // If table doesn't exist, provide helpful message
-        if (error.message.includes('does not exist') || error.message.includes('not find')) {
-          throw new Error('Database not set up. Please contact support or run database migrations.');
+      // Retry stripping optional columns that may not yet exist in the DB.
+      let payload = { ...updateData };
+      let lastError: { message?: string } | null = null;
+      for (let attempts = 0; attempts < 6; attempts++) {
+        const res = await supabase.from('users').update(payload).eq('id', currentUser!.id);
+        if (!res.error) {
+          lastError = null;
+          break;
         }
-        throw error;
+        lastError = res.error;
+        const match = res.error.message?.match(/Could not find the '([^']+)' column/);
+        if (match?.[1] && match[1] in payload) {
+          const next = { ...payload };
+          delete next[match[1]];
+          payload = next;
+          continue;
+        }
+        break;
+      }
+
+      if (lastError) {
+        const msg = lastError.message || '';
+        if (msg.includes('does not exist') || msg.includes('not find')) {
+          throw new Error('Database not set up. Please contact support.');
+        }
+        throw new Error('Could not save your sitter profile.');
       }
 
       toast({
         title: t('common.success'),
-        description: 'Sitter profile created! You can update your details anytime.',
+        description: 'Sitter profile saved! You can update your details anytime.',
       });
 
-      // Redirect to profile
       navigate('/profile');
-    } catch (error: any) {
-      toast({
-        title: t('common.error'),
-        description: error.message,
-        variant: 'destructive',
-      });
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Save sitter profile error:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to save sitter profile.';
+      toast({ title: t('common.error'), description: msg, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -365,20 +377,38 @@ const SitterProfileSetup: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                Years of pet care experience
+                Have you had experience sitting pets?
               </label>
-              <Input
-                type="number"
-                value={sitterData.yearsExperience}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setSitterData({ ...sitterData, yearsExperience: v === '' ? '' : Math.max(0, Number(v)) });
-                }}
-                min="0"
-                max="60"
-                placeholder="0"
-                inputMode="numeric"
-              />
+              <label className="inline-flex items-center gap-2 text-sm text-text-primary-light dark:text-text-primary-dark cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={sitterData.hasPetExperience}
+                  onChange={(e) =>
+                    setSitterData({ ...sitterData, hasPetExperience: e.target.checked })
+                  }
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                Yes, I have experience
+              </label>
+              {sitterData.hasPetExperience && (
+                <div className="mt-2">
+                  <Input
+                    type="text"
+                    value={sitterData.experienceDescription}
+                    onChange={(e) =>
+                      setSitterData({
+                        ...sitterData,
+                        experienceDescription: e.target.value.slice(0, 200),
+                      })
+                    }
+                    placeholder="e.g. 6 months, 2 years, since I was a kid"
+                    maxLength={200}
+                  />
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                    {sitterData.experienceDescription.length}/200
+                  </p>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">

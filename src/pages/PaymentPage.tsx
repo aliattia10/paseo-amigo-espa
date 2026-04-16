@@ -11,10 +11,8 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
-if (!stripeKey) {
-  console.error('❌ VITE_STRIPE_PUBLISHABLE_KEY is not set in environment variables!');
-} else {
-  console.log('Stripe initialized with key:', stripeKey.substring(0, 8) + '...');
+if (!stripeKey && import.meta.env.DEV) {
+  console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set in environment variables');
 }
 const stripePromise = loadStripe(stripeKey);
 

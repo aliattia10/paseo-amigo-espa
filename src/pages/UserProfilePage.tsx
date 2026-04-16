@@ -25,7 +25,7 @@ const UserProfilePage: React.FC = () => {
         const { supabase } = await import('@/integrations/supabase/client');
         const res = await supabase
           .from('users')
-          .select('id, name, bio, profile_image, hourly_rate, rating, review_count, city, user_type, verified, years_experience, pets_cared_for, sitter_age, hobbies')
+          .select('id, name, bio, profile_image, hourly_rate, rating, review_count, city, user_type, verified, years_experience, pets_cared_for, sitter_age, experience_description, has_pet_experience, hobbies')
           .eq('id', userId)
           .maybeSingle() as { data: Record<string, unknown> | null; error: Error | null };
         if (res.error) throw res.error;
@@ -138,6 +138,7 @@ const UserProfilePage: React.FC = () => {
                 rating={user.rating != null ? Number(user.rating) : null}
                 petsCaredFor={user.pets_cared_for != null ? Number(user.pets_cared_for) : null}
                 yearsExperience={user.years_experience != null ? Number(user.years_experience) : null}
+                experienceDescription={typeof user.experience_description === 'string' ? user.experience_description : null}
                 sitterAge={user.sitter_age != null ? Number(user.sitter_age) : null}
                 bio={user.bio || undefined}
                 hobbies={Array.isArray(user.hobbies) ? user.hobbies : (user.hobbies ? [user.hobbies] : null)}

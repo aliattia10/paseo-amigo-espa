@@ -28,6 +28,8 @@ export interface User {
   sitterAge?: number | null;
   /** Sitter: has prior pet experience */
   hasPetExperience?: boolean | null;
+  /** Sitter: free-text description of experience (e.g. "6 months", "since I was a kid") */
+  experienceDescription?: string | null;
   /** Sitter: e.g. ["Hiking", "Reading"] */
   hobbies?: string[] | null;
   /** Sitter: e.g. { size: ["small","medium"], type: ["dog","cat"] } */

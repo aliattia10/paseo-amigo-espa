@@ -25,7 +25,8 @@ const ProfileEditPage: React.FC = () => {
     bio: string;
     profilePictureUrl: string;
     hourlyRate: number | '';
-    yearsExperience: number | '';
+    hasPetExperience: boolean;
+    experienceDescription: string;
     petsCaredFor: number | '';
     sitterAge: number | '';
   }>({
@@ -35,10 +36,11 @@ const ProfileEditPage: React.FC = () => {
     postalCode: userProfile?.postalCode || '',
     bio: userProfile?.bio || '',
     profilePictureUrl: userProfile?.profileImage || '',
-    hourlyRate: (userProfile as any)?.hourly_rate || 15,
-    yearsExperience: (userProfile as any)?.yearsExperience || 0,
-    petsCaredFor: (userProfile as any)?.petsCaredFor || 0,
-    sitterAge: (userProfile as any)?.sitterAge || 18,
+    hourlyRate: (userProfile?.hourlyRate as number | undefined) ?? 15,
+    hasPetExperience: Boolean((userProfile as any)?.hasPetExperience),
+    experienceDescription: ((userProfile as any)?.experienceDescription as string | undefined) ?? '',
+    petsCaredFor: ((userProfile as any)?.petsCaredFor as number | undefined) ?? 0,
+    sitterAge: ((userProfile as any)?.sitterAge as number | undefined) ?? 18,
   });
   
   // Tinder-style multiple photos (max 6)
@@ -58,10 +60,11 @@ const ProfileEditPage: React.FC = () => {
         postalCode: userProfile.postalCode || '',
         bio: userProfile.bio || '',
         profilePictureUrl: userProfile.profileImage || '',
-        hourlyRate: (userProfile as any)?.hourly_rate || 15,
-        yearsExperience: (userProfile as any)?.yearsExperience || 0,
-        petsCaredFor: (userProfile as any)?.petsCaredFor || 0,
-        sitterAge: (userProfile as any)?.sitterAge || 18,
+        hourlyRate: (userProfile.hourlyRate as number | undefined) ?? 15,
+        hasPetExperience: Boolean((userProfile as any)?.hasPetExperience),
+        experienceDescription: ((userProfile as any)?.experienceDescription as string | undefined) ?? '',
+        petsCaredFor: ((userProfile as any)?.petsCaredFor as number | undefined) ?? 0,
+        sitterAge: ((userProfile as any)?.sitterAge as number | undefined) ?? 18,
       });
       
       // Load existing photos from profile_image (stored as JSON array)
@@ -83,9 +86,6 @@ const ProfileEditPage: React.FC = () => {
   const showPrompt = React.useMemo(() => new URLSearchParams(location.search).get('prompt') === 'complete', [location.search]);
 
   const handleImageUpload = async (file: File, index: number) => {
-    console.log('=== IMAGE UPLOAD START ===');
-    console.log('File:', file.name, file.type, file.size, 'Index:', index);
-    
     if (!currentUser) {
       toast({
         title: 'Error',
@@ -98,112 +98,76 @@ const ProfileEditPage: React.FC = () => {
     setUploadingIndex(index);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
-      
-      // Validate file type
+
       if (!file.type.startsWith('image/')) {
         throw new Error('Please select an image file');
       }
-
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('Image must be less than 5MB');
       }
-      
-      // Check if avatars bucket exists
+
       const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      console.log('Available buckets:', buckets);
-      
-      if (bucketsError || !buckets?.some(b => b.name === 'avatars')) {
-        throw new Error('Storage bucket not configured. Please run: database/fix_profile_storage.sql or database/fix_storage_bucket.sql');
+      if (bucketsError || !buckets?.some((b) => b.name === 'avatars')) {
+        throw new Error('Storage bucket not configured. Please contact support.');
       }
-      
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${currentUser.id}/photo-${index}-${Date.now()}.${fileExt}`;
-      console.log('Uploading to:', fileName);
 
-      // Delete old image at this index if exists
       if (photos[index]) {
         const oldPath = photos[index].split('/').slice(-2).join('/');
-        console.log('Deleting old image:', oldPath);
         await supabase.storage.from('avatars').remove([oldPath]);
       }
 
-      // Upload new image
-      console.log('Uploading file to storage...');
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
+        .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
         if (uploadError.message.includes('not found') || uploadError.message.includes('bucket')) {
-          throw new Error('Storage not configured. Please contact support or run database/fix_profile_storage.sql in Supabase SQL Editor');
+          throw new Error('Storage not configured. Please contact support.');
         }
         if (uploadError.message.includes('policy') || uploadError.message.includes('permission')) {
-          throw new Error('Upload permission denied. Please check storage policies in Supabase');
+          throw new Error('Upload permission denied.');
         }
-        throw new Error(`Upload failed: ${uploadError.message}`);
+        throw new Error('Upload failed. Please try again.');
       }
 
-      console.log('File uploaded successfully');
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-      
-      console.log('Public URL:', publicUrl);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
-      // Update photos array
       const newPhotos = [...photos];
       newPhotos[index] = publicUrl;
       setPhotos(newPhotos);
 
-      // Update the profile pictures in the database immediately
-      console.log('Updating database with new photos array...');
-      const photosJson = JSON.stringify(newPhotos.filter(p => p)); // Remove empty slots
-      
-      const { data: updateData, error: updateError } = await supabase
+      const photosJson = JSON.stringify(newPhotos.filter((p) => p));
+      const { error: updateError } = await supabase
         .from('users')
-        .update({ 
+        .update({
           profile_image: photosJson,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', currentUser.id)
         .select();
 
       if (updateError) {
-        console.error('Profile update error:', {
-          message: updateError.message,
-          details: updateError.details,
-          hint: updateError.hint
-        });
-        throw new Error(`Failed to update profile picture: ${updateError.message}`);
+        throw new Error('Failed to update profile picture.');
       }
 
-      console.log('Database updated:', updateData);
       setFormData({ ...formData, profilePictureUrl: newPhotos[0] || publicUrl });
-      
-      // Refresh the user profile in auth context
-      console.log('Refreshing user profile...');
       await refreshUserProfile();
-      console.log('Profile refreshed');
-      
+
       toast({
         title: 'Success!',
         description: `Photo ${index + 1} uploaded successfully`,
       });
-    } catch (error: any) {
-      console.error('Image upload error:', error);
-      toast({
-        title: 'Upload Failed',
-        description: error.message || 'Failed to upload image',
-        variant: 'destructive',
-      });
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Image upload error:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to upload image';
+      toast({ title: 'Upload Failed', description: msg, variant: 'destructive' });
     } finally {
       setUploadingImage(false);
-      console.log('=== IMAGE UPLOAD END ===');
     }
   };
 
@@ -220,10 +184,6 @@ const ProfileEditPage: React.FC = () => {
   };
 
   const handleSave = async () => {
-    console.log('=== SAVE PROFILE START ===');
-    console.log('Current user:', currentUser?.id);
-    console.log('Form data:', formData);
-    
     if (!currentUser) {
       toast({
         title: 'Error',
@@ -285,7 +245,10 @@ const ProfileEditPage: React.FC = () => {
         updateData.hourly_rate = formData.hourlyRate;
       }
       if (userProfile?.userType !== 'owner') {
-        updateData.years_experience = Math.max(0, Number(formData.yearsExperience || 0));
+        updateData.has_pet_experience = Boolean(formData.hasPetExperience);
+        updateData.experience_description = formData.hasPetExperience
+          ? (formData.experienceDescription || '').trim().slice(0, 200) || null
+          : null;
         updateData.pets_cared_for = Math.max(0, Number(formData.petsCaredFor || 0));
         updateData.sitter_age = Math.max(18, Number(formData.sitterAge || 18));
       }
@@ -297,92 +260,79 @@ const ProfileEditPage: React.FC = () => {
         updateData.profile_image = formData.profilePictureUrl;
       }
 
-      console.log('Updating profile with data:', updateData);
-      console.log('User ID:', currentUser.id);
-
-      // Get current session to ensure we're authenticated
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session user ID:', session?.user?.id);
-      console.log('Current user ID:', currentUser.id);
-
       if (!session?.user) {
         throw new Error('No active session. Please log in again.');
       }
-
-      // Try the update - use session user ID to be safe
       const userId = session.user.id;
-      const { data, error } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', userId)
-        .select();
 
-      console.log('Update result - data:', data);
-      console.log('Update result - error:', error);
+      // Retry the update while stripping optional columns that the DB
+      // schema cache may not yet have (migrations not yet applied).
+      const OPTIONAL_COLUMNS = [
+        'sitter_age',
+        'has_pet_experience',
+        'experience_description',
+        'pets_cared_for',
+        'years_experience',
+      ];
+      let payload: Record<string, unknown> = { ...updateData };
+      let data: unknown[] | null = null;
+      let error: { message?: string; code?: string } | null = null;
+      for (let attempts = 0; attempts < 6; attempts++) {
+        const res = await supabase.from('users').update(payload).eq('id', userId).select();
+        data = res.data;
+        error = res.error;
+        if (!error) break;
+        const msg = error.message || '';
+        // Detect a missing column and drop it, then retry.
+        const match = msg.match(/Could not find the '([^']+)' column/);
+        const droppedField = match?.[1];
+        if (droppedField && droppedField in payload) {
+          const { [droppedField]: _removed, ...rest } = payload;
+          payload = rest;
+          continue;
+        }
+        if (error.code === 'PGRST204' && OPTIONAL_COLUMNS.some((c) => c in payload)) {
+          const next: Record<string, unknown> = { ...payload };
+          for (const c of OPTIONAL_COLUMNS) delete next[c];
+          payload = next;
+          continue;
+        }
+        break;
+      }
 
       if (error) {
-        console.error('Update error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
-        
-        // If table doesn't exist, provide helpful message
-        if (error.message.includes('does not exist') || error.message.includes('not find')) {
+        const msg = error.message || '';
+        if (/does not exist|not find/i.test(msg)) {
           throw new Error('Database not set up. Please contact support.');
         }
-        if (error.message.includes('permission') || error.message.includes('denied') || error.message.includes('policy')) {
-          throw new Error('Permission denied. Please check your database RLS policies or contact support.');
+        if (/permission|denied|policy/i.test(msg)) {
+          throw new Error('Permission denied. Please contact support.');
         }
-        if (error.message.includes('violates')) {
+        if (/violates/i.test(msg)) {
           throw new Error('Invalid data. Please check all fields and try again.');
         }
-        throw new Error(`Database error: ${error.message}`);
+        throw new Error('Could not save profile. Please try again.');
       }
 
-      // Verify the update actually happened
       if (!data || data.length === 0) {
-        console.error('❌ UPDATE FAILED: No rows returned');
-        console.error('This usually means RLS policy blocked the update');
-        console.error('User ID used:', userId);
-        
-        // Try to read the user to see if they exist
-        const { data: checkData, error: checkError } = await supabase
-          .from('users')
-          .select('id, name, email')
-          .eq('id', userId)
-          .single();
-        
-        console.error('User exists check:', checkData, checkError);
-        throw new Error('Update was blocked. Your user ID might not match the database record.');
+        throw new Error('Update was blocked. Please refresh and try again.');
       }
 
-      console.log('✅ Profile updated successfully:', data[0]);
-
-      // Refresh the user profile in auth context
-      console.log('Refreshing user profile...');
       await refreshUserProfile();
-      console.log('User profile refreshed');
 
       toast({
         title: '✓ Saved!',
         description: 'Your profile has been updated',
       });
 
-      // Navigate back immediately after refresh completes
-      console.log('Navigating back to profile...');
       navigate('/profile', { replace: true });
-    } catch (error: any) {
-      console.error('Save error:', error);
-      toast({
-        title: 'Save Failed',
-        description: error.message || 'Failed to update profile. Please try again.',
-        variant: 'destructive',
-      });
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Save error:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to update profile.';
+      toast({ title: 'Save Failed', description: msg, variant: 'destructive' });
     } finally {
       setLoading(false);
-      console.log('=== SAVE PROFILE END ===');
     }
   };
 
@@ -580,7 +530,7 @@ const ProfileEditPage: React.FC = () => {
               <>
                 <div>
                   <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Age
+                    {t('sitter.age', 'Age')}
                   </label>
                   <Input
                     type="number"
@@ -598,25 +548,40 @@ const ProfileEditPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Years of experience
+                    {t('sitter.experienceQuestion', 'Have you had experience sitting pets?')}
                   </label>
-                  <Input
-                    type="number"
-                    value={formData.yearsExperience}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setFormData({ ...formData, yearsExperience: v === '' ? '' : Math.max(0, Number(v)) });
-                    }}
-                    className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
-                    min="0"
-                    max="60"
-                    placeholder="0"
-                    inputMode="numeric"
-                  />
+                  <div className="flex items-center gap-3">
+                    <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.hasPetExperience}
+                        onChange={(e) => setFormData({ ...formData, hasPetExperience: e.target.checked })}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      {t('sitter.experienceYes', 'Yes, I have experience')}
+                    </label>
+                  </div>
+                  {formData.hasPetExperience && (
+                    <div className="mt-2">
+                      <Input
+                        type="text"
+                        value={formData.experienceDescription}
+                        onChange={(e) =>
+                          setFormData({ ...formData, experienceDescription: e.target.value.slice(0, 200) })
+                        }
+                        className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                        placeholder={t('sitter.experiencePlaceholder', 'e.g. 6 months, 2 years, since I was a kid')}
+                        maxLength={200}
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formData.experienceDescription.length}/200
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Pets cared for
+                    {t('sitter.petsCaredFor', 'Pets cared for')}
                   </label>
                   <Input
                     type="number"

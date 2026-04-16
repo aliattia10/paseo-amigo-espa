@@ -44,7 +44,7 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
   const [loading, setLoading] = useState(false);
 
   const [hasExperience, setHasExperience] = useState<boolean | null>(null);
-  const [yearsExperience, setYearsExperience] = useState<number | ''>(0);
+  const [experienceDescription, setExperienceDescription] = useState<string>('');
   const [petsCaredFor, setPetsCaredFor] = useState<number | ''>(0);
   const [sitterAge, setSitterAge] = useState<number | ''>(18);
 
@@ -71,17 +71,12 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
     }
     const pets = typeof petsCaredFor === 'number' ? petsCaredFor : 0;
     const age = typeof sitterAge === 'number' ? sitterAge : NaN;
-    const years = typeof yearsExperience === 'number' ? yearsExperience : 0;
     if (hasExperience && pets < 1) {
       toast({ title: t('common.error'), description: 'Please enter how many pets', variant: 'destructive' });
       return;
     }
     if (!Number.isFinite(age) || age < 18 || age > 90) {
       toast({ title: t('common.error'), description: 'Sitter age must be between 18 and 90', variant: 'destructive' });
-      return;
-    }
-    if (years < 0 || years > 60) {
-      toast({ title: t('common.error'), description: 'Years of experience must be between 0 and 60', variant: 'destructive' });
       return;
     }
     setStep(2);
@@ -109,23 +104,40 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
       };
       if (preferences.includes('puppies')) prefsPayload.type = [...(prefsPayload.type || []), 'puppy'];
 
-      const yearsNum = typeof yearsExperience === 'number' ? yearsExperience : 0;
       const petsNum = typeof petsCaredFor === 'number' ? petsCaredFor : 0;
       const ageNum = typeof sitterAge === 'number' ? sitterAge : 18;
-      const { error } = await supabase
-        .from('users')
-        .update({
-          has_pet_experience: hasExperience ?? false,
-          years_experience: yearsNum,
-          pets_cared_for: hasExperience ? petsNum : 0,
-          sitter_age: ageNum,
-          preferences: prefsPayload,
-          hobbies,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', currentUser.id);
+      const basePayload: Record<string, unknown> = {
+        has_pet_experience: hasExperience ?? false,
+        experience_description: hasExperience ? experienceDescription.trim().slice(0, 200) || null : null,
+        pets_cared_for: hasExperience ? petsNum : 0,
+        sitter_age: ageNum,
+        preferences: prefsPayload,
+        hobbies,
+        updated_at: new Date().toISOString(),
+      };
 
-      if (error) throw error;
+      // Retry stripping unknown columns so flow still works while
+      // new columns (experience_description/sitter_age) may not exist yet.
+      let payload = { ...basePayload };
+      let lastError: { message?: string } | null = null;
+      for (let attempts = 0; attempts < 6; attempts++) {
+        const res = await supabase.from('users').update(payload).eq('id', currentUser.id);
+        if (!res.error) {
+          lastError = null;
+          break;
+        }
+        lastError = res.error;
+        const match = res.error.message?.match(/Could not find the '([^']+)' column/);
+        if (match?.[1] && match[1] in payload) {
+          const next = { ...payload };
+          delete next[match[1]];
+          payload = next;
+          continue;
+        }
+        break;
+      }
+
+      if (lastError) throw new Error('Could not save onboarding');
       toast({ title: t('common.success'), description: "You're all set!" });
       onComplete?.();
       navigate('/sitter-profile-setup', { replace: true });
@@ -192,23 +204,39 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
               </button>
             </div>
             {hasExperience === true && (
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  How many pets have you cared for?
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={petsCaredFor}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setPetsCaredFor(v === '' ? '' : Math.max(0, Number(v)));
-                  }}
-                  className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
-                  placeholder="e.g. 10"
-                  inputMode="numeric"
-                />
-              </div>
+              <>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Tell pet owners about your experience
+                  </label>
+                  <input
+                    type="text"
+                    value={experienceDescription}
+                    onChange={(e) => setExperienceDescription(e.target.value.slice(0, 200))}
+                    className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
+                    placeholder="e.g. 6 months, 2 years, since I was a kid"
+                    maxLength={200}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">{experienceDescription.length}/200</p>
+                </div>
+                <div className="mb-8">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    How many pets have you cared for?
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={petsCaredFor}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setPetsCaredFor(v === '' ? '' : Math.max(0, Number(v)));
+                    }}
+                    className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
+                    placeholder="e.g. 10"
+                    inputMode="numeric"
+                  />
+                </div>
+              </>
             )}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -228,24 +256,7 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
                 inputMode="numeric"
               />
             </div>
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Years of pet care experience
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={60}
-                value={yearsExperience}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setYearsExperience(v === '' ? '' : Math.max(0, Math.min(60, Number(v))));
-                }}
-                className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
-                placeholder="e.g. 3"
-                inputMode="numeric"
-              />
-            </div>
+            <div className="mb-8" />
             <Button size="lg" className="w-full rounded-xl" onClick={handleStep1Next}>
               Continue <ChevronRight className="ml-2 h-5 w-5" />
             </Button>

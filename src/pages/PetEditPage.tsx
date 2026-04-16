@@ -140,14 +140,10 @@ const PetEditPage: React.FC = () => {
     
     setUploadingImage(true);
     try {
-      console.log('=== IMAGE UPLOAD START ===');
-      console.log('File:', file.name, file.type, file.size);
-      
       const fileExt = file.name.split('.').pop();
       const fileName = `${currentUser.id}-${petData.petType}-${Date.now()}.${fileExt}`;
       const filePath = `pets/${fileName}`;
 
-      console.log('Uploading to:', filePath);
       const candidateBuckets = ['avatars', 'profile-images'] as const;
       let usedBucket: (typeof candidateBuckets)[number] | null = null;
       let lastUploadError: Error | null = null;
@@ -167,7 +163,6 @@ const PetEditPage: React.FC = () => {
       }
 
       if (!usedBucket) {
-        console.error('Upload error:', lastUploadError);
         throw lastUploadError ?? new Error('Failed to upload image');
       }
 
@@ -175,13 +170,7 @@ const PetEditPage: React.FC = () => {
         .from(usedBucket)
         .getPublicUrl(filePath);
 
-      console.log('Public URL:', publicUrl);
-      
-      // Add new image to the array
       const newImageUrls = [...petData.imageUrls, publicUrl];
-      
-      // Save to database immediately
-      console.log('Saving to database...');
       const imageUrlJson = JSON.stringify(newImageUrls);
       const { error: updateError } = await supabase
         .from('pets')
@@ -192,8 +181,6 @@ const PetEditPage: React.FC = () => {
         .eq('id', petId);
 
       if (updateError) {
-        console.error('Database update error:', updateError);
-        // Try dogs table as fallback
         if (updateError.message.includes('does not exist')) {
           const { error: dogError } = await supabase
             .from('dogs')
@@ -202,50 +189,36 @@ const PetEditPage: React.FC = () => {
               updated_at: new Date().toISOString(),
             })
             .eq('id', petId);
-          
+
           if (dogError) {
-            console.error('Dogs table update error:', dogError);
             throw new Error('Failed to save image to database');
           }
         } else {
           throw updateError;
         }
       }
-      
-      console.log('Database updated successfully');
+
       setPetData({ ...petData, imageUrls: newImageUrls });
-      setCurrentImageIndex(newImageUrls.length - 1); // Show the newly uploaded image
-      
+      setCurrentImageIndex(newImageUrls.length - 1);
+
       toast({
         title: t('common.success'),
         description: `${petData.petType === 'cat' ? 'Cat' : 'Pet'} picture uploaded and saved successfully`,
       });
-      
-      console.log('=== IMAGE UPLOAD END ===');
-    } catch (error: any) {
-      console.error('Image upload error:', error);
-      toast({
-        title: t('common.error'),
-        description: error.message || 'Failed to upload image',
-        variant: 'destructive',
-      });
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Image upload error:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to upload image';
+      toast({ title: t('common.error'), description: msg, variant: 'destructive' });
     } finally {
       setUploadingImage(false);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('=== FILE CHANGE EVENT ===');
     const file = e.target.files?.[0];
-    console.log('File selected:', file);
-    
-    if (!file) {
-      console.log('No file selected');
-      return;
-    }
-    
+    if (!file) return;
+
     if (!file.type.startsWith('image/')) {
-      console.error('Invalid file type:', file.type);
       toast({
         title: t('common.error'),
         description: 'Please select an image file',
@@ -253,9 +226,8 @@ const PetEditPage: React.FC = () => {
       });
       return;
     }
-    
+
     if (file.size > 5 * 1024 * 1024) {
-      console.error('File too large:', file.size);
       toast({
         title: t('common.error'),
         description: 'Image size must be less than 5MB',
@@ -263,8 +235,7 @@ const PetEditPage: React.FC = () => {
       });
       return;
     }
-    
-    console.log('File validation passed, starting upload...');
+
     handleImageUpload(file);
     
     // Reset input so same file can be selected again
@@ -299,82 +270,75 @@ const PetEditPage: React.FC = () => {
     
     setLoading(true);
     try {
-      console.log('=== SAVE PET START ===');
-      console.log('Pet data:', petData);
-      
-      // Convert image URLs array to JSON string
       const imageUrlJson = JSON.stringify(petData.imageUrls);
       const resolvedBreed = petData.breed === 'Other'
         ? (petData.customBreed.trim() || 'Other')
         : (petData.breed || null);
       const legacyAgeText = formatPetAge(parsedYears, parsedMonths, petData.age);
-      
-      const { error } = await supabase
-        .from('pets')
-        .update({
-          name: petData.name,
-          pet_type: petData.petType,
-          age: legacyAgeText,
-          age_years: parsedYears,
-          age_months: parsedMonths,
-          breed: resolvedBreed,
-          breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
-          pet_size: petData.petSize,
-          allergies: petData.allergies || null,
-          health_issues: petData.healthIssues || null,
-          special_needs: petData.specialNeeds || null,
-          notes: petData.notes,
-          image_url: imageUrlJson,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', petId);
 
-      if (error) {
-        console.error('Update error:', error);
-        // Try dogs table if pets doesn't exist
-        if (error.message.includes('does not exist')) {
-          const { error: dogError } = await supabase
-            .from('dogs')
-            .update({
-              name: petData.name,
-              age: legacyAgeText,
-              age_years: parsedYears,
-              age_months: parsedMonths,
-              breed: resolvedBreed,
-              breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
-              pet_size: petData.petSize,
-              allergies: petData.allergies || null,
-              health_issues: petData.healthIssues || null,
-              special_needs: petData.specialNeeds || null,
-              notes: petData.notes,
-              image_url: imageUrlJson,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', petId);
-          
-          if (dogError) throw dogError;
+      const basePayload: Record<string, unknown> = {
+        name: petData.name,
+        pet_type: petData.petType,
+        age: legacyAgeText,
+        age_years: parsedYears,
+        age_months: parsedMonths,
+        breed: resolvedBreed,
+        breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
+        pet_size: petData.petSize,
+        allergies: petData.allergies || null,
+        health_issues: petData.healthIssues || null,
+        special_needs: petData.specialNeeds || null,
+        notes: petData.notes,
+        image_url: imageUrlJson,
+        updated_at: new Date().toISOString(),
+      };
+
+      const updateWithRetry = async (
+        table: 'pets' | 'dogs',
+        initialPayload: Record<string, unknown>
+      ) => {
+        let payload = { ...initialPayload };
+        for (let attempts = 0; attempts < 8; attempts++) {
+          const res = await supabase.from(table).update(payload).eq('id', petId);
+          if (!res.error) return { ok: true as const };
+          const msg = res.error.message || '';
+          // Drop unknown columns (schema cache missing), then retry.
+          const match = msg.match(/Could not find the '([^']+)' column/);
+          if (match?.[1] && match[1] in payload) {
+            const next = { ...payload };
+            delete next[match[1]];
+            payload = next;
+            continue;
+          }
+          return { ok: false as const, error: res.error, payload };
+        }
+        return { ok: false as const, error: { message: 'Save failed' }, payload };
+      };
+
+      const petsResult = await updateWithRetry('pets', basePayload);
+
+      if (!petsResult.ok) {
+        const msg = petsResult.error?.message || '';
+        if (msg.includes('does not exist')) {
+          const dogsResult = await updateWithRetry('dogs', basePayload);
+          if (!dogsResult.ok) throw new Error('Failed to update pet profile.');
         } else {
-          throw error;
+          throw new Error('Failed to update pet profile.');
         }
       }
 
-      console.log('Pet updated successfully');
       toast({
         title: t('common.success'),
         description: `${petData.petType === 'cat' ? 'Cat' : 'Pet'} profile updated successfully!`,
       });
 
       navigate('/profile');
-    } catch (error: any) {
-      console.error('Save error:', error);
-      toast({
-        title: t('common.error'),
-        description: error.message || 'Failed to update pet profile',
-        variant: 'destructive',
-      });
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Save error:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to update pet profile';
+      toast({ title: t('common.error'), description: msg, variant: 'destructive' });
     } finally {
       setLoading(false);
-      console.log('=== SAVE PET END ===');
     }
   };
 

@@ -61,6 +61,7 @@ export const getUser = async (userId: string): Promise<User | null> => {
       petsCaredFor: data.pets_cared_for ?? undefined,
       sitterAge: data.sitter_age ?? undefined,
       hasPetExperience: data.has_pet_experience ?? undefined,
+      experienceDescription: data.experience_description ?? undefined,
       hobbies: data.hobbies ?? undefined,
       preferences: data.preferences ?? undefined,
       createdAt: new Date(data.created_at || new Date()),
@@ -87,6 +88,7 @@ export const updateUser = async (userId: string, userData: Partial<User>) => {
   if (userData.petsCaredFor != null) updateData.pets_cared_for = userData.petsCaredFor;
   if (userData.sitterAge != null) updateData.sitter_age = userData.sitterAge;
   if (userData.hasPetExperience != null) updateData.has_pet_experience = userData.hasPetExperience;
+  if (userData.experienceDescription != null) updateData.experience_description = userData.experienceDescription;
   if (userData.hobbies != null) updateData.hobbies = userData.hobbies;
   if (userData.preferences != null) updateData.preferences = userData.preferences;
   
