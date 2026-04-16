@@ -44,9 +44,9 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
   const [loading, setLoading] = useState(false);
 
   const [hasExperience, setHasExperience] = useState<boolean | null>(null);
-  const [yearsExperience, setYearsExperience] = useState<number>(0);
-  const [petsCaredFor, setPetsCaredFor] = useState<number>(0);
-  const [sitterAge, setSitterAge] = useState<number>(18);
+  const [yearsExperience, setYearsExperience] = useState<number | ''>(0);
+  const [petsCaredFor, setPetsCaredFor] = useState<number | ''>(0);
+  const [sitterAge, setSitterAge] = useState<number | ''>(18);
 
   const [preferences, setPreferences] = useState<string[]>([]);
   const togglePreference = (id: string) => {
@@ -69,15 +69,18 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
       toast({ title: t('common.error'), description: 'Please select an option', variant: 'destructive' });
       return;
     }
-    if (hasExperience && petsCaredFor < 1) {
+    const pets = typeof petsCaredFor === 'number' ? petsCaredFor : 0;
+    const age = typeof sitterAge === 'number' ? sitterAge : NaN;
+    const years = typeof yearsExperience === 'number' ? yearsExperience : 0;
+    if (hasExperience && pets < 1) {
       toast({ title: t('common.error'), description: 'Please enter how many pets', variant: 'destructive' });
       return;
     }
-    if (sitterAge < 18 || sitterAge > 90) {
+    if (!Number.isFinite(age) || age < 18 || age > 90) {
       toast({ title: t('common.error'), description: 'Sitter age must be between 18 and 90', variant: 'destructive' });
       return;
     }
-    if (yearsExperience < 0 || yearsExperience > 60) {
+    if (years < 0 || years > 60) {
       toast({ title: t('common.error'), description: 'Years of experience must be between 0 and 60', variant: 'destructive' });
       return;
     }
@@ -106,13 +109,16 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
       };
       if (preferences.includes('puppies')) prefsPayload.type = [...(prefsPayload.type || []), 'puppy'];
 
+      const yearsNum = typeof yearsExperience === 'number' ? yearsExperience : 0;
+      const petsNum = typeof petsCaredFor === 'number' ? petsCaredFor : 0;
+      const ageNum = typeof sitterAge === 'number' ? sitterAge : 18;
       const { error } = await supabase
         .from('users')
         .update({
           has_pet_experience: hasExperience ?? false,
-          years_experience: yearsExperience,
-          pets_cared_for: hasExperience ? petsCaredFor : 0,
-          sitter_age: sitterAge,
+          years_experience: yearsNum,
+          pets_cared_for: hasExperience ? petsNum : 0,
+          sitter_age: ageNum,
           preferences: prefsPayload,
           hobbies,
           updated_at: new Date().toISOString(),
@@ -193,10 +199,14 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
                 <input
                   type="number"
                   min={1}
-                  value={petsCaredFor || ''}
-                  onChange={(e) => setPetsCaredFor(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                  value={petsCaredFor}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setPetsCaredFor(v === '' ? '' : Math.max(0, Number(v)));
+                  }}
                   className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
                   placeholder="e.g. 10"
+                  inputMode="numeric"
                 />
               </div>
             )}
@@ -208,10 +218,14 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
                 type="number"
                 min={18}
                 max={90}
-                value={sitterAge || ''}
-                onChange={(e) => setSitterAge(Math.max(18, Math.min(90, parseInt(e.target.value, 10) || 18)))}
+                value={sitterAge}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSitterAge(v === '' ? '' : Math.max(18, Math.min(90, Number(v))));
+                }}
                 className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
                 placeholder="e.g. 28"
+                inputMode="numeric"
               />
             </div>
             <div className="mb-8">
@@ -222,10 +236,14 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
                 type="number"
                 min={0}
                 max={60}
-                value={yearsExperience || 0}
-                onChange={(e) => setYearsExperience(Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0)))}
+                value={yearsExperience}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setYearsExperience(v === '' ? '' : Math.max(0, Math.min(60, Number(v))));
+                }}
                 className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
                 placeholder="e.g. 3"
+                inputMode="numeric"
               />
             </div>
             <Button size="lg" className="w-full rounded-xl" onClick={handleStep1Next}>

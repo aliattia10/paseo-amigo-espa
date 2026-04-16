@@ -17,7 +17,18 @@ const ProfileEditPage: React.FC = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    phone: string;
+    city: string;
+    postalCode: string;
+    bio: string;
+    profilePictureUrl: string;
+    hourlyRate: number | '';
+    yearsExperience: number | '';
+    petsCaredFor: number | '';
+    sitterAge: number | '';
+  }>({
     name: userProfile?.name || '',
     phone: userProfile?.phone || '',
     city: userProfile?.city || '',
@@ -232,7 +243,8 @@ const ProfileEditPage: React.FC = () => {
       return;
     }
     if (userProfile?.userType !== 'owner') {
-      if (formData.hourlyRate < 5 || formData.hourlyRate > 500) {
+      const rate = typeof formData.hourlyRate === 'number' ? formData.hourlyRate : NaN;
+      if (!Number.isFinite(rate) || rate < 5 || rate > 500) {
         toast({
           title: 'Invalid hourly rate',
           description: 'Hourly rate must be between €5 and €500.',
@@ -240,7 +252,8 @@ const ProfileEditPage: React.FC = () => {
         });
         return;
       }
-      if (formData.sitterAge < 18 || formData.sitterAge > 90) {
+      const age = typeof formData.sitterAge === 'number' ? formData.sitterAge : NaN;
+      if (!Number.isFinite(age) || age < 18 || age > 90) {
         toast({
           title: 'Invalid age',
           description: 'Sitter age must be between 18 and 90.',
@@ -268,7 +281,7 @@ const ProfileEditPage: React.FC = () => {
       }
 
       // Add hourly rate for sitters
-      if (formData.hourlyRate) {
+      if (typeof formData.hourlyRate === 'number' && formData.hourlyRate > 0) {
         updateData.hourly_rate = formData.hourlyRate;
       }
       if (userProfile?.userType !== 'owner') {
@@ -547,12 +560,16 @@ const ProfileEditPage: React.FC = () => {
                 <Input
                   type="number"
                   value={formData.hourlyRate}
-                  onChange={(e) => setFormData({ ...formData, hourlyRate: parseInt(e.target.value) || 15 })}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setFormData({ ...formData, hourlyRate: v === '' ? '' : Number(v) });
+                  }}
                   className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                   placeholder="15"
                   min="5"
                   max="500"
                   step="1"
+                  inputMode="numeric"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   Set your base hourly rate (€5-€500)
@@ -568,10 +585,15 @@ const ProfileEditPage: React.FC = () => {
                   <Input
                     type="number"
                     value={formData.sitterAge}
-                    onChange={(e) => setFormData({ ...formData, sitterAge: parseInt(e.target.value) || 18 })}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, sitterAge: v === '' ? '' : Number(v) });
+                    }}
                     className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                     min="18"
                     max="90"
+                    placeholder="18"
+                    inputMode="numeric"
                   />
                 </div>
                 <div>
@@ -581,10 +603,15 @@ const ProfileEditPage: React.FC = () => {
                   <Input
                     type="number"
                     value={formData.yearsExperience}
-                    onChange={(e) => setFormData({ ...formData, yearsExperience: Math.max(0, parseInt(e.target.value) || 0) })}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, yearsExperience: v === '' ? '' : Math.max(0, Number(v)) });
+                    }}
                     className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                     min="0"
                     max="60"
+                    placeholder="0"
+                    inputMode="numeric"
                   />
                 </div>
                 <div>
@@ -594,10 +621,15 @@ const ProfileEditPage: React.FC = () => {
                   <Input
                     type="number"
                     value={formData.petsCaredFor}
-                    onChange={(e) => setFormData({ ...formData, petsCaredFor: Math.max(0, parseInt(e.target.value) || 0) })}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormData({ ...formData, petsCaredFor: v === '' ? '' : Math.max(0, Number(v)) });
+                    }}
                     className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                     min="0"
                     max="10000"
+                    placeholder="0"
+                    inputMode="numeric"
                   />
                 </div>
               </>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,27 +13,72 @@ import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
 const SitterProfileSetup: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   
-  const [sitterData, setSitterData] = useState({
+  const [sitterData, setSitterData] = useState<{
+    bio: string;
+    hourlyRate: number | '';
+    yearsExperience: number | '';
+    petsCaredFor: number | '';
+    sitterAge: number | '';
+    avatarUrl: string;
+    experience: string[];
+    dogs: boolean;
+    cats: boolean;
+    dogExperience: string;
+    catExperience: string;
+  }>({
     bio: '',
     hourlyRate: 15,
     yearsExperience: 0,
     petsCaredFor: 0,
     sitterAge: 18,
     avatarUrl: '',
-    experience: [] as string[],
-    dogs: true, // Default to dogs only for backward compatibility
+    experience: [],
+    dogs: true,
     cats: false,
     dogExperience: '',
     catExperience: '',
   });
   const [photos, setPhotos] = useState<string[]>([]);
   const MAX_PHOTOS = 6;
+
+  // Prefill existing sitter data so users aren't forced to retype.
+  useEffect(() => {
+    if (!userProfile) return;
+    const anyProfile = userProfile as unknown as Record<string, unknown>;
+    setSitterData((prev) => ({
+      ...prev,
+      bio: typeof userProfile.bio === 'string' ? userProfile.bio : prev.bio,
+      hourlyRate:
+        typeof userProfile.hourlyRate === 'number' ? userProfile.hourlyRate : prev.hourlyRate,
+      yearsExperience:
+        typeof anyProfile.yearsExperience === 'number'
+          ? (anyProfile.yearsExperience as number)
+          : prev.yearsExperience,
+      petsCaredFor:
+        typeof anyProfile.petsCaredFor === 'number'
+          ? (anyProfile.petsCaredFor as number)
+          : prev.petsCaredFor,
+      sitterAge:
+        typeof anyProfile.sitterAge === 'number'
+          ? (anyProfile.sitterAge as number)
+          : prev.sitterAge,
+    }));
+    try {
+      if (typeof userProfile.profileImage === 'string') {
+        const parsed = JSON.parse(userProfile.profileImage);
+        if (Array.isArray(parsed)) setPhotos(parsed.filter(Boolean));
+        else if (userProfile.profileImage) setPhotos([userProfile.profileImage]);
+      }
+    } catch {
+      if (userProfile.profileImage) setPhotos([userProfile.profileImage]);
+    }
+  }, [userProfile]);
 
   const handleImageUpload = async (file: File) => {
     if (!currentUser) return;
@@ -108,7 +153,12 @@ const SitterProfileSetup: React.FC = () => {
       return;
     }
     
-    if (sitterData.hourlyRate < 5 || sitterData.hourlyRate > 500) {
+    const rate = typeof sitterData.hourlyRate === 'number' ? sitterData.hourlyRate : NaN;
+    const age = typeof sitterData.sitterAge === 'number' ? sitterData.sitterAge : NaN;
+    const years = typeof sitterData.yearsExperience === 'number' ? sitterData.yearsExperience : 0;
+    const petsCount = typeof sitterData.petsCaredFor === 'number' ? sitterData.petsCaredFor : 0;
+
+    if (!Number.isFinite(rate) || rate < 5 || rate > 500) {
       toast({
         title: t('common.error'),
         description: 'Hourly rate must be between €5 and €500',
@@ -116,7 +166,7 @@ const SitterProfileSetup: React.FC = () => {
       });
       return;
     }
-    if (sitterData.sitterAge < 18 || sitterData.sitterAge > 90) {
+    if (!Number.isFinite(age) || age < 18 || age > 90) {
       toast({
         title: t('common.error'),
         description: 'Sitter age must be between 18 and 90',
@@ -124,7 +174,7 @@ const SitterProfileSetup: React.FC = () => {
       });
       return;
     }
-    if (sitterData.yearsExperience < 0 || sitterData.yearsExperience > 60) {
+    if (years < 0 || years > 60) {
       toast({
         title: t('common.error'),
         description: 'Years of experience must be between 0 and 60',
@@ -132,7 +182,7 @@ const SitterProfileSetup: React.FC = () => {
       });
       return;
     }
-    if (sitterData.petsCaredFor < 0 || sitterData.petsCaredFor > 10000) {
+    if (petsCount < 0 || petsCount > 10000) {
       toast({
         title: t('common.error'),
         description: 'Pets cared for must be between 0 and 10,000',
@@ -154,10 +204,10 @@ const SitterProfileSetup: React.FC = () => {
     try {
       const updateData: any = {
         bio: sitterData.bio,
-        hourly_rate: sitterData.hourlyRate,
-        years_experience: sitterData.yearsExperience,
-        pets_cared_for: sitterData.petsCaredFor,
-        sitter_age: sitterData.sitterAge,
+        hourly_rate: rate,
+        years_experience: years,
+        pets_cared_for: petsCount,
+        sitter_age: age,
       };
 
       // Save photos as JSON array
@@ -274,12 +324,17 @@ const SitterProfileSetup: React.FC = () => {
               <Input
                 type="number"
                 value={sitterData.hourlyRate}
-                onChange={(e) => setSitterData({ ...sitterData, hourlyRate: parseInt(e.target.value) || 15 })}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSitterData({ ...sitterData, hourlyRate: v === '' ? '' : Number(v) });
+                }}
                 className="w-full text-lg"
                 min="5"
                 max="500"
                 step="1"
                 required
+                placeholder="15"
+                inputMode="numeric"
               />
               <span className="text-text-secondary-light dark:text-text-secondary-dark">/hour</span>
             </div>
@@ -297,10 +352,15 @@ const SitterProfileSetup: React.FC = () => {
               <Input
                 type="number"
                 value={sitterData.sitterAge}
-                onChange={(e) => setSitterData({ ...sitterData, sitterAge: parseInt(e.target.value) || 18 })}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSitterData({ ...sitterData, sitterAge: v === '' ? '' : Number(v) });
+                }}
                 min="18"
                 max="90"
                 required
+                placeholder="18"
+                inputMode="numeric"
               />
             </div>
             <div>
@@ -310,9 +370,14 @@ const SitterProfileSetup: React.FC = () => {
               <Input
                 type="number"
                 value={sitterData.yearsExperience}
-                onChange={(e) => setSitterData({ ...sitterData, yearsExperience: Math.max(0, parseInt(e.target.value) || 0) })}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSitterData({ ...sitterData, yearsExperience: v === '' ? '' : Math.max(0, Number(v)) });
+                }}
                 min="0"
                 max="60"
+                placeholder="0"
+                inputMode="numeric"
               />
             </div>
             <div>
@@ -322,9 +387,14 @@ const SitterProfileSetup: React.FC = () => {
               <Input
                 type="number"
                 value={sitterData.petsCaredFor}
-                onChange={(e) => setSitterData({ ...sitterData, petsCaredFor: Math.max(0, parseInt(e.target.value) || 0) })}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSitterData({ ...sitterData, petsCaredFor: v === '' ? '' : Math.max(0, Number(v)) });
+                }}
                 min="0"
                 max="10000"
+                placeholder="0"
+                inputMode="numeric"
               />
             </div>
           </div>

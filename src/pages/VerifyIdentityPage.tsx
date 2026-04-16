@@ -47,9 +47,31 @@ const VerifyIdentityPage: React.FC = () => {
   }, [isDiditReturn, refreshUserProfile, currentUser?.id]);
 
   const handleSkip = () => {
-    if (userProfile?.userType === 'owner') navigate('/pet-profile-setup');
-    else if (userProfile?.userType === 'walker') navigate('/sitter-profile-setup');
-    else navigate('/dashboard');
+    // If the user already has a profile with basic fields filled,
+    // don't force them back into onboarding — just go to dashboard.
+    const anyProfile = (userProfile ?? {}) as unknown as Record<string, unknown>;
+    const hasBio = typeof userProfile?.bio === 'string' && userProfile.bio.trim().length > 0;
+    const hasRate = typeof userProfile?.hourlyRate === 'number' && (userProfile.hourlyRate as number) > 0;
+    const hasSitterExtras =
+      typeof anyProfile.sitterAge === 'number' ||
+      typeof anyProfile.yearsExperience === 'number' ||
+      typeof anyProfile.petsCaredFor === 'number';
+
+    if (userProfile?.userType === 'owner') {
+      // Owners need at least one pet; fall back to pet-profile-setup only if missing.
+      // If they reached verify from dashboard, just send them back to dashboard.
+      navigate('/dashboard');
+      return;
+    }
+    if (userProfile?.userType === 'walker') {
+      if (hasBio && hasRate && hasSitterExtras) {
+        navigate('/dashboard');
+      } else {
+        navigate('/sitter-profile-setup');
+      }
+      return;
+    }
+    navigate('/dashboard');
   };
 
   if (authLoading || !currentUser?.id) {
