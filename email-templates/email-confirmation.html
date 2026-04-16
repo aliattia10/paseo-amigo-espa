@@ -1,86 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm Your Email - Petflik</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm your email - Petflik</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
-    <table role="presentation" style="width: 100%; border-collapse: collapse;">
-        <tr>
-            <td align="center" style="padding: 40px 0;">
-                <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                    <!-- Header with Logo -->
-                    <tr>
-                        <td style="padding: 40px 40px 20px; text-align: center; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); border-radius: 16px 16px 0 0;">
-                            <div style="width: 80px; height: 80px; margin: 0 auto 16px; background-color: rgba(255, 255, 255, 0.2); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
-                                <span style="font-size: 48px;">🐾</span>
-                            </div>
-                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">Petflik</h1>
-                            <p style="margin: 8px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px;">Your Pet Care Community</p>
-                        </td>
-                    </tr>
-                    
-                    <!-- Content -->
-                    <tr>
-                        <td style="padding: 40px;">
-                            <h2 style="margin: 0 0 16px; color: #111827; font-size: 24px; font-weight: 600;">Confirm Your Email Address</h2>
-                            <p style="margin: 0 0 24px; color: #6b7280; font-size: 16px; line-height: 1.6;">
-                                Thanks for signing up for Petflik! To complete your registration and start connecting with pet lovers, please confirm your email address.
-                            </p>
-                            
-                            <!-- CTA Button -->
-                            <table role="presentation" style="margin: 32px 0;">
-                                <tr>
-                                    <td style="border-radius: 8px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
-                                        <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 16px 32px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px;">
-                                            Confirm Email Address
-                                        </a>
-                                    </td>
-                                </tr>
-                            </table>
-                            
-                            <p style="margin: 24px 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
-                                Or copy and paste this link into your browser:
-                            </p>
-                            <p style="margin: 8px 0 0; padding: 12px; background-color: #f3f4f6; border-radius: 6px; word-break: break-all; font-size: 12px; color: #4b5563;">
-                                {{ .ConfirmationURL }}
-                            </p>
-                            
-                            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
-                                <p style="margin: 0; color: #9ca3af; font-size: 14px; line-height: 1.6;">
-                                    <strong>Didn't sign up?</strong><br>
-                                    If you didn't create a Petflik account, you can safely ignore this email.
-                                </p>
-                            </div>
-                            
-                            <div style="margin-top: 24px; padding: 16px; background-color: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 6px;">
-                                <p style="margin: 0; color: #1e40af; font-size: 13px; line-height: 1.5;">
-                                    💡 <strong>Quick tip:</strong> Add support@petflik.com to your contacts to ensure you receive all important updates.
-                                </p>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <!-- Footer -->
-                    <tr>
-                        <td style="padding: 32px 40px; background-color: #f9fafb; border-radius: 0 0 16px 16px; text-align: center;">
-                            <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">
-                                Need help? Contact us at <a href="mailto:support@petflik.com" style="color: #3b82f6; text-decoration: none;">support@petflik.com</a>
-                            </p>
-                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                                © 2024 Petflik. All rights reserved.
-                            </p>
-                            <div style="margin-top: 16px;">
-                                <a href="https://petflik.com/privacy" style="display: inline-block; margin: 0 8px; color: #9ca3af; text-decoration: none; font-size: 12px;">Privacy Policy</a>
-                                <span style="color: #d1d5db;">•</span>
-                                <a href="https://petflik.com/terms" style="display: inline-block; margin: 0 8px; color: #9ca3af; text-decoration: none; font-size: 12px;">Terms of Service</a>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+<body style="margin:0; padding:0; background-color:#f6f8f7; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f6f8f7;">
+    <tr>
+      <td align="center" style="padding:48px 16px;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border:1px solid #e5e5ea; border-radius:16px; overflow:hidden;">
+          <tr>
+            <td style="height:5px; background:linear-gradient(90deg, #56AB46 0%, #78B16B 100%);"></td>
+          </tr>
+          <tr>
+            <td style="padding:36px 36px 24px; text-align:center; background:linear-gradient(135deg, #56AB46 0%, #78B16B 100%);">
+              <p style="margin:0; font-size:11px; letter-spacing:3px; color:rgba(255,255,255,0.86); text-transform:uppercase;">Trusted pet care platform</p>
+              <h1 style="margin:8px 0 0; font-size:36px; letter-spacing:2px; color:#ffffff; font-weight:800;">PETFLIK</h1>
+              <p style="margin:6px 0 0; font-size:13px; letter-spacing:0.5px; color:rgba(255,255,255,0.92);">Europe</p>
             </td>
-        </tr>
-    </table>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 24px;">
+              <p style="margin:0; font-size:18px; line-height:1.7; color:#1C1C1E;">Hello,</p>
+              <p style="margin:16px 0 0; font-size:16px; line-height:1.7; color:#4A4A4A;">
+                Welcome to Petflik. Please confirm your email address to activate your account and start connecting with trusted pet sitters and owners.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 28px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f2f7f1; border:1px solid #dbe8d7; border-radius:10px;">
+                <tr>
+                  <td style="padding:30px; text-align:center;">
+                    <p style="margin:0 0 16px; font-size:11px; letter-spacing:2px; color:#56AB46; text-transform:uppercase; font-weight:700;">One step left</p>
+                    <a
+                      href="{{ .ConfirmationURL }}"
+                      style="display:inline-block; padding:14px 26px; text-decoration:none; font-size:15px; font-weight:700; letter-spacing:0.3px; color:#ffffff; background-color:#56AB46; border-radius:8px;"
+                    >
+                      Confirm email
+                    </a>
+                    <p style="margin:20px 0 0; font-size:12px; line-height:1.6; color:#6b7280;">
+                      If the button does not work, copy this link:
+                    </p>
+                    <p style="margin:8px 0 0; padding:10px; background-color:#ffffff; border:1px solid #d1d5db; border-radius:6px; font-size:11px; line-height:1.5; color:#4b5563; word-break:break-all;">
+                      {{ .ConfirmationURL }}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 24px;">
+              <p style="margin:0; font-size:14px; line-height:1.7; color:#6b7280;">
+                If you did not create a Petflik account, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 36px; background-color:#f9fafb; border-top:1px solid #e5e7eb;">
+              <p style="margin:0; font-size:13px; line-height:1.6; color:#6b7280; text-align:center;">
+                Need help? <a href="mailto:support@petflik.com" style="color:#56AB46; text-decoration:none;">support@petflik.com</a>
+              </p>
+              <p style="margin:10px 0 0; font-size:11px; line-height:1.6; color:#9ca3af; text-align:center;">
+                © {{ .Now.Year }} Petflik. All rights reserved.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="height:5px; background:linear-gradient(90deg, #56AB46 0%, #78B16B 100%);"></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>

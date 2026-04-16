@@ -78,7 +78,8 @@ serve(async (req) => {
       });
     }
 
-    const callback = `${publicAppUrl}/verify-identity`;
+    // Keep callback on legacy redirect route to support old and new clients.
+    const callback = `${publicAppUrl}/verify-identity-done`;
 
     const diditRes = await fetch('https://verification.didit.me/v3/session/', {
       method: 'POST',

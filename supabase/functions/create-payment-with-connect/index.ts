@@ -52,22 +52,20 @@ serve(async (req) => {
       )
     }
 
-    // Optional: Check if sitter has payout method configured
-    // This is optional for now - sitter can add payout method later
+    // Check if sitter has Stripe Connect configured.
     try {
-      const { data: sitterProfile } = await supabase
-        .from('users')
-        .select('payout_method, paypal_email, iban')
-        .eq('id', booking.sitter_id)
+      const { data: connectAccount } = await supabase
+        .from('stripe_connect_accounts')
+        .select('onboarding_completed, payouts_enabled, charges_enabled')
+        .eq('user_id', booking.sitter_id)
         .single()
       
-      // Log warning if no payout method, but don't block payment
-      if (!sitterProfile || (!sitterProfile.paypal_email && !sitterProfile.iban)) {
-        console.warn('Sitter has not set up payout method yet, but allowing payment to proceed')
+      // Log warning if Stripe isn't connected yet, but do not block payment.
+      if (!connectAccount || !connectAccount.onboarding_completed) {
+        console.warn('Sitter has not completed Stripe Connect setup yet, allowing payment to proceed')
       }
     } catch (error) {
-      // If columns don't exist yet (migration not run), just log and continue
-      console.warn('Could not check payout method (columns may not exist yet):', error)
+      console.warn('Could not check Stripe Connect status:', error)
     }
 
     // Calculate fees

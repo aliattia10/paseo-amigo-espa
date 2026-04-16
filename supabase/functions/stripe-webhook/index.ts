@@ -75,19 +75,30 @@ serve(async (req) => {
 
       case 'account.updated': {
         const account = event.data.object as Stripe.Account
-        
+        const disabledReason = account.requirements?.disabled_reason || null
+        const fieldsNeeded = [
+          ...(account.requirements?.currently_due ?? []),
+          ...(account.requirements?.past_due ?? []),
+        ]
+        const verificationStatus = account.charges_enabled && account.payouts_enabled
+          ? 'verified'
+          : disabledReason
+            ? 'restricted'
+            : 'pending'
+
         await supabase
           .from('stripe_connect_accounts')
           .update({
             charges_enabled: account.charges_enabled,
             payouts_enabled: account.payouts_enabled,
             details_submitted: account.details_submitted,
-            verification_status: account.charges_enabled ? 'verified' : 'pending',
+            verification_status: verificationStatus,
             onboarding_completed: account.details_submitted,
+            verification_fields_needed: fieldsNeeded,
           })
           .eq('stripe_account_id', account.id)
-        
-        console.log('Account updated:', account.id)
+
+        console.log('Account updated:', account.id, 'status:', verificationStatus)
         break
       }
 

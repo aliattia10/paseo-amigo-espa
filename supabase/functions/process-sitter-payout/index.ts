@@ -50,32 +50,28 @@ serve(async (req) => {
       throw new Error('Payout request already processed')
     }
 
-    // Get sitter's payout details
-    const sitter = payoutRequest.sitter
-    const payoutMethod = sitter.payout_method
+    // Stripe Connect-only payout flow.
+    const { data: connectAccount, error: connectErr } = await supabase
+      .from('stripe_connect_accounts')
+      .select('stripe_account_id, onboarding_completed, payouts_enabled, charges_enabled, verification_status')
+      .eq('user_id', payoutRequest.sitter_id)
+      .single()
 
-    let payoutResult: any = {}
+    if (connectErr || !connectAccount?.stripe_account_id) {
+      throw new Error('Sitter Stripe Connect account not found')
+    }
 
-    if (payoutMethod === 'paypal') {
-      // For PayPal, you would integrate with PayPal API
-      // For now, mark as manual processing required
-      payoutResult = {
-        method: 'paypal',
-        email: sitter.paypal_email,
-        status: 'manual_processing_required',
-        note: 'Process PayPal payout manually to: ' + sitter.paypal_email
-      }
-    } else if (payoutMethod === 'bank') {
-      // For bank transfers, you could use Stripe Transfers API if you have their bank details
-      // Or mark for manual SEPA transfer
-      payoutResult = {
-        method: 'bank_transfer',
-        iban: sitter.iban,
-        account_holder: sitter.account_holder_name,
-        bank_name: sitter.bank_name,
-        status: 'manual_processing_required',
-        note: 'Process bank transfer manually to IBAN: ' + sitter.iban
-      }
+    const payoutResult: Record<string, unknown> = {
+      method: 'stripe_connect',
+      stripe_account_id: connectAccount.stripe_account_id,
+      onboarding_completed: connectAccount.onboarding_completed,
+      payouts_enabled: connectAccount.payouts_enabled,
+      charges_enabled: connectAccount.charges_enabled,
+      verification_status: connectAccount.verification_status,
+      status: connectAccount.payouts_enabled ? 'ready_for_stripe_payout' : 'manual_review_required',
+      note: connectAccount.payouts_enabled
+        ? 'Payout should be processed using Stripe Connect account capabilities.'
+        : 'Stripe Connect account is not fully enabled. Complete onboarding before payout.',
     }
 
     // Update payout request status
@@ -85,6 +81,7 @@ serve(async (req) => {
         status: 'processing',
         processed_at: new Date().toISOString(),
         payout_details: JSON.stringify(payoutResult),
+        payout_method: 'stripe_connect',
       })
       .eq('id', payoutRequestId)
 
@@ -100,7 +97,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         payoutRequest: payoutRequestId,
-        method: payoutMethod,
+        method: 'stripe_connect',
         amount: payoutRequest.amount,
         details: payoutResult,
       }),

@@ -12,6 +12,9 @@ interface LocationContextType {
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
+const LOCATION_STORAGE_KEY = 'locationEnabled';
+const LOCATION_LAST_PROMPT_KEY = 'locationPromptedAt';
+const PROMPT_COOLDOWN_MS = 10 * 60 * 1000;
 
 export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
@@ -22,7 +25,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Load saved preferences
   useEffect(() => {
-    const savedLocationEnabled = localStorage.getItem('locationEnabled') === 'true';
+    const savedLocationEnabled = localStorage.getItem(LOCATION_STORAGE_KEY) === 'true';
     if (savedLocationEnabled) {
       setLocationEnabled(true);
       // Optionally try to get current location again
@@ -36,9 +39,11 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           },
           (error) => {
             console.error('Error getting saved location:', error);
-            // If we can't get location, remove the saved flag
-            localStorage.removeItem('locationEnabled');
-            setLocationEnabled(false);
+            // Keep enabled state if permission is still granted; avoid prompt loops
+            if (error?.code === 1) {
+              localStorage.removeItem(LOCATION_STORAGE_KEY);
+              setLocationEnabled(false);
+            }
           },
           { timeout: 5000, maximumAge: 600000 } // 10 minute cache
         );
@@ -59,17 +64,14 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const handleChange = () => {
           if (!permissionStatus) return;
           
-          // If permission was granted, automatically get location
-          if (permissionStatus.state === 'granted' && !locationEnabled) {
-            // Use a small delay to ensure the permission is fully granted
-            setTimeout(() => {
-              requestLocation();
-            }, 100);
+          // If permission was granted, refresh only when location is missing.
+          if (permissionStatus.state === 'granted' && !location) {
+            void requestLocation();
           }
           
           // If permission was denied, clear saved state
           if (permissionStatus.state === 'denied') {
-            localStorage.removeItem('locationEnabled');
+            localStorage.removeItem(LOCATION_STORAGE_KEY);
             setLocationEnabled(false);
             setLocation(null);
           }
@@ -89,10 +91,16 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     setupListener();
-  }, [locationEnabled]);
+  }, [locationEnabled, location]);
 
   // Request location permission
   const requestLocation = async () => {
+    const now = Date.now();
+    const lastPrompt = Number(localStorage.getItem(LOCATION_LAST_PROMPT_KEY) || 0);
+    if (locationEnabled && location && now - lastPrompt < PROMPT_COOLDOWN_MS) {
+      return;
+    }
+
     if (!navigator.geolocation) {
       toast({
         title: t('location.notSupported'),
@@ -132,7 +140,8 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setLocationEnabled(true);
       
       // Save location enabled state
-      localStorage.setItem('locationEnabled', 'true');
+      localStorage.setItem(LOCATION_STORAGE_KEY, 'true');
+      localStorage.setItem(LOCATION_LAST_PROMPT_KEY, String(now));
 
       // Update user location in database
       if (currentUser) {
@@ -152,6 +161,9 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (error?.code === 1) {
         errorMessage = t('location.denied');
         errorDescription = t('location.deniedDesc');
+        localStorage.removeItem(LOCATION_STORAGE_KEY);
+        setLocationEnabled(false);
+        setLocation(null);
       } else if (error?.code === 2) {
         errorMessage = t('location.unavailable');
         errorDescription = t('location.unavailableDesc');

@@ -40,7 +40,7 @@ import AvailabilityPage from "./pages/AvailabilityPage";
 import BookingsPage from "./pages/BookingsPage";
 import BookingRequestPage from "./pages/BookingRequestPage";
 import PaymentPage from "./pages/PaymentPage";
-import PayoutMethodsPage from "./pages/PayoutMethodsPage";
+import { PayoutSetupPage } from "./pages/PayoutSetupPage";
 import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import AdminVerificationsPage from "./pages/AdminVerificationsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
@@ -756,6 +756,8 @@ const App = () => (
                 {/* Protected Routes */}
                 <Route path="/verify-email" element={<ProtectedRoute><VerifyEmailPage /></ProtectedRoute>} />
                 <Route path="/verify-identity" element={<ProtectedRoute><VerifyIdentityPage /></ProtectedRoute>} />
+                <Route path="/verify-identity/*" element={<ProtectedRoute><VerifyIdentityPage /></ProtectedRoute>} />
+                <Route path="/verify" element={<ProtectedRoute><VerifyIdentityPage /></ProtectedRoute>} />
                 <Route path="/verify-identity-done" element={<ProtectedRoute><VerifyIdentityDonePage /></ProtectedRoute>} />
                 <Route 
                   path="/dashboard" 
@@ -905,9 +907,17 @@ const App = () => (
                   path="/payout-methods" 
                   element={
                     <ProtectedRoute>
-                      <PayoutMethodsPage />
+                      <PayoutSetupPage />
                     </ProtectedRoute>
                   } 
+                />
+                <Route
+                  path="/payout-setup"
+                  element={
+                    <ProtectedRoute>
+                      <PayoutSetupPage />
+                    </ProtectedRoute>
+                  }
                 />
                 <Route
                   path="/admin/payouts"

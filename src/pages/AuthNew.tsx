@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
-import RoleSelection from '@/components/auth/RoleSelection';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { playNotificationSound } from '@/lib/sounds';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
@@ -22,8 +21,7 @@ const AuthNew = () => {
   const { currentUser } = useAuth();
   const mode = searchParams.get('mode') || 'login';
 
-  const [step, setStep] = useState<'role' | 'form'>('role');
-  const [selectedRole, setSelectedRole] = useState<'owner' | 'walker' | 'both' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'owner' | 'walker' | 'both' | null>('owner');
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
@@ -108,23 +106,13 @@ const AuthNew = () => {
     run();
   }, [searchParams, navigate, toast]);
 
-  // If mode is login or role is provided in URL, skip role selection
+  // Keep single entrypoint for signup/login; role is chosen in form only.
   useEffect(() => {
     const roleFromUrl = searchParams.get('role') as 'owner' | 'walker' | null;
-    
-    if (mode === 'login') {
-      setStep('form');
-    } else if (mode === 'signup' && roleFromUrl) {
-      // Role already selected from RoleSelectionPage
+    if (mode === 'signup' && roleFromUrl) {
       setSelectedRole(roleFromUrl);
-      setStep('form');
     }
   }, [mode, searchParams]);
-
-  const handleRoleSelect = (role: 'owner' | 'walker' | 'both') => {
-    setSelectedRole(role);
-    setStep('form');
-  };
 
   const handleGoogleSignIn = async () => {
     setOauthLoading(true);
@@ -350,28 +338,6 @@ const AuthNew = () => {
     }
   };
 
-  // Show role selection for signup (with header so back button works)
-  if (step === 'role' && mode === 'signup') {
-    return (
-      <div className="relative flex h-auto min-h-screen w-full flex-col bg-role-background-light dark:bg-role-background-dark group/design-root overflow-x-hidden font-display">
-        <div className="sticky top-0 z-10 flex items-center bg-role-background-light/80 dark:bg-role-background-dark/80 p-4 pb-2 justify-between backdrop-blur-sm">
-          <div className="flex size-12 shrink-0 items-center justify-start">
-            <button onClick={() => navigate('/home')}>
-              <span className="material-symbols-outlined text-role-text-light dark:text-role-text-dark text-2xl">arrow_back</span>
-            </button>
-          </div>
-          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-role-text-light dark:text-role-text-dark">
-            {t('auth.createAccount')}
-          </h2>
-          <div className="flex w-12 items-center justify-end">
-            <LanguageSwitcher />
-          </div>
-        </div>
-        <RoleSelection onSelectRole={handleRoleSelect} />
-      </div>
-    );
-  }
-
   // Show login/signup form
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-role-background-light dark:bg-role-background-dark group/design-root overflow-x-hidden font-display">
@@ -422,6 +388,27 @@ const AuthNew = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
               <>
+                <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
+                  <div className="p-4">
+                    <span className="text-sm font-medium text-role-text-light dark:text-role-text-dark">{t('auth.iAm', 'I am a')}</span>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole('owner')}
+                        className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${selectedRole === 'owner' ? 'bg-primary text-white' : 'bg-background-light dark:bg-background-dark text-role-text-light dark:text-role-text-dark'}`}
+                      >
+                        {t('auth.petOwner')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole('walker')}
+                        className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${selectedRole === 'walker' ? 'bg-primary text-white' : 'bg-background-light dark:bg-background-dark text-role-text-light dark:text-role-text-dark'}`}
+                      >
+                        {t('auth.sitter')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
                 <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden">
                   <div className="p-4">
                     <label className="flex flex-col gap-2">

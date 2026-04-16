@@ -50,7 +50,7 @@ serve(async (req) => {
     // Get user profile for metadata
     const { data: profile } = await supabase
       .from('users')
-      .select('email, full_name')
+      .select('email, name')
       .eq('id', user.id)
       .single()
 
@@ -59,6 +59,9 @@ serve(async (req) => {
       type: 'express',
       country: 'ES',
       email: profile?.email || user.email,
+      business_profile: profile?.name
+        ? { name: profile.name as string }
+        : undefined,
       capabilities: {
         card_payments: { requested: true },
         transfers: { requested: true },

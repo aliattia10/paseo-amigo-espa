@@ -22,6 +22,9 @@ const SitterProfileSetup: React.FC = () => {
   const [sitterData, setSitterData] = useState({
     bio: '',
     hourlyRate: 15,
+    yearsExperience: 0,
+    petsCaredFor: 0,
+    sitterAge: 18,
     avatarUrl: '',
     experience: [] as string[],
     dogs: true, // Default to dogs only for backward compatibility
@@ -105,10 +108,34 @@ const SitterProfileSetup: React.FC = () => {
       return;
     }
     
-    if (sitterData.hourlyRate < 10 || sitterData.hourlyRate > 100) {
+    if (sitterData.hourlyRate < 5 || sitterData.hourlyRate > 500) {
       toast({
         title: t('common.error'),
-        description: 'Hourly rate must be between €10 and €100',
+        description: 'Hourly rate must be between €5 and €500',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (sitterData.sitterAge < 18 || sitterData.sitterAge > 90) {
+      toast({
+        title: t('common.error'),
+        description: 'Sitter age must be between 18 and 90',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (sitterData.yearsExperience < 0 || sitterData.yearsExperience > 60) {
+      toast({
+        title: t('common.error'),
+        description: 'Years of experience must be between 0 and 60',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (sitterData.petsCaredFor < 0 || sitterData.petsCaredFor > 10000) {
+      toast({
+        title: t('common.error'),
+        description: 'Pets cared for must be between 0 and 10,000',
         variant: 'destructive',
       });
       return;
@@ -128,6 +155,9 @@ const SitterProfileSetup: React.FC = () => {
       const updateData: any = {
         bio: sitterData.bio,
         hourly_rate: sitterData.hourlyRate,
+        years_experience: sitterData.yearsExperience,
+        pets_cared_for: sitterData.petsCaredFor,
+        sitter_age: sitterData.sitterAge,
       };
 
       // Save photos as JSON array
@@ -246,16 +276,57 @@ const SitterProfileSetup: React.FC = () => {
                 value={sitterData.hourlyRate}
                 onChange={(e) => setSitterData({ ...sitterData, hourlyRate: parseInt(e.target.value) || 15 })}
                 className="w-full text-lg"
-                min="10"
-                max="100"
+                min="5"
+                max="500"
                 step="1"
                 required
               />
               <span className="text-text-secondary-light dark:text-text-secondary-dark">/hour</span>
             </div>
             <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-2">
-              Set your base rate. You can adjust this anytime.
+              Set your base rate between €5 and €500.
             </p>
+          </div>
+
+          {/* Experience and Age */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                Sitter age <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="number"
+                value={sitterData.sitterAge}
+                onChange={(e) => setSitterData({ ...sitterData, sitterAge: parseInt(e.target.value) || 18 })}
+                min="18"
+                max="90"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                Years of pet care experience
+              </label>
+              <Input
+                type="number"
+                value={sitterData.yearsExperience}
+                onChange={(e) => setSitterData({ ...sitterData, yearsExperience: Math.max(0, parseInt(e.target.value) || 0) })}
+                min="0"
+                max="60"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                Pets cared for
+              </label>
+              <Input
+                type="number"
+                value={sitterData.petsCaredFor}
+                onChange={(e) => setSitterData({ ...sitterData, petsCaredFor: Math.max(0, parseInt(e.target.value) || 0) })}
+                min="0"
+                max="10000"
+              />
+            </div>
           </div>
 
           {/* Experience Tags - Optional */}

@@ -1,100 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 const RoleSelectionPage: React.FC = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
+  React.useEffect(() => {
+    navigate('/auth?mode=signup', { replace: true });
+  }, [navigate]);
 
-  const handleRoleSelect = (role: 'owner' | 'walker') => {
-    // Navigate to signup with role pre-selected
-    navigate(`/auth?mode=signup&role=${role}`);
-  };
-
-  return (
-    <div className="relative flex h-auto min-h-screen w-full flex-col bg-role-background-light dark:bg-role-background-dark group/design-root overflow-x-hidden font-display">
-      {/* Top Bar: Back button + Language Switcher */}
-      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
-        <button
-          onClick={() => navigate('/home')}
-          className="flex items-center justify-center p-2 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
-          aria-label="Back to home"
-        >
-          <span className="material-symbols-outlined text-role-text-light dark:text-role-text-dark text-2xl">arrow_back</span>
-        </button>
-        <LanguageSwitcher />
-      </div>
-
-      {/* HeaderImage */}
-      <div className="w-full">
-        <div className="px-0 md:px-4 py-0 md:py-3">
-          <div 
-            className="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden min-h-[320px] sm:min-h-[400px] md:rounded-xl"
-            style={{
-              backgroundImage: 'url("https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1200&q=80")',
-              backgroundPosition: 'center 40%'
-            }}
-          />
-        </div>
-      </div>
-
-      {/* HeadlineText */}
-      <h1 className="text-role-text-light dark:text-role-text-dark tracking-tight text-[32px] font-bold leading-tight px-4 text-center pb-3 pt-6">
-        {t('auth.joinPetflik')}
-      </h1>
-
-      {/* ButtonGroup */}
-      <div className="flex justify-center">
-        <div className="flex flex-1 gap-4 max-w-[480px] flex-col items-stretch px-4 py-3">
-          <button
-            onClick={() => handleRoleSelect('owner')}
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-auto px-5 py-4 bg-role-primary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] w-full flex-col gap-1 text-center hover:opacity-90 transition-opacity shadow-lg"
-          >
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined">pets</span>
-              <span className="truncate text-lg">{t('auth.petOwner')}</span>
-            </div>
-            <p className="text-sm font-normal text-role-background-dark/80">
-              {t('auth.petOwnerDesc')}
-            </p>
-          </button>
-
-          <button
-            onClick={() => handleRoleSelect('walker')}
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-auto px-5 py-4 bg-role-button-secondary text-role-background-dark text-base font-bold leading-normal tracking-[0.015em] w-full flex-col gap-1 text-center hover:opacity-90 transition-opacity shadow-lg"
-          >
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined">school</span>
-              <span className="truncate text-lg">{t('auth.sitter')}</span>
-            </div>
-            <p className="text-sm font-normal text-role-background-dark/80">
-              {t('auth.sitterDesc')}
-            </p>
-          </button>
-        </div>
-      </div>
-
-      {/* MetaText */}
-      <p className="text-role-text-light/70 dark:text-role-text-dark/70 text-sm font-normal leading-normal pb-6 pt-3 px-4 text-center">
-        {t('auth.alreadyHaveAccount')}{' '}
-        <button 
-          onClick={() => navigate('/auth?mode=login')} 
-          className="font-bold underline text-role-primary hover:opacity-80 transition-opacity"
-        >
-          {t('auth.signIn')}
-        </button>
-      </p>
-
-      {/* Footer with Logo */}
-      <footer className="mt-auto px-4 py-6 flex justify-center items-center">
-        <div className="flex items-center gap-2 text-role-text-light dark:text-role-text-dark">
-          <img src="/app-logo.png?v=2" alt="Petflik Logo" className="w-8 h-8" />
-          <span className="font-bold text-lg">Petflik</span>
-        </div>
-      </footer>
-    </div>
-  );
+  return null;
 };
 
 export default RoleSelectionPage;

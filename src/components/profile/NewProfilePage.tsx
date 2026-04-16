@@ -521,6 +521,26 @@ const NewProfilePage: React.FC = () => {
           {/* My Availability Card */}
           {activeRole === 'sitter' && (
             <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
+              <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-3">Sitter details</h3>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-background-light dark:bg-background-dark p-2">
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">Age</p>
+                  <p className="font-bold text-text-primary-light dark:text-text-primary-dark">{(userProfile as any)?.sitterAge ?? '—'}</p>
+                </div>
+                <div className="rounded-lg bg-background-light dark:bg-background-dark p-2">
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">Experience</p>
+                  <p className="font-bold text-text-primary-light dark:text-text-primary-dark">{(userProfile as any)?.yearsExperience ?? 0}y</p>
+                </div>
+                <div className="rounded-lg bg-background-light dark:bg-background-dark p-2">
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">Pets cared</p>
+                  <p className="font-bold text-text-primary-light dark:text-text-primary-dark">{(userProfile as any)?.petsCaredFor ?? 0}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeRole === 'sitter' && (
+            <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{t('profile.myAvailability')}</h3>
                 <button 

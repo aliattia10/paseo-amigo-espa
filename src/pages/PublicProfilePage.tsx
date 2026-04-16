@@ -203,7 +203,7 @@ const PublicProfilePage: React.FC = () => {
                     schedule
                   </span>
                   <span className="font-bold text-lg text-text-primary-light dark:text-text-primary-dark">
-                    {userProfile?.experience || '1'}
+                    {((userProfile as any)?.yearsExperience ?? userProfile?.experience) || '1'}
                   </span>
                 </div>
                 <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
@@ -211,6 +211,23 @@ const PublicProfilePage: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {((userProfile as any)?.sitterAge || (userProfile as any)?.petsCaredFor) && (
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-background-light dark:bg-background-dark rounded-xl p-3 text-center">
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Age</p>
+                  <p className="font-bold text-text-primary-light dark:text-text-primary-dark">
+                    {(userProfile as any)?.sitterAge ?? '—'}
+                  </p>
+                </div>
+                <div className="bg-background-light dark:bg-background-dark rounded-xl p-3 text-center">
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Pets cared for</p>
+                  <p className="font-bold text-text-primary-light dark:text-text-primary-dark">
+                    {(userProfile as any)?.petsCaredFor ?? 0}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Hourly Rate - for sitters */}
             {userProfile?.hourlyRate && (userProfile?.userType === 'walker' || (userProfile?.userType as any) === 'sitter' || (userProfile?.userType as any) === 'both') && (

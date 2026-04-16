@@ -7,6 +7,8 @@ export interface SitterCardProps {
   profileImage?: string | null;
   rating?: number | null;
   petsCaredFor?: number | null;
+  yearsExperience?: number | null;
+  sitterAge?: number | null;
   bio?: string | null;
   hobbies?: string[] | null;
   hourlyRate?: number | null;
@@ -22,6 +24,8 @@ const SitterCard: React.FC<SitterCardProps> = ({
   profileImage,
   rating = null,
   petsCaredFor = null,
+  yearsExperience = null,
+  sitterAge = null,
   bio = '',
   hobbies = [],
   hourlyRate = null,
@@ -63,6 +67,16 @@ const SitterCard: React.FC<SitterCardProps> = ({
             {displayPets && (
               <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                 {displayPets}
+              </span>
+            )}
+            {yearsExperience != null && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                {yearsExperience}y exp
+              </span>
+            )}
+            {sitterAge != null && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                Age {sitterAge}
               </span>
             )}
             {hourlyRate != null && (

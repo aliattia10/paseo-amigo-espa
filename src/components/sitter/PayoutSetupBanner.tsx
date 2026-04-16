@@ -23,17 +23,17 @@ export const PayoutSetupBanner: React.FC = () => {
 
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('paypal_email, iban')
-        .eq('id', currentUser.id)
+        .from('stripe_connect_accounts')
+        .select('onboarding_completed, payouts_enabled, charges_enabled')
+        .eq('user_id', currentUser.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading payout method:', error);
       }
 
-      // User has payout method if they have either PayPal or bank details
-      setHasPayoutMethod(!!(data?.paypal_email || data?.iban));
+      // Stripe Connect is considered ready when onboarding is completed.
+      setHasPayoutMethod(Boolean(data?.onboarding_completed || (data?.payouts_enabled && data?.charges_enabled)));
     } catch (error) {
       console.error('Error:', error);
     } finally {

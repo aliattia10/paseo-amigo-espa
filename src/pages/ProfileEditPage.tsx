@@ -25,6 +25,9 @@ const ProfileEditPage: React.FC = () => {
     bio: userProfile?.bio || '',
     profilePictureUrl: userProfile?.profileImage || '',
     hourlyRate: (userProfile as any)?.hourly_rate || 15,
+    yearsExperience: (userProfile as any)?.yearsExperience || 0,
+    petsCaredFor: (userProfile as any)?.petsCaredFor || 0,
+    sitterAge: (userProfile as any)?.sitterAge || 18,
   });
   
   // Tinder-style multiple photos (max 6)
@@ -45,6 +48,9 @@ const ProfileEditPage: React.FC = () => {
         bio: userProfile.bio || '',
         profilePictureUrl: userProfile.profileImage || '',
         hourlyRate: (userProfile as any)?.hourly_rate || 15,
+        yearsExperience: (userProfile as any)?.yearsExperience || 0,
+        petsCaredFor: (userProfile as any)?.petsCaredFor || 0,
+        sitterAge: (userProfile as any)?.sitterAge || 18,
       });
       
       // Load existing photos from profile_image (stored as JSON array)
@@ -225,6 +231,24 @@ const ProfileEditPage: React.FC = () => {
       });
       return;
     }
+    if (userProfile?.userType !== 'owner') {
+      if (formData.hourlyRate < 5 || formData.hourlyRate > 500) {
+        toast({
+          title: 'Invalid hourly rate',
+          description: 'Hourly rate must be between €5 and €500.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (formData.sitterAge < 18 || formData.sitterAge > 90) {
+        toast({
+          title: 'Invalid age',
+          description: 'Sitter age must be between 18 and 90.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
 
     setLoading(true);
     try {
@@ -246,6 +270,11 @@ const ProfileEditPage: React.FC = () => {
       // Add hourly rate for sitters
       if (formData.hourlyRate) {
         updateData.hourly_rate = formData.hourlyRate;
+      }
+      if (userProfile?.userType !== 'owner') {
+        updateData.years_experience = Math.max(0, Number(formData.yearsExperience || 0));
+        updateData.pets_cared_for = Math.max(0, Number(formData.petsCaredFor || 0));
+        updateData.sitter_age = Math.max(18, Number(formData.sitterAge || 18));
       }
 
       // Save photos array as JSON
@@ -521,14 +550,57 @@ const ProfileEditPage: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, hourlyRate: parseInt(e.target.value) || 15 })}
                   className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                   placeholder="15"
-                  min="10"
-                  max="100"
+                  min="5"
+                  max="500"
                   step="1"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Set your base hourly rate (€10-€100)
+                  Set your base hourly rate (€5-€500)
                 </p>
               </div>
+            )}
+            {userProfile?.userType !== 'owner' && (
+              <>
+                <div>
+                  <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Age
+                  </label>
+                  <Input
+                    type="number"
+                    value={formData.sitterAge}
+                    onChange={(e) => setFormData({ ...formData, sitterAge: parseInt(e.target.value) || 18 })}
+                    className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                    min="18"
+                    max="90"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Years of experience
+                  </label>
+                  <Input
+                    type="number"
+                    value={formData.yearsExperience}
+                    onChange={(e) => setFormData({ ...formData, yearsExperience: Math.max(0, parseInt(e.target.value) || 0) })}
+                    className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                    min="0"
+                    max="60"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Pets cared for
+                  </label>
+                  <Input
+                    type="number"
+                    value={formData.petsCaredFor}
+                    onChange={(e) => setFormData({ ...formData, petsCaredFor: Math.max(0, parseInt(e.target.value) || 0) })}
+                    className="w-full bg-white dark:bg-[#2a2a2a] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                    min="0"
+                    max="10000"
+                  />
+                </div>
+              </>
             )}
           </div>
         </div>

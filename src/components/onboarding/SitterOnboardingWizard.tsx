@@ -44,7 +44,9 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
   const [loading, setLoading] = useState(false);
 
   const [hasExperience, setHasExperience] = useState<boolean | null>(null);
+  const [yearsExperience, setYearsExperience] = useState<number>(0);
   const [petsCaredFor, setPetsCaredFor] = useState<number>(0);
+  const [sitterAge, setSitterAge] = useState<number>(18);
 
   const [preferences, setPreferences] = useState<string[]>([]);
   const togglePreference = (id: string) => {
@@ -69,6 +71,14 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
     }
     if (hasExperience && petsCaredFor < 1) {
       toast({ title: t('common.error'), description: 'Please enter how many pets', variant: 'destructive' });
+      return;
+    }
+    if (sitterAge < 18 || sitterAge > 90) {
+      toast({ title: t('common.error'), description: 'Sitter age must be between 18 and 90', variant: 'destructive' });
+      return;
+    }
+    if (yearsExperience < 0 || yearsExperience > 60) {
+      toast({ title: t('common.error'), description: 'Years of experience must be between 0 and 60', variant: 'destructive' });
       return;
     }
     setStep(2);
@@ -100,7 +110,9 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
         .from('users')
         .update({
           has_pet_experience: hasExperience ?? false,
+          years_experience: yearsExperience,
           pets_cared_for: hasExperience ? petsCaredFor : 0,
+          sitter_age: sitterAge,
           preferences: prefsPayload,
           hobbies,
           updated_at: new Date().toISOString(),
@@ -188,6 +200,34 @@ const SitterOnboardingWizard: React.FC<SitterOnboardingWizardProps> = ({ onCompl
                 />
               </div>
             )}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Your age
+              </label>
+              <input
+                type="number"
+                min={18}
+                max={90}
+                value={sitterAge || ''}
+                onChange={(e) => setSitterAge(Math.max(18, Math.min(90, parseInt(e.target.value, 10) || 18)))}
+                className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
+                placeholder="e.g. 28"
+              />
+            </div>
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Years of pet care experience
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={60}
+                value={yearsExperience || 0}
+                onChange={(e) => setYearsExperience(Math.max(0, Math.min(60, parseInt(e.target.value, 10) || 0)))}
+                className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 text-lg"
+                placeholder="e.g. 3"
+              />
+            </div>
             <Button size="lg" className="w-full rounded-xl" onClick={handleStep1Next}>
               Continue <ChevronRight className="ml-2 h-5 w-5" />
             </Button>

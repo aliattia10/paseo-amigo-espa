@@ -29,6 +29,14 @@ export const PayoutSetupPage: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [connectAccount, setConnectAccount] = useState<any>(null);
 
+  const connectStatus = !connectAccount
+    ? 'not_connected'
+    : connectAccount?.payouts_enabled && connectAccount?.charges_enabled
+      ? 'active'
+      : connectAccount?.verification_status === 'restricted'
+        ? 'restricted'
+        : 'pending';
+
   useEffect(() => {
     loadConnectAccount();
     
@@ -251,6 +259,17 @@ export const PayoutSetupPage: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <Card className="p-8">
+        <div className="mb-4 text-center">
+          <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-700">
+            {connectStatus === 'not_connected'
+              ? 'Not connected'
+              : connectStatus === 'pending'
+                ? 'Pending verification'
+                : connectStatus === 'restricted'
+                  ? 'Restricted'
+                  : 'Active'}
+          </span>
+        </div>
         <CreditCard className="w-16 h-16 mx-auto mb-4 text-primary" />
         <h1 className="text-2xl font-bold mb-2 text-center">
           {t('payout.setup_payouts')}

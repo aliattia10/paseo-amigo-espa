@@ -131,7 +131,7 @@ const LandingPage: React.FC = () => {
               <Button
                 size="lg"
                 className="bg-medium-jungle hover:bg-medium-jungle/90 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-                onClick={() => navigate('/select-role')}
+                onClick={() => navigate('/auth?mode=signup')}
               >
                 {t('landing.getStarted')}
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -403,7 +403,7 @@ const LandingPage: React.FC = () => {
               <Button
                 size="lg"
                 className="bg-medium-jungle hover:bg-medium-jungle/90 text-white"
-                onClick={() => navigate('/select-role')}
+                onClick={() => navigate('/auth?mode=signup')}
               >
                 {t('landing.becomeSitter')}
                 <ArrowRight className="ml-2 w-4 h-4" />
@@ -501,8 +501,8 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-gray-900 dark:text-white font-bold mb-6">{t('landing.footerOurApps')}</h4>
             <ul className="space-y-4">
-              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerForOwners')}</button></li>
-              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerForSitters')}</button></li>
+              <li><button onClick={() => navigate('/auth?mode=signup')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerForOwners')}</button></li>
+              <li><button onClick={() => navigate('/auth?mode=signup')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerForSitters')}</button></li>
             </ul>
           </div>
 
@@ -512,7 +512,7 @@ const Footer: React.FC = () => {
               <li><button onClick={() => navigate('/about')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerAbout')}</button></li>
               <li><button onClick={() => navigate('/blog')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerBlog')}</button></li>
               <li><button onClick={() => navigate('/contact')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerContact')}</button></li>
-              <li><button onClick={() => navigate('/select-role')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerCareers')}</button></li>
+              <li><button onClick={() => navigate('/auth?mode=signup')} className="text-gray-500 dark:text-gray-400 hover:text-medium-jungle transition-colors">{t('landing.footerCareers')}</button></li>
             </ul>
           </div>
 

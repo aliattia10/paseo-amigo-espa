@@ -107,6 +107,7 @@ const resources = {
       'auth.petOwnerDesc': 'Find trusted sitters for your furry friends.',
       'auth.sitter': 'Sitter',
       'auth.sitterDesc': 'Earn money doing what you love.',
+      'auth.iAm': 'I am a',
       'auth.signIn': 'Sign In',
       'auth.pleaseLogInAgain': 'Please log in again',
       
@@ -309,6 +310,8 @@ const resources = {
       
       // Verify identity (KYC)
       'verifyIdentity.title': 'Verify your identity',
+      'verifyIdentity.invalidCallbackTitle': 'Verification callback is incomplete',
+      'verifyIdentity.invalidCallbackDesc': 'We could not read your verification result. Please retry identity verification.',
       'verifyIdentity.description': 'To keep our community safe, we ask you to verify your identity with a quick ID check. This only takes a minute.',
       'verifyIdentity.start': 'Start verification',
       'verifyIdentity.starting': 'Starting...',
@@ -837,6 +840,7 @@ const resources = {
       'auth.petOwnerDesc': 'Trouvez des gardiens de confiance pour vos amis à fourrure.',
       'auth.sitter': 'Gardien',
       'auth.sitterDesc': 'Gagnez de l\'argent en faisant ce que vous aimez.',
+      'auth.iAm': 'Je suis',
 'auth.signIn': 'Se Connecter',
       'auth.pleaseLogInAgain': 'Veuillez vous reconnecter',
 
@@ -988,6 +992,8 @@ const resources = {
 
       // Verify identity (KYC)
       'verifyIdentity.title': 'Vérifiez votre identité',
+      'verifyIdentity.invalidCallbackTitle': 'Le retour de vérification est incomplet',
+      'verifyIdentity.invalidCallbackDesc': 'Nous n\'avons pas pu lire votre résultat. Veuillez relancer la vérification.',
       'verifyIdentity.description': 'Pour garder notre communauté sûre, nous vous demandons de vérifier votre identité avec une vérification d\'identité rapide. Cela ne prend qu\'une minute.',
       'verifyIdentity.start': 'Commencer la vérification',
       'verifyIdentity.starting': 'Démarrage...',
@@ -1765,6 +1771,7 @@ const resources = {
       'auth.petOwnerDesc': 'Encuentra cuidadores de confianza para tus amigos peludos.',
       'auth.sitter': 'Cuidador',
       'auth.sitterDesc': 'Gana dinero haciendo lo que amas.',
+      'auth.iAm': 'Soy',
 'auth.signIn': 'Iniciar Sesión',
       'auth.pleaseLogInAgain': 'Por favor, inicia sesión de nuevo',
 
@@ -1967,6 +1974,8 @@ const resources = {
       
       // Verify identity (KYC)
       'verifyIdentity.title': 'Verifica tu identidad',
+      'verifyIdentity.invalidCallbackTitle': 'La devolución de verificación está incompleta',
+      'verifyIdentity.invalidCallbackDesc': 'No pudimos leer el resultado de verificación. Inténtalo de nuevo.',
       'verifyIdentity.description': 'Para mantener la comunidad segura, te pedimos que verifiques tu identidad con una comprobación rápida de ID. Solo toma un minuto.',
       'verifyIdentity.start': 'Iniciar verificación',
       'verifyIdentity.starting': 'Iniciando...',

@@ -4,8 +4,10 @@ import { z } from 'zod';
 export const sitterProfileSchema = z.object({
   bio: z.string().max(500).optional(),
   rating: z.number().min(0).max(5).optional().nullable(),
+  hourly_rate: z.number().min(5).max(500).optional(),
   years_experience: z.number().int().min(0).optional(),
   pets_cared_for: z.number().int().min(0).optional(),
+  sitter_age: z.number().int().min(18).max(90).optional(),
   has_pet_experience: z.boolean().optional(),
   hobbies: z.array(z.string().max(50)).max(20).optional(),
   preferences: z
@@ -37,7 +39,9 @@ export type PetProfileForm = z.infer<typeof petProfileSchema>;
 /** Sitter onboarding: experience step */
 export const sitterExperienceSchema = z.object({
   has_pet_experience: z.boolean(),
+  years_experience: z.number().int().min(0).max(60).optional(),
   pets_cared_for: z.number().int().min(0).optional(),
+  sitter_age: z.number().int().min(18).max(90).optional(),
 });
 
 /** Sitter onboarding: preference chips (Big Dogs, Small Dogs, Cats, Puppies) */

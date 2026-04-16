@@ -16,7 +16,11 @@ const VerifyIdentityPage: React.FC = () => {
 
   const statusParam = searchParams.get('status') ?? '';
   const sessionIdParam = searchParams.get('verificationSessionId') ?? '';
+  const validStatuses = new Set(['Approved', 'Declined', 'In Review', 'Pending']);
   const isDiditReturn = Boolean(statusParam || sessionIdParam);
+  const malformedDiditReturn =
+    isDiditReturn &&
+    (!statusParam || !sessionIdParam || (statusParam && !validStatuses.has(statusParam)));
 
   const clearParamsAndGoDashboard = useCallback(() => {
     setSearchParams({}, { replace: true });
@@ -67,6 +71,21 @@ const VerifyIdentityPage: React.FC = () => {
   }
 
   if (isDiditReturn) {
+    if (malformedDiditReturn) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            {t('verifyIdentity.invalidCallbackTitle', 'Verification callback is incomplete')}
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-5">
+            {t('verifyIdentity.invalidCallbackDesc', 'We could not read your verification result. Please retry identity verification.')}
+          </p>
+          <Button onClick={() => setSearchParams({}, { replace: true })}>
+            {t('common.retry', 'Retry')}
+          </Button>
+        </div>
+      );
+    }
     return (
       <VerifyIdentityOutcome status={statusParam} sessionId={sessionIdParam} onContinue={clearParamsAndGoDashboard} />
     );

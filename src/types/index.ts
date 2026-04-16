@@ -24,6 +24,8 @@ export interface User {
   yearsExperience?: number | null;
   /** Sitter: total pets cared for */
   petsCaredFor?: number | null;
+  /** Sitter: age in years */
+  sitterAge?: number | null;
   /** Sitter: has prior pet experience */
   hasPetExperience?: boolean | null;
   /** Sitter: e.g. ["Hiking", "Reading"] */

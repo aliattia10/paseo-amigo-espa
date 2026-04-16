@@ -58,12 +58,7 @@ const AdminPayoutsPage: React.FC = () => {
           sitter:users!payout_requests_sitter_id_fkey(
             id,
             name,
-            email,
-            payout_method,
-            paypal_email,
-            bank_name,
-            iban,
-            account_holder_name
+            email
           )
         `)
         .eq('status', 'pending')
@@ -199,27 +194,12 @@ const AdminPayoutsPage: React.FC = () => {
 
                 <div>
                   <h4 className="font-semibold mb-2">Payout Details:</h4>
-                  {request.payout_method === 'paypal' ? (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                      <p className="text-sm font-medium">PayPal</p>
-                      <p className="text-sm text-blue-700 dark:text-blue-300">
-                        {request.sitter?.paypal_email}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="bg-sage-green/10 dark:bg-sage-green/20 p-3 rounded-lg">
-                      <p className="text-sm font-medium">Bank Transfer</p>
-                      <p className="text-xs text-medium-jungle dark:text-sage-green">
-                        <strong>Account Holder:</strong> {request.sitter?.account_holder_name}
-                      </p>
-                      <p className="text-xs text-medium-jungle dark:text-sage-green">
-                        <strong>IBAN:</strong> {request.sitter?.iban}
-                      </p>
-                      <p className="text-xs text-medium-jungle dark:text-sage-green">
-                        <strong>Bank:</strong> {request.sitter?.bank_name}
-                      </p>
-                    </div>
-                  )}
+                  <div className="bg-sage-green/10 dark:bg-sage-green/20 p-3 rounded-lg">
+                    <p className="text-sm font-medium">Stripe Connect</p>
+                    <p className="text-xs text-medium-jungle dark:text-sage-green">
+                      Payout method: automatic transfer through Stripe Connect account.
+                    </p>
+                  </div>
 
                   <Button
                     onClick={() => handleMarkAsProcessed(request.id)}
@@ -241,8 +221,7 @@ const AdminPayoutsPage: React.FC = () => {
               <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <p className="text-xs text-yellow-800 dark:text-yellow-200">
                   <strong>Action Required:</strong> Process this payout manually via{' '}
-                  {request.payout_method === 'paypal' ? 'PayPal' : 'bank transfer'}, then mark as
-                  processed.
+                  Stripe Connect dashboard, then mark as processed.
                 </p>
               </div>
             </div>
