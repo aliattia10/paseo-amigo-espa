@@ -25,6 +25,30 @@ export default {
 				'medium-jungle': '#56AB46',
 				'white': '#FFFFFF',
 				'muted-olive': '#8FBA85',
+				// PetFlik Geneva landing palette
+				ivory: 'oklch(0.98 0.005 80)',
+				'warm-gray': 'oklch(0.95 0.005 80)',
+				sage: {
+					50: 'oklch(0.97 0.01 150)',
+					100: 'oklch(0.94 0.02 150)',
+					200: 'oklch(0.88 0.03 150)',
+					300: 'oklch(0.78 0.05 150)',
+					400: 'oklch(0.65 0.08 150)',
+					500: 'oklch(0.55 0.09 150)',
+					600: 'oklch(0.48 0.08 150)',
+					700: 'oklch(0.42 0.07 150)',
+					800: 'oklch(0.35 0.06 150)',
+					900: 'oklch(0.28 0.05 150)',
+				},
+				terra: {
+					50: 'oklch(0.96 0.02 50)',
+					100: 'oklch(0.92 0.04 50)',
+					200: 'oklch(0.85 0.07 45)',
+					300: 'oklch(0.78 0.10 40)',
+					400: 'oklch(0.70 0.12 38)',
+					500: 'oklch(0.62 0.13 35)',
+					600: 'oklch(0.55 0.12 35)',
+				},
 				
 				// Stitch Design System - Exact Colors from HTML Files
 				// Welcome Page Colors
@@ -130,6 +154,7 @@ export default {
 			},
 			fontFamily: {
 				'display': ['"Plus Jakarta Sans"', 'sans-serif'],
+				'serif': ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
 			},
 			borderRadius: {
 				'DEFAULT': '0.5rem',      // Stitch default
