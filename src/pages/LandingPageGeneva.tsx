@@ -1,15 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { ArrowRight, CheckCircle, Heart, MapPin, Shield, Star, Users } from 'lucide-react';
+  ArrowRight,
+  CalendarCheck,
+  CreditCard,
+  Heart,
+  Mail,
+  MapPin,
+  ShieldCheck,
+  Star,
+  UserPlus,
+  Users,
+} from 'lucide-react';
 
 const LandingPageGeneva: React.FC = () => {
   const navigate = useNavigate();
@@ -18,25 +24,23 @@ const LandingPageGeneva: React.FC = () => {
   const languageCycle = ['en', 'es', 'fr'] as const;
 
   React.useEffect(() => {
-    if (theme === 'dark') {
-      toggleTheme();
-    }
+    if (theme === 'dark') toggleTheme();
   }, [theme, toggleTheme]);
 
   const cycleLanguage = () => {
     const idx = languageCycle.indexOf((currentLanguage as 'en' | 'es' | 'fr') || 'en');
-    const next = languageCycle[(idx + 1) % languageCycle.length];
-    changeLanguage(next);
+    changeLanguage(languageCycle[(idx + 1) % languageCycle.length]);
   };
 
+  const goSignup = () => navigate('/auth?mode=signup');
+  const goSignin = () => navigate('/auth');
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-ash-grey/20 via-white to-muted-olive/20 text-gray-900">
+    <div className="min-h-screen bg-ivory text-foreground">
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         <button
           onClick={toggleTheme}
           className="h-10 w-10 rounded-full bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors flex items-center justify-center"
-          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
         >
           <span className="material-symbols-outlined text-xl">
             {theme === 'dark' ? 'light_mode' : 'dark_mode'}
@@ -45,209 +49,245 @@ const LandingPageGeneva: React.FC = () => {
         <button
           onClick={cycleLanguage}
           className="h-10 rounded-full px-3 bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors text-sm font-semibold"
-          title="Change language"
-          aria-label="Change language"
         >
           {String(currentLanguage || 'en').toUpperCase()}
         </button>
       </div>
 
-      <section className="relative overflow-hidden pt-24 pb-16">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-16 left-10 w-64 h-64 bg-sage-green/25 rounded-full blur-3xl" />
-          <div className="absolute top-24 right-10 w-64 h-64 bg-muted-olive/25 rounded-full blur-3xl" />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-sage-green/15 border border-sage-green/30 px-4 py-1.5 mb-5">
-                <MapPin className="w-4 h-4 text-medium-jungle" />
-                <span className="text-xs font-semibold uppercase tracking-wide">PetFlik - Dogs & Cats</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-5">
-                Find trusted care for your
-                <span className="text-medium-jungle"> dogs and cats</span>
-              </h1>
-              <p className="text-lg text-gray-600 mb-8 max-w-xl">
-                Swipe, match, and book verified pet sitters in minutes. PetFlik is built for pet parents and sitters who care for both dogs and cats.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  size="lg"
-                  className="bg-medium-jungle hover:bg-medium-jungle/90 text-white px-8 py-6 text-lg font-semibold"
-                  onClick={() => navigate('/auth?mode=signup')}
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="px-8 py-6 text-lg font-semibold border-medium-jungle text-medium-jungle"
-                  onClick={() => navigate('/auth')}
-                >
-                  Sign in
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <img
-                src="https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=700"
-                alt="Happy dog portrait"
-                className="rounded-2xl shadow-xl h-56 md:h-72 w-full object-cover"
-              />
-              <img
-                src="https://images.unsplash.com/photo-1519052537078-e6302a4968d4?auto=format&fit=crop&q=80&w=700"
-                alt="Happy cat portrait"
-                className="rounded-2xl shadow-xl h-56 md:h-72 w-full object-cover"
-              />
-              <img
-                src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&q=80&w=700"
-                alt="Dog with owner"
-                className="rounded-2xl shadow-xl h-56 md:h-72 w-full object-cover"
-              />
-              <img
-                src="https://images.unsplash.com/photo-1511044568932-338cba0ad803?auto=format&fit=crop&q=80&w=700"
-                alt="Cat relaxing at home"
-                className="rounded-2xl shadow-xl h-56 md:h-72 w-full object-cover"
-              />
-            </div>
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-ivory/80 backdrop-blur-xl border-b border-sage-100/60">
+        <div className="container flex items-center justify-between h-16">
+          <a href="#top" className="flex items-center gap-2.5">
+            <img src="/app-logo.png?v=2" alt="PetFlik" className="h-9 w-9 rounded-full" />
+            <span className="font-serif font-semibold text-xl text-sage-800 tracking-tight">PetFlik</span>
+          </a>
+          <div className="hidden md:flex items-center gap-8">
+            <a href="#how-it-works" className="text-sm font-medium text-foreground/70 hover:text-sage-600">How It Works</a>
+            <a href="#why-petflik" className="text-sm font-medium text-foreground/70 hover:text-sage-600">Why PetFlik</a>
+            <a href="#community" className="text-sm font-medium text-foreground/70 hover:text-sage-600">Community</a>
+            <a href="#faq" className="text-sm font-medium text-foreground/70 hover:text-sage-600">FAQ</a>
+          </div>
+          <div className="hidden md:flex items-center gap-3">
+            <Button variant="ghost" className="text-sm font-medium text-sage-700 hover:bg-sage-50" onClick={goSignin}>
+              Sign In
+            </Button>
+            <Button className="bg-sage-600 hover:bg-sage-700 text-white font-medium text-sm px-5 rounded-xl" onClick={goSignup}>
+              Get Started
+            </Button>
           </div>
         </div>
-      </section>
+      </nav>
 
-      <section className="py-14 border-y border-ash-grey/40 bg-white/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            ['1000+', 'Happy pets'],
-            ['500+', 'Verified sitters'],
-            ['4.9', 'Average rating'],
-            ['24/7', 'Support'],
-          ].map(([value, label]) => (
-            <div key={label} className="bg-white rounded-xl p-5 text-center shadow-sm border border-ash-grey/40">
-              <div className="text-3xl font-bold text-medium-jungle">{value}</div>
-              <div className="text-sm text-gray-600">{label}</div>
+      <section id="top" className="relative min-h-screen flex items-center overflow-hidden pt-16">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=1800"
+            alt="Dog walking along Lake Geneva"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-ivory/95 via-ivory/80 to-ivory/30" />
+        </div>
+        <div className="container relative z-10 grid lg:grid-cols-2 gap-8 items-center">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 bg-sage-50/80 border border-sage-200/60 rounded-full px-4 py-1.5 mb-6">
+              <MapPin size={14} className="text-sage-600" />
+              <span className="text-xs font-semibold text-sage-700 tracking-wide uppercase">Geneva, Switzerland</span>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-10">How it works</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              ['1', 'Create your profile', 'Tell us about your dogs, cats, and care preferences.'],
-              ['2', 'Swipe and match', 'Browse local sitters and connect with the best fit.'],
-              ['3', 'Book with confidence', 'Chat, schedule, and pay securely in one place.'],
-            ].map(([step, title, desc]) => (
-              <div key={step} className="bg-white rounded-2xl p-6 shadow-sm border border-ash-grey/40">
-                <div className="w-12 h-12 rounded-full bg-sage-green/20 text-medium-jungle font-bold flex items-center justify-center mb-4">
-                  {step}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{title}</h3>
-                <p className="text-gray-600">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-ash-grey/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-10">Why PetFlik</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              [Heart, 'Trusted community', 'Pet owners and sitters who genuinely love dogs and cats.'],
-              [Shield, 'Secure payments', 'Safe checkout and protected payouts.'],
-              [Users, 'Local matching', 'Find sitters near your neighborhood.'],
-              [Star, 'Verified reviews', 'Real feedback after each completed booking.'],
-            ].map(([Icon, title, desc]) => (
-              <div key={title as string} className="bg-white rounded-xl p-6 shadow-sm border border-ash-grey/40">
-                <Icon className="w-6 h-6 text-medium-jungle mb-3" />
-                <h3 className="font-semibold mb-2">{title as string}</h3>
-                <p className="text-sm text-gray-600">{desc as string}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8 items-center bg-white rounded-2xl p-8 border border-ash-grey/40 shadow-sm">
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Earn as a dog and cat sitter</h2>
-              <p className="text-gray-600 mb-5">
-                Set your own rates, choose your availability, and build a trusted profile in your city.
-              </p>
-              <ul className="space-y-3 mb-6">
-                {[
-                  'Flexible schedule',
-                  'Transparent earnings',
-                  'Grow your repeat clients',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-medium-jungle mt-0.5" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                size="lg"
-                className="bg-medium-jungle hover:bg-medium-jungle/90 text-white"
-                onClick={() => navigate('/auth?mode=signup')}
-              >
-                Become a sitter
-                <ArrowRight className="ml-2 w-4 h-4" />
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-semibold text-sage-900 leading-[1.1] mb-6">
+              Your Dog Deserves
+              <br />
+              <span className="text-sage-600">a Local Friend</span>
+            </h1>
+            <p className="text-lg text-foreground/70 leading-relaxed mb-8 max-w-md">
+              PetFlik connects Geneva dog owners with verified local sitters - students, adults, and seniors who genuinely love dogs. Swipe, match, and book in seconds.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white font-semibold px-7 rounded-xl" onClick={goSignup}>
+                Find a Sitter
+                <ArrowRight size={18} className="ml-2" />
+              </Button>
+              <Button size="lg" variant="outline" className="border-sage-300 text-sage-700 hover:bg-sage-50 font-semibold px-7 rounded-xl bg-white/60" onClick={goSignup}>
+                Become a Sitter
               </Button>
             </div>
-            <img
-              src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=900"
-              alt="Pet sitter with dogs and cats"
-              className="rounded-xl w-full h-72 object-cover"
-            />
           </div>
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-8">Frequently asked questions</h2>
+      <section id="how-it-works" className="py-24 bg-warm-gray">
+        <div className="container">
+          <div className="text-center mb-16">
+            <span className="text-xs font-semibold text-terra-500 tracking-widest uppercase mb-3 block">Simple as 1-2-3</span>
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-sage-900">How PetFlik Works</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            {[
+              ['01', UserPlus, 'Create Your Profile', "Sign up as a dog owner or sitter. Add your dog's details, your location in Geneva, and your availability."],
+              ['02', Heart, 'Swipe & Match', 'Browse verified sitters near you. Swipe right on sitters you love, left to skip.'],
+              ['03', CalendarCheck, 'Book & Enjoy', "Chat with your match, agree on timing and rates, and book securely through the platform."],
+            ].map(([number, Icon, title, description]) => (
+              <div key={String(number)} className="bg-white rounded-2xl p-8 shadow-sm border border-sage-100/60">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="font-serif text-5xl font-bold text-sage-100">{number as string}</span>
+                  <div className="w-12 h-12 rounded-xl bg-sage-50 flex items-center justify-center">
+                    <Icon size={22} className="text-sage-600" />
+                  </div>
+                </div>
+                <h3 className="font-serif text-xl font-semibold text-sage-800 mb-3">{title as string}</h3>
+                <p className="text-foreground/60 leading-relaxed text-sm">{description as string}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="why-petflik" className="py-24 bg-ivory">
+        <div className="container">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <img
+              src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=1200"
+              alt="Verified and trusted platform"
+              className="w-full max-w-md mx-auto rounded-3xl"
+            />
+            <div>
+              <span className="text-xs font-semibold text-terra-500 tracking-widest uppercase mb-3 block">Built for Trust</span>
+              <h2 className="font-serif text-3xl sm:text-4xl font-semibold text-sage-900 tracking-tight mb-4">
+                Why Geneva Dog Owners
+                <br />
+                Choose PetFlik
+              </h2>
+              <p className="text-foreground/60 mb-10 text-lg max-w-md">
+                A platform designed with your dog's safety and happiness as the top priority.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-6">
+                {[
+                  [ShieldCheck, 'Verified & Trusted Sitters'],
+                  [MapPin, 'Locally Grown Community'],
+                  [Users, 'All Ages, One Passion'],
+                  [Star, 'Rated & Reviewed'],
+                  [CalendarCheck, 'Flexible Scheduling'],
+                  [CreditCard, 'Secure Payments'],
+                ].map(([Icon, label]) => (
+                  <div key={label as string} className="flex gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-sage-50 flex items-center justify-center shrink-0">
+                      <Icon size={18} className="text-sage-600" />
+                    </div>
+                    <h3 className="font-semibold text-sage-800 text-sm">{label as string}</h3>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="community" className="py-24 bg-sage-600 text-white">
+        <div className="container text-center max-w-3xl">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold mb-6">Join the PetFlik Community</h2>
+          <p className="text-sage-100/85 text-lg mb-8">
+            Trusted by pet owners and sitters across Geneva. Find the right match and book with confidence.
+          </p>
+          <Button size="lg" className="bg-white text-sage-700 hover:bg-sage-50 font-semibold px-7 rounded-xl" onClick={goSignup}>
+            Get Started
+            <ArrowRight size={18} className="ml-2" />
+          </Button>
+        </div>
+      </section>
+
+      <section id="faq" className="py-24 bg-ivory">
+        <div className="container max-w-3xl">
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-3xl sm:text-4xl font-semibold text-sage-900">Frequently Asked Questions</h2>
+          </div>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
-              <AccordionTrigger>Do you support both dogs and cats?</AccordionTrigger>
-              <AccordionContent>Yes. PetFlik supports care requests for dogs and cats across onboarding, matching, and booking.</AccordionContent>
+              <AccordionTrigger>How do I know a sitter is trustworthy?</AccordionTrigger>
+              <AccordionContent>Every sitter is verified and reviewed by real pet owners before you book.</AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
-              <AccordionTrigger>How do I know a sitter is trustworthy?</AccordionTrigger>
-              <AccordionContent>We combine profile verification, ratings, reviews, and transparent booking history.</AccordionContent>
+              <AccordionTrigger>How does payment work?</AccordionTrigger>
+              <AccordionContent>Payments are processed securely through the platform and protected until service completion.</AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
-              <AccordionTrigger>How fast can I find a sitter?</AccordionTrigger>
-              <AccordionContent>Most users can discover and message multiple local sitters in a few minutes.</AccordionContent>
+              <AccordionTrigger>Can I book recurring walks?</AccordionTrigger>
+              <AccordionContent>Yes, you can coordinate one-time or recurring services directly with your sitter.</AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
       </section>
 
-      <section className="py-16 bg-medium-jungle text-white text-center">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to find your perfect pet match?</h2>
-          <p className="text-white/90 mb-8">
-            Join pet owners and sitters already using PetFlik for safe, flexible dog and cat care.
+      <section className="py-24 lg:py-32 bg-ivory border-t border-sage-100/60">
+        <div className="container text-center max-w-2xl mx-auto">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-sage-900 tracking-tight mb-6">
+            Ready to Find Your Dog's
+            <br />
+            <span className="text-sage-600">Perfect Match?</span>
+          </h2>
+          <p className="text-foreground/60 text-lg leading-relaxed mb-10 max-w-lg mx-auto">
+            Join hundreds of Geneva dog owners who trust PetFlik to connect them with verified, local sitters.
           </p>
-          <Button
-            size="lg"
-            className="bg-white text-medium-jungle hover:bg-white/90 px-8 py-6 text-lg font-semibold"
-            onClick={() => navigate('/auth?mode=signup')}
-          >
-            Get Started
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white font-semibold px-8 rounded-xl text-base" onClick={goSignup}>
+              Get Started Free
+              <ArrowRight size={18} className="ml-2" />
+            </Button>
+            <Button size="lg" variant="outline" className="border-sage-300 text-sage-700 hover:bg-sage-50 font-semibold px-8 rounded-xl text-base" onClick={goSignin}>
+              Learn More
+            </Button>
+          </div>
         </div>
       </section>
+
+      <footer className="bg-sage-800 text-sage-100">
+        <div className="container py-16 lg:py-20">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-2.5 mb-4">
+                <img src="/app-logo.png?v=2" alt="PetFlik" className="h-9 w-9 rounded-full" />
+                <span className="font-serif font-semibold text-xl text-white tracking-tight">PetFlik</span>
+              </div>
+              <p className="text-sage-300 text-sm leading-relaxed max-w-xs mb-6">
+                The trusted platform connecting Geneva's dog owners with verified local sitters.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sage-300 text-sm">
+                  <MapPin size={14} />
+                  <span>Geneva, Switzerland</span>
+                </div>
+                <div className="flex items-center gap-2 text-sage-300 text-sm">
+                  <Mail size={14} />
+                  <span>hello@petflik.com</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-4">Platform</h4>
+              <ul className="space-y-2.5">
+                <li><button onClick={goSignup} className="text-sage-300 text-sm hover:text-white">For Owners</button></li>
+                <li><button onClick={goSignup} className="text-sage-300 text-sm hover:text-white">For Sitters</button></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-4">Company</h4>
+              <ul className="space-y-2.5">
+                <li><button onClick={() => navigate('/about')} className="text-sage-300 text-sm hover:text-white">About</button></li>
+                <li><button onClick={() => navigate('/blog')} className="text-sage-300 text-sm hover:text-white">Blog</button></li>
+                <li><button onClick={() => navigate('/contact')} className="text-sage-300 text-sm hover:text-white">Contact</button></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-4">Legal</h4>
+              <ul className="space-y-2.5">
+                <li><button onClick={() => navigate('/terms')} className="text-sage-300 text-sm hover:text-white">Terms & Conditions</button></li>
+                <li><button onClick={() => navigate('/privacy')} className="text-sage-300 text-sm hover:text-white">Privacy Policy</button></li>
+                <li><button onClick={() => navigate('/refund-policy')} className="text-sage-300 text-sm hover:text-white">Refund Policy</button></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-14 pt-8 border-t border-sage-700/50">
+            <p className="text-sage-400 text-xs">&copy; {new Date().getFullYear()} PetFlik. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
