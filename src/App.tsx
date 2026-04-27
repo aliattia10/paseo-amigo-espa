@@ -45,7 +45,7 @@ import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import AdminVerificationsPage from "./pages/AdminVerificationsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminGuard from "./components/admin/AdminGuard";
-import LandingPage from "./pages/LandingPage";
+import LandingPageGeneva from "./pages/LandingPageGeneva";
 import AboutUsPage from "./pages/AboutUsPage";
 import ContactPage from "./pages/ContactPage";
 import UserAgreementPage from "./pages/UserAgreementPage";
@@ -728,7 +728,7 @@ const App = () => (
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
-                <Route path="/home" element={<LandingPage />} />
+                <Route path="/home" element={<LandingPageGeneva />} />
                 <Route path="/about" element={<AboutUsPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/user-agreement" element={<UserAgreementPage />} />
