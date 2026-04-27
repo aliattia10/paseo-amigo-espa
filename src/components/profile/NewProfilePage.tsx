@@ -8,6 +8,17 @@ import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 import i18n from '@/lib/i18n';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import PetCard from '@/components/dashboard/PetCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Booking {
   id: string;
@@ -53,6 +64,9 @@ const NewProfilePage: React.FC = () => {
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   // Refresh profile data when component mounts or when returning from edit
   useEffect(() => {
@@ -66,6 +80,46 @@ const NewProfilePage: React.FC = () => {
       await logout();
     } catch (e) {
       toast({ title: t('common.error'), description: t('dashboard.logoutError'), variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!currentUser) {
+      toast({
+        title: t('common.error'),
+        description: 'You must be logged in to delete your account.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (deleteConfirmText.trim().toUpperCase() !== 'DELETE') {
+      toast({
+        title: 'Confirmation required',
+        description: 'Type DELETE to confirm account removal.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase.functions.invoke('delete-account');
+      if (error) throw new Error(error.message || 'Could not delete account');
+
+      await supabase.auth.signOut({ scope: 'local' });
+      setDeleteDialogOpen(false);
+      toast({
+        title: 'Account deleted',
+        description: 'Your profile and account have been removed.',
+      });
+      window.location.href = '/home';
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Could not delete account';
+      toast({ title: 'Delete failed', description: msg, variant: 'destructive' });
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -699,6 +753,61 @@ const NewProfilePage: React.FC = () => {
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
             </ul>
+          </div>
+
+          {/* Danger Zone */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden border border-red-200 dark:border-red-900/50">
+            <div className="p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-red-600 dark:text-red-400">delete</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-red-600 dark:text-red-400">Delete Account</h3>
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                    Permanently remove your profile, photos, bookings, and account access.
+                  </p>
+                </div>
+              </div>
+              <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg border border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 h-10 text-sm font-bold"
+                  >
+                    Delete my account
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="max-w-[92vw] rounded-2xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action is permanent and cannot be undone. To confirm, type{' '}
+                      <strong>DELETE</strong> below.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="Type DELETE"
+                    className="w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-sm"
+                  />
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={deletingAccount}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={deletingAccount}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        void handleDeleteAccount();
+                      }}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      {deletingAccount ? 'Deleting...' : 'Delete account'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
 
           {/* Booking History */}

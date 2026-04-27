@@ -34,7 +34,9 @@ const sitterPhone =
 const verifiedImage =
   'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=85&w=900';
 const communityImage =
-  'https://images.unsplash.com/photo-1558944351-c20d374d432d?auto=format&fit=crop&q=85&w=1200';
+  'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&q=85&w=1200';
+const imageFallback =
+  'https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&q=85&w=900';
 
 type LandingHandlers = {
   goSignup: () => void;
@@ -60,6 +62,31 @@ function PhoneMockup() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LandingImage({
+  src,
+  alt,
+  className,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      loading="lazy"
+      onError={(event) => {
+        const img = event.currentTarget;
+        if (img.src !== imageFallback) {
+          img.src = imageFallback;
+        }
+      }}
+    />
   );
 }
 
@@ -404,7 +431,7 @@ function CommunitySection() {
 
           <div className="relative order-1 lg:order-2">
             <div className="relative overflow-hidden rounded-3xl shadow-xl shadow-sage-900/10">
-              <img src={communityImage} alt="Diverse community of pet lovers in Geneva" className="aspect-[4/3] w-full object-cover" />
+              <LandingImage src={communityImage} alt="Diverse community of pet lovers in Geneva" className="aspect-[4/3] w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-sage-900/30 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="rounded-xl border border-white/50 bg-white/90 p-4 backdrop-blur-sm">
@@ -422,7 +449,7 @@ function CommunitySection() {
 
 function PetsSection() {
   const pets = [
-    ['Golden Retriever', 'https://images.unsplash.com/photo-1633722715463-d30f4f325e24?auto=format&fit=crop&q=85&w=800'],
+    ['Golden Retriever', 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=85&w=800'],
     ['French Bulldog', 'https://images.unsplash.com/photo-1583512603784-a8e3ea83534c?auto=format&fit=crop&q=85&w=800'],
     ['Border Collie', 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?auto=format&fit=crop&q=85&w=800'],
     ['Labrador', 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=85&w=800'],
@@ -443,9 +470,9 @@ function PetsSection() {
           <p className="mx-auto mt-4 max-w-lg text-lg text-foreground/60">From playful dogs to independent cats - our sitters love them all.</p>
         </div>
 
-        <div className="mb-16 grid overflow-hidden rounded-3xl shadow-lg shadow-sage-900/10 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mb-16 grid overflow-hidden rounded-3xl bg-sage-50 shadow-lg shadow-sage-900/10 sm:grid-cols-2 lg:grid-cols-3">
           {pets.map(([label, src]) => (
-            <img key={label} src={src} alt={label} className="h-64 w-full object-cover" />
+            <LandingImage key={label} src={src} alt={label} className="h-64 w-full object-cover" />
           ))}
         </div>
 
