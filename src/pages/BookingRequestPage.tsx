@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { formatPetAge, parseLegacyAge } from '@/lib/pet-age';
+import { formatCurrencyChf } from '@/lib/currency';
 
 const resolvePrimaryPetImage = (raw?: string | null): string | undefined => {
   if (!raw) return undefined;
@@ -119,7 +120,7 @@ const BookingRequestPage: React.FC = () => {
       const bookingNotes = [
         formData.notes?.trim() || '',
         referralCode ? `Referral code: ${referralCode}` : '',
-        referralCode ? `Referral discount: €${referralDiscount.toFixed(2)} (5% for up to 10h)` : '',
+        referralCode ? `Referral discount: ${formatCurrencyChf(referralDiscount)} (5% for up to 10h)` : '',
       ].filter(Boolean).join('\n');
 
       // Create booking using RPC function or direct insert
@@ -370,7 +371,7 @@ const BookingRequestPage: React.FC = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
                 <span>Hourly Rate</span>
-                <span>€{hourlyRate.toFixed(2)}/hr</span>
+                <span>{formatCurrencyChf(hourlyRate)}/hr</span>
               </div>
               <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
                 <span>Duration</span>
@@ -378,22 +379,22 @@ const BookingRequestPage: React.FC = () => {
               </div>
               <div className="flex justify-between text-text-primary-light dark:text-text-primary-dark">
                 <span>Subtotal</span>
-                <span>€{subtotal.toFixed(2)}</span>
+                <span>{formatCurrencyChf(subtotal)}</span>
               </div>
               <div className="flex justify-between text-text-secondary-light dark:text-text-secondary-dark text-sm">
                 <span>Platform Fee (20%)</span>
-                <span>€{platformFee.toFixed(2)}</span>
+                <span>{formatCurrencyChf(platformFee)}</span>
               </div>
               {hasReferralCode && (
                 <div className="flex justify-between text-green-600 dark:text-green-400 text-sm">
                   <span>Referral Discount (5%, max 10h)</span>
-                  <span>-€{referralDiscount.toFixed(2)}</span>
+                  <span>-{formatCurrencyChf(referralDiscount)}</span>
                 </div>
               )}
               <div className="border-t border-border-light dark:border-border-dark pt-2 mt-2"></div>
               <div className="flex justify-between text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
                 <span>Total</span>
-                <span>€{total.toFixed(2)}</span>
+                <span>{formatCurrencyChf(total)}</span>
               </div>
             </div>
           </div>

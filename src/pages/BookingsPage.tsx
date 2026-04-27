@@ -8,6 +8,8 @@ import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 import BottomNavigation from '@/components/ui/BottomNavigation';
 import ReviewModal from '@/components/bookings/ReviewModal';
 import i18n from '@/lib/i18n';
+import { formatCurrencyChf } from '@/lib/currency';
+import { featureFlags } from '@/lib/feature-flags';
 
 interface Booking {
   id: string;
@@ -484,12 +486,19 @@ const BookingsPage: React.FC = () => {
               
               {/* Show Pay Now button when booking confirmed but not paid (OWNER) */}
               {(booking.status as string) === 'confirmed' && (!booking.payment_status || booking.payment_status === 'pending') && currentUser?.id === booking.owner_id && (
-                <Button 
-                  onClick={() => navigate(`/payment?bookingId=${booking.id}`)} 
-                  className="w-full bg-primary text-white"
-                >
-                  💳 {t('bookings.payNow')} - €{booking.total_amount.toFixed(2)}
-                </Button>
+                <div className="space-y-2">
+                  {featureFlags.minPaymentMode && (
+                    <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                      Test pricing mode active: minimum CHF amount applied.
+                    </div>
+                  )}
+                  <Button
+                    onClick={() => navigate(`/payment?bookingId=${booking.id}`)}
+                    className="w-full bg-primary text-white"
+                  >
+                    💳 {t('bookings.payNow')} - {formatCurrencyChf(featureFlags.minPaymentMode ? Math.max(0.5, featureFlags.minPaymentChf) : booking.total_amount)}
+                  </Button>
+                </div>
               )}
               
               {/* Show waiting message when confirmed and paid */}

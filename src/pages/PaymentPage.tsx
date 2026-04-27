@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { featureFlags } from '@/lib/feature-flags';
+import { formatCurrencyChf } from '@/lib/currency';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
 if (!stripeKey && import.meta.env.DEV) {
@@ -73,7 +75,7 @@ function PaymentForm({ bookingId, amount, onSuccess }: { bookingId: string; amou
             Processing...
           </>
         ) : (
-          `Pay €${amount.toFixed(2)}`
+          `Pay ${formatCurrencyChf(amount)}`
         )}
       </Button>
       <p className="text-sm text-muted-foreground text-center">
@@ -93,6 +95,7 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(true);
   const [platformFee, setPlatformFee] = useState<number>(0);
   const [sitterAmount, setSitterAmount] = useState<number>(0);
+  const [chargedAmount, setChargedAmount] = useState<number>(0);
 
   // Get bookingId from query params
   const bookingId = searchParams.get('bookingId');
@@ -117,24 +120,24 @@ export default function PaymentPage() {
         setBooking(bookingData);
 
         // Use total_price instead of payment_amount
-        const amount = bookingData.total_price || bookingData.payment_amount || 0;
+        const baseAmount = bookingData.total_price || bookingData.payment_amount || 0;
+        const amount = featureFlags.minPaymentMode
+          ? Math.max(0.5, featureFlags.minPaymentChf)
+          : baseAmount;
 
         // Create payment intent with Stripe Connect (20% platform fee)
-        console.log('Creating payment for booking:', bookingData.id, 'Amount:', amount);
 
         const { data, error } = await supabase.functions.invoke('create-payment-with-connect', {
           body: {
             bookingId: bookingData.id,
             amount: amount,
+            originalAmountChf: baseAmount,
+            chargedAmountChf: amount,
+            testMode: featureFlags.minPaymentMode,
           },
         });
 
-        console.log('Payment creation response:', { data, error });
-
         if (error) {
-          console.error('Payment creation error:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
-
           // Show more specific error message
           const errorMessage = error.message || error.msg || 'Failed to create payment';
           toast.error(`Payment Error: ${errorMessage}`);
@@ -142,32 +145,29 @@ export default function PaymentPage() {
         }
 
         if (!data || !data.clientSecret) {
-          console.error('Response data:', data);
           const errorMsg = data?.error || 'No client secret returned from payment creation';
           toast.error(`Payment Setup Error: ${errorMsg}`);
           throw new Error(errorMsg);
         }
-        
-        console.log('Client secret received:', data.clientSecret.substring(0, 15) + '...');
-
-        console.log('Payment intent created successfully, client secret received');
 
         // Store platform fee and sitter amount for display
         setPlatformFee(data.platformFee || amount * 0.20);
         setSitterAmount(data.sitterAmount || amount * 0.80);
+        setChargedAmount(data.chargedAmountChf || amount);
 
         // Update booking with payment intent ID
         await supabase
           .from('bookings')
           .update({ 
             stripe_payment_intent_id: data.paymentIntentId,
-            payment_amount: amount
+            payment_amount: amount,
+            payment_status: 'pending',
           })
           .eq('id', bookingId);
 
         setClientSecret(data.clientSecret);
       } catch (error: any) {
-        console.error('Error:', error);
+      if (import.meta.env.DEV) console.error('Error:', error);
         toast.error(error.message || 'Failed to initialize payment');
         setTimeout(() => navigate('/bookings'), 2000);
       } finally {
@@ -196,6 +196,11 @@ export default function PaymentPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {featureFlags.minPaymentMode && (
+            <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              Test pricing mode active: minimum CHF amount applied.
+            </div>
+          )}
           <div className="mb-6 p-4 bg-muted rounded-lg space-y-3">
             <div className="flex justify-between">
               <span className="text-sm">{t('payment.service')}</span>
@@ -203,21 +208,21 @@ export default function PaymentPage() {
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="text-base font-semibold">{t('payment.totalAmount')}</span>
-              <span className="text-base font-bold">€{(booking.total_price || booking.payment_amount)?.toFixed(2)}</span>
+              <span className="text-base font-bold">{formatCurrencyChf(chargedAmount || booking.total_price || booking.payment_amount || 0)}</span>
             </div>
             <div className="text-xs text-muted-foreground space-y-1 border-t pt-2">
               <div className="flex justify-between">
                 <span>Goes to Sitter (80%):</span>
-                <span className="font-medium">€{sitterAmount.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrencyChf(sitterAmount)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Platform Fee (20%):</span>
-                <span className="font-medium">€{platformFee.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrencyChf(platformFee)}</span>
               </div>
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span className="text-xs">{t('payment.sitterReceives')}</span>
-              <span className="text-xs">€{(booking.total_price - booking.commission_fee)?.toFixed(2)}</span>
+              <span className="text-xs">{formatCurrencyChf((chargedAmount || booking.total_price || 0) - (booking.commission_fee || platformFee || 0))}</span>
             </div>
           </div>
 

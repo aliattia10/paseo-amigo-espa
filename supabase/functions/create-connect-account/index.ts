@@ -58,6 +58,7 @@ serve(async (req) => {
     const account = await stripe.accounts.create({
       type: 'express',
       country: 'ES',
+      default_currency: 'chf',
       email: profile?.email || user.email,
       business_profile: profile?.name
         ? { name: profile.name as string }
@@ -81,7 +82,7 @@ serve(async (req) => {
         stripe_account_id: account.id,
         account_type: 'express',
         country: 'ES',
-        currency: 'EUR',
+        currency: 'CHF',
       })
 
     if (insertError) {

@@ -11,6 +11,7 @@ const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const PLATFORM_FEE_PERCENT = 0.20 // 20% platform fee
+const STRIPE_CHF_MIN = 0.5 // Minimum charge in CHF (major unit)
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,7 +36,7 @@ serve(async (req) => {
       )
     }
 
-    const { bookingId, amount } = await req.json()
+    const { bookingId, amount, originalAmountChf, chargedAmountChf, testMode } = await req.json()
 
     // Get booking details
     const { data: booking, error: bookingError} = await supabase
@@ -68,15 +69,24 @@ serve(async (req) => {
       console.warn('Could not check Stripe Connect status:', error)
     }
 
+    const incomingAmount = Number(amount)
+    const safeAmountChf = Number.isFinite(incomingAmount) ? Math.max(STRIPE_CHF_MIN, incomingAmount) : STRIPE_CHF_MIN
+    const originalAmountSafe = Number.isFinite(Number(originalAmountChf))
+      ? Math.max(STRIPE_CHF_MIN, Number(originalAmountChf))
+      : safeAmountChf
+    const chargedAmountSafe = Number.isFinite(Number(chargedAmountChf))
+      ? Math.max(STRIPE_CHF_MIN, Number(chargedAmountChf))
+      : safeAmountChf
+
     // Calculate fees
-    const totalAmount = Math.round(amount * 100) // Convert to cents
+    const totalAmount = Math.round(safeAmountChf * 100) // Convert to rappen
     const platformFee = Math.round(totalAmount * PLATFORM_FEE_PERCENT)
     const sitterAmount = totalAmount - platformFee
 
     // Create standard payment intent (money goes to platform account)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
-      currency: 'eur',
+      currency: 'chf',
       automatic_payment_methods: {
         enabled: true,
       },
@@ -86,6 +96,9 @@ serve(async (req) => {
         receiver_id: booking.sitter_id,
         platform_fee: (platformFee / 100).toString(),
         sitter_amount: (sitterAmount / 100).toString(),
+        test_mode: Boolean(testMode).toString(),
+        original_amount_chf: originalAmountSafe.toFixed(2),
+        charged_amount_chf: chargedAmountSafe.toFixed(2),
       },
     })
 
@@ -94,17 +107,32 @@ serve(async (req) => {
       booking_id: bookingId,
       payer_id: user.id,
       receiver_id: booking.sitter_id,
-      amount: amount,
-      currency: 'EUR',
+      amount: safeAmountChf,
+      currency: 'CHF',
       platform_fee: platformFee / 100,
       sitter_payout: sitterAmount / 100,
       stripe_payment_intent_id: paymentIntent.id,
       status: 'pending',
     })
 
+    if (testMode) {
+      const existingNotes = typeof booking.notes === 'string' ? booking.notes : ''
+      const testNote =
+        `\n[Test pricing mode] original_amount_chf=${originalAmountSafe.toFixed(2)} charged_amount_chf=${chargedAmountSafe.toFixed(2)}`
+      await supabase
+        .from('bookings')
+        .update({
+          notes: `${existingNotes}${testNote}`.trim(),
+          payment_amount: safeAmountChf,
+        })
+        .eq('id', bookingId)
+    }
+
     return new Response(
       JSON.stringify({ 
         clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
+        chargedAmountChf: safeAmountChf,
         platformFee: platformFee / 100,
         sitterAmount: sitterAmount / 100,
       }),

@@ -27,8 +27,8 @@ serve(async (req) => {
 
     // Create payment intent with manual capture (hold funds)
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
-      currency: 'eur',
+      amount: Math.max(50, Math.round(amount * 100)), // Convert to rappen and keep safe floor
+      currency: 'chf',
       capture_method: 'manual', // Hold funds until manual capture
       metadata: {
         booking_id: bookingId,

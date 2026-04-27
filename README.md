@@ -152,9 +152,31 @@ Set these in **Netlify → Site → Site configuration → Environment variables
 Optional (if you use them):
 
 - `VITE_STRIPE_PUBLISHABLE_KEY` – Stripe publishable key
+- `VITE_MIN_PAYMENT_MODE` – enable minimum-charge test pricing while keeping real Stripe flow active (`true`/`false`)
+- `VITE_MIN_PAYMENT_CHF` – minimum amount to charge in CHF when test pricing is enabled (default `1.00`)
 - `VITE_GOOGLE_MAPS_API_KEY` – Google Maps API key
 
 After adding or changing variables, trigger a **new deploy** so the build picks them up. The app uses these only at **build time**; the browser still talks to Supabase directly. If loading fails only on some networks (e.g. firewall blocking Supabase), env vars on Netlify will not fix that—only the correct keys and a reachable Supabase URL.
+
+### Minimum payment test mode (real payments, CHF)
+
+Use this mode when you want to validate booking/payment/review flows with low real charges:
+
+```env
+VITE_MIN_PAYMENT_MODE=true
+VITE_MIN_PAYMENT_CHF=1.00
+```
+
+- Payments still use real Stripe checkout.
+- Charge amount is overridden to the configured minimum CHF value.
+- Booking/payment flows remain unchanged (only charged amount changes).
+- UI shows a test-pricing badge on booking/payment screens.
+- Metadata is attached for auditability (`test_mode`, `original_amount_chf`, `charged_amount_chf`).
+
+Before full launch pricing:
+- Set `VITE_MIN_PAYMENT_MODE=false`
+- Redeploy frontend
+- Verify one normal-priced booking end-to-end
 
 ## 🚀 Deployment
 
