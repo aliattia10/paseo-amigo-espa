@@ -38,7 +38,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             });
           },
           (error) => {
-            console.error('Error getting saved location:', error);
+            if (import.meta.env.DEV) console.debug('Saved location refresh failed:', error);
             // Keep enabled state if permission is still granted; avoid prompt loops
             if (error?.code === 1) {
               localStorage.removeItem(LOCATION_STORAGE_KEY);
@@ -86,7 +86,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }
         };
       } catch (e) {
-        console.log('Permissions API not supported:', e);
+        if (import.meta.env.DEV) console.debug('Permissions API not supported:', e);
       }
     };
 
@@ -120,7 +120,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // the Permissions API is out of sync with actual browser settings
         // Let the geolocation API itself handle the permission
       } catch (e) {
-        console.log('Permissions API not supported, continuing with geolocation request');
+        if (import.meta.env.DEV) console.debug('Permissions API not supported, continuing with geolocation request');
       }
     }
 
@@ -153,7 +153,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         description: t('location.enabledDesc'),
       });
     } catch (error: any) {
-      console.error('Error getting location:', error);
+      if (import.meta.env.DEV) console.debug('Error getting location:', error);
       
       let errorMessage = t('location.unableToGet');
       let errorDescription = t('location.tryAgainShort');
@@ -198,10 +198,10 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         .eq('id', currentUser.id);
       
       if (error) {
-        console.error('Error updating location:', error);
+        if (import.meta.env.DEV) console.debug('Error updating location:', error);
       }
     } catch (error) {
-      console.error('Error updating location:', error);
+      if (import.meta.env.DEV) console.debug('Error updating location:', error);
     }
   };
 
