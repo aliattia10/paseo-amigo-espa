@@ -8,10 +8,13 @@ import {
   ArrowRight,
   CalendarCheck,
   CreditCard,
+  Dog,
   Heart,
   Mail,
   MapPin,
+  PawPrint,
   ShieldCheck,
+  Smartphone,
   Star,
   UserPlus,
   Users,
@@ -109,6 +112,18 @@ const LandingPageGeneva: React.FC = () => {
                 Become a Sitter
               </Button>
             </div>
+            <div className="flex gap-8 mt-10 pt-8 border-t border-sage-200/50">
+              {[
+                { value: '1,000+', label: 'Happy Dogs' },
+                { value: '500+', label: 'Verified Sitters' },
+                { value: '4.9★', label: 'Average Rating' },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <div className="font-serif text-2xl font-bold text-sage-800">{stat.value}</div>
+                  <div className="text-xs text-foreground/50 font-medium mt-0.5">{stat.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -180,16 +195,154 @@ const LandingPageGeneva: React.FC = () => {
         </div>
       </section>
 
-      <section id="community" className="py-24 bg-sage-600 text-white">
-        <div className="container text-center max-w-3xl">
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold mb-6">Join the PetFlik Community</h2>
-          <p className="text-sage-100/85 text-lg mb-8">
-            Trusted by pet owners and sitters across Geneva. Find the right match and book with confidence.
-          </p>
-          <Button size="lg" className="bg-white text-sage-700 hover:bg-sage-50 font-semibold px-7 rounded-xl" onClick={goSignup}>
-            Get Started
-            <ArrowRight size={18} className="ml-2" />
-          </Button>
+      <section className="py-24 lg:py-32 bg-sage-600 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+              backgroundSize: '32px 32px',
+            }}
+          />
+        </div>
+        <div className="container relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="flex justify-center">
+            <img
+              src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=800"
+              alt="PetFlik swipe interface demonstration"
+              className="w-64 sm:w-72 rounded-3xl shadow-2xl shadow-black/20"
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Smartphone size={16} className="text-sage-200" />
+              <span className="text-xs font-semibold text-sage-200 tracking-widest uppercase">The App Experience</span>
+            </div>
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white tracking-tight leading-tight mb-6">
+              As Easy as
+              <br />
+              Swiping Left or Right
+            </h2>
+            <p className="text-sage-100/80 text-lg leading-relaxed mb-8 max-w-md">
+              Inspired by Tinder-like simplicity, PetFlik makes finding a dog sitter intuitive and fast.
+            </p>
+            <div className="space-y-4 mb-10">
+              {[
+                'Browse sitter profiles with photos, reviews & rates',
+                'Swipe right to express interest, left to pass',
+                'Match instantly and start chatting',
+                'Book securely with escrow-protected payments',
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-sage-200" />
+                  </div>
+                  <span className="text-sage-100 text-sm">{item}</span>
+                </div>
+              ))}
+            </div>
+            <Button size="lg" className="bg-white text-sage-700 hover:bg-sage-50 font-semibold px-7 rounded-xl" onClick={goSignup}>
+              Try PetFlik Now
+              <ArrowRight size={18} className="ml-2" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section id="community" className="py-24 lg:py-32 bg-ivory">
+        <div className="container grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <div>
+            <span className="text-xs font-semibold text-terra-500 tracking-widest uppercase mb-3 block">Community First</span>
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-sage-900 tracking-tight mb-5">
+              Built in Geneva,
+              <br />
+              for Geneva Dogs
+            </h2>
+            <p className="text-foreground/60 text-lg leading-relaxed mb-8 max-w-lg">
+              PetFlik is a local-first platform. We connect nearby owners and sitters so trust can grow through real, repeat relationships.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4 mb-8">
+              <div className="rounded-xl border border-sage-100 p-4">
+                <div className="text-2xl font-bold text-sage-700">250+</div>
+                <div className="text-xs text-foreground/60">Active weekly walks</div>
+              </div>
+              <div className="rounded-xl border border-sage-100 p-4">
+                <div className="text-2xl font-bold text-sage-700">95%</div>
+                <div className="text-xs text-foreground/60">Repeat booking rate</div>
+              </div>
+            </div>
+            <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white font-semibold px-7 rounded-xl" onClick={goSignup}>
+              Join the Community
+            </Button>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&q=80&w=1200"
+            alt="Geneva pet community"
+            className="w-full rounded-3xl shadow-lg"
+          />
+        </div>
+      </section>
+
+      <section className="py-24 lg:py-32 bg-warm-gray">
+        <div className="container text-center mb-12">
+          <span className="text-xs font-semibold text-terra-500 tracking-widest uppercase mb-3 block">For Every Breed</span>
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-sage-900 tracking-tight">
+            Dogs We Love in Geneva
+          </h2>
+        </div>
+        <div className="container grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            ['French Bulldog', 'https://images.unsplash.com/photo-1583512603784-a8e3ea83534c?auto=format&fit=crop&q=80&w=700'],
+            ['Golden Retriever', 'https://images.unsplash.com/photo-1633722715463-d30f4f325e24?auto=format&fit=crop&q=80&w=700'],
+            ['Labrador', 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=700'],
+            ['Border Collie', 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?auto=format&fit=crop&q=80&w=700'],
+          ].map(([breed, src]) => (
+            <div key={breed} className="rounded-2xl overflow-hidden bg-white border border-sage-100 shadow-sm">
+              <img src={src} alt={breed} className="h-48 w-full object-cover" />
+              <div className="p-4 flex items-center justify-between">
+                <span className="font-semibold text-sage-800 text-sm">{breed}</span>
+                <PawPrint size={16} className="text-sage-500" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="py-24 lg:py-32 bg-ivory">
+        <div className="container grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <span className="text-xs font-semibold text-terra-500 tracking-widest uppercase mb-3 block">Earn with PetFlik</span>
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-sage-900 tracking-tight mb-5">
+              Love Dogs?
+              <br />
+              Earn Doing It.
+            </h2>
+            <p className="text-foreground/60 text-lg leading-relaxed mb-8">
+              Join as a sitter, set your rates, and accept bookings that match your schedule.
+            </p>
+            <div className="space-y-3 mb-8">
+              {[
+                'Set your own hourly rates',
+                'Accept only the bookings you want',
+                'Build trust with verified reviews',
+                'Get paid securely through the app',
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <Dog size={16} className="text-sage-600" />
+                  <span className="text-sm text-foreground/75">{item}</span>
+                </div>
+              ))}
+            </div>
+            <Button size="lg" className="bg-sage-600 hover:bg-sage-700 text-white font-semibold px-7 rounded-xl" onClick={goSignup}>
+              Become a Sitter
+              <ArrowRight size={18} className="ml-2" />
+            </Button>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=1200"
+            alt="Dog sitter with dog"
+            className="w-full rounded-3xl shadow-lg"
+          />
         </div>
       </section>
 
@@ -210,6 +363,10 @@ const LandingPageGeneva: React.FC = () => {
             <AccordionItem value="item-3">
               <AccordionTrigger>Can I book recurring walks?</AccordionTrigger>
               <AccordionContent>Yes, you can coordinate one-time or recurring services directly with your sitter.</AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-4">
+              <AccordionTrigger>Is PetFlik only for Geneva?</AccordionTrigger>
+              <AccordionContent>PetFlik is currently optimized for Geneva with local trust and neighborhood matching as the core experience.</AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
