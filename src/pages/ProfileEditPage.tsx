@@ -8,6 +8,17 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import TinderPhotoGallery from '@/components/profile/TinderPhotoGallery';
 import i18n from '@/lib/i18n';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const ProfileEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -48,6 +59,9 @@ const ProfileEditPage: React.FC = () => {
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const MAX_PHOTOS = 6;
 
   // Update form data when userProfile changes
@@ -339,9 +353,56 @@ const ProfileEditPage: React.FC = () => {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Form submit prevented');
     // Call handleSave when form is submitted
     handleSave();
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!currentUser) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to delete your account.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (deleteConfirmText.trim().toUpperCase() !== 'DELETE') {
+      toast({
+        title: 'Confirmation required',
+        description: 'Type DELETE to confirm account removal.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase.functions.invoke('delete-account');
+
+      if (error) {
+        throw new Error(error.message || 'Could not delete account');
+      }
+
+      // Clear local session and return to the public landing page.
+      await supabase.auth.signOut({ scope: 'local' });
+      setDeleteDialogOpen(false);
+      toast({
+        title: 'Account deleted',
+        description: 'Your profile and account have been removed.',
+      });
+      window.location.href = '/home';
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Could not delete account';
+      toast({
+        title: 'Delete failed',
+        description: msg,
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   return (
@@ -600,6 +661,55 @@ const ProfileEditPage: React.FC = () => {
               </>
             )}
           </div>
+        </div>
+
+        {/* Tinder-style Danger Zone */}
+        <div className="bg-white dark:bg-[#1a1a1a] p-4 mb-4">
+          <h3 className="text-base font-semibold text-red-600 mb-1">Delete Account</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+            This is permanent and cannot be undone.
+          </p>
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+              >
+                Delete my profile
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete your profile?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action will permanently remove your account, profile, photos, and related data.
+                  To confirm, type <strong>DELETE</strong> below.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="py-1">
+                <Input
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE"
+                  className="w-full"
+                />
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deletingAccount}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={deletingAccount}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void handleDeleteAccount();
+                  }}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {deletingAccount ? 'Deleting...' : 'Delete account'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </main>
 
