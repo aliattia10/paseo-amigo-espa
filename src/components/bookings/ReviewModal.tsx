@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
+import { emitBookingWorkflowEvent } from '@/lib/booking-workflow';
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -28,6 +30,7 @@ export default function ReviewModal({
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +56,28 @@ export default function ReviewModal({
 
       if (!data?.success) {
         throw new Error(data?.error || t('review.submitFailed', 'Failed to submit review'));
+      }
+
+      // Add a timeline message in chat so both users can continue naturally
+      // while still seeing that a review was left.
+      try {
+        const { data: bookingRow } = await supabase
+          .from('bookings')
+          .select('id, owner_id, sitter_id')
+          .eq('id', bookingId)
+          .single();
+
+        if (bookingRow?.owner_id && bookingRow?.sitter_id && currentUser?.id) {
+          await emitBookingWorkflowEvent({
+            bookingId,
+            ownerId: bookingRow.owner_id,
+            sitterId: bookingRow.sitter_id,
+            actorId: currentUser.id,
+            chatMessage: `Review submitted: ${rating}★${comment ? ` - "${comment}"` : ''}`,
+          });
+        }
+      } catch {
+        // Non-blocking: review is already saved, chat event is best-effort.
       }
 
       toast({
