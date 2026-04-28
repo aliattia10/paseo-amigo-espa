@@ -45,6 +45,7 @@ interface Profile {
   breed?: string | null;
   mood?: string | null;
   personalityTags?: string[] | null;
+  profilePaused?: boolean;
 }
 
 const NewHomePage: React.FC = () => {
@@ -175,7 +176,7 @@ const NewHomePage: React.FC = () => {
         const petsPromise = Promise.race([
           (supabase as any)
             .from('pets')
-            .select(`id, name, age, age_years, age_months, image_url, owner_id, pet_type, breed, mood, personality_tags, users!pets_owner_id_fkey (latitude, longitude)`)
+            .select(`id, name, age, age_years, age_months, image_url, owner_id, pet_type, breed, mood, personality_tags, users!pets_owner_id_fkey (latitude, longitude, preferences)`)
             .neq('owner_id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
           new Promise<{ data: null; error: { message: string } }>((resolve) =>
@@ -186,7 +187,7 @@ const NewHomePage: React.FC = () => {
         const sittersPromise = Promise.race([
           (supabase as any)
             .from('users')
-            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude, rating, review_count, verified, years_experience, pets_cared_for, hobbies')
+            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude, rating, review_count, verified, years_experience, pets_cared_for, hobbies, preferences')
             .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
             .neq('id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
@@ -226,7 +227,10 @@ const NewHomePage: React.FC = () => {
           if (needPetsList) setRealPetProfiles([]);
         }
         if (!petsError && pets) {
-          const petsNoDemo = pets.filter((pet: { owner_id?: string }) => !isDemoUserId(pet.owner_id));
+          const petsNoDemo = pets.filter((pet: { owner_id?: string; users?: any }) => {
+            const owner = Array.isArray(pet.users) ? pet.users[0] : pet.users;
+            return !isDemoUserId(pet.owner_id) && owner?.preferences?.profilePaused !== true;
+          });
           const petProfiles: Profile[] = petsNoDemo.map((pet: any) => {
             let imageUrls: string[] = [];
             try {
@@ -260,6 +264,7 @@ const NewHomePage: React.FC = () => {
               breed: pet.breed || null,
               mood: pet.mood || null,
               personalityTags: Array.isArray(pet.personality_tags) ? pet.personality_tags : (pet.personality_tags ? [pet.personality_tags] : null),
+              profilePaused: false,
             };
           });
           setRealPetProfiles(petProfiles);
@@ -270,7 +275,10 @@ const NewHomePage: React.FC = () => {
         }
         if (!sittersError && sitters && sitters.length > 0) {
           const realSitters = sitters.filter(
-            (sitter: { id: string; email?: string | null }) => !isDemoUserId(sitter.id) && !isDemoUserEmail(sitter.email)
+            (sitter: { id: string; email?: string | null; preferences?: Record<string, unknown> | null }) =>
+              !isDemoUserId(sitter.id) &&
+              !isDemoUserEmail(sitter.email) &&
+              sitter.preferences?.profilePaused !== true
           );
           const sitterProfiles: Profile[] = realSitters.map((sitter: any) => {
             let imageUrls: string[] = [];
@@ -300,6 +308,7 @@ const NewHomePage: React.FC = () => {
               verified: sitter.verified === true,
               petsCaredFor: sitter.pets_cared_for != null ? Number(sitter.pets_cared_for) : null,
               hobbies: Array.isArray(sitter.hobbies) ? sitter.hobbies : (sitter.hobbies ? [sitter.hobbies] : null),
+              profilePaused: sitter.preferences?.profilePaused === true,
             };
           });
           setRealSitterProfiles(sitterProfiles);

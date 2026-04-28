@@ -123,6 +123,49 @@ const NewProfilePage: React.FC = () => {
     }
   };
 
+  const profilePaused = (userProfile?.preferences as Record<string, unknown> | null | undefined)?.profilePaused === true;
+
+  const handleTogglePauseProfile = async () => {
+    if (!currentUser) return;
+
+    const currentPreferences =
+      userProfile?.preferences && typeof userProfile.preferences === 'object'
+        ? userProfile.preferences
+        : {};
+    const nextPaused = !profilePaused;
+
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase
+        .from('users')
+        .update({
+          preferences: {
+            ...currentPreferences,
+            profilePaused: nextPaused,
+            profilePausedAt: nextPaused ? new Date().toISOString() : null,
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', currentUser.id);
+
+      if (error) throw error;
+
+      await refreshUserProfile();
+      toast({
+        title: nextPaused ? 'Profile paused' : 'Profile active',
+        description: nextPaused
+          ? 'Your profile is hidden from discovery until you resume.'
+          : 'Your profile is visible in discovery again.',
+      });
+    } catch (error: any) {
+      toast({
+        title: t('common.error'),
+        description: error?.message || 'Could not update profile visibility.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleImageUpload = async (file: File) => {
     if (!currentUser) return;
     
@@ -765,6 +808,49 @@ const NewProfilePage: React.FC = () => {
                 <span className="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">chevron_right</span>
               </li>
             </ul>
+          </div>
+
+          {/* Tinder-style Pause */}
+          <div className="rounded-xl bg-card-light dark:bg-card-dark shadow-sm overflow-hidden border border-primary/20">
+            <div className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-primary">
+                      {profilePaused ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-text-primary-light dark:text-text-primary-dark">
+                      Pause Profile
+                    </h3>
+                    <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                      Tinder-style pause hides you from discovery without deleting your account.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleTogglePauseProfile}
+                  className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${
+                    profilePaused ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                  aria-pressed={profilePaused}
+                  aria-label={profilePaused ? 'Resume profile' : 'Pause profile'}
+                >
+                  <span
+                    className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      profilePaused ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              {profilePaused && (
+                <div className="mt-3 rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary">
+                  Paused: your profile will not appear in matching until you resume.
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Danger Zone */}
