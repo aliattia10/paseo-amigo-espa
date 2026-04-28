@@ -153,8 +153,9 @@ function HeroSection({ goSignup }: LandingHandlers) {
     <section id="top" className="relative flex min-h-screen items-center overflow-hidden pt-16">
       <div className="absolute inset-0">
         <img src={dogHero} alt="Dog walking along Lake Geneva" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ivory/95 via-ivory/80 to-ivory/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ivory/60 via-transparent to-ivory/40" />
+        <div className="absolute inset-0 bg-ivory/45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ivory via-ivory/90 to-ivory/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ivory/75 via-ivory/20 to-ivory/50" />
       </div>
 
       <div className="container relative z-10">
@@ -165,12 +166,12 @@ function HeroSection({ goSignup }: LandingHandlers) {
               <span className="text-xs font-semibold uppercase tracking-wide text-sage-700">Geneva, Switzerland</span>
             </div>
             <h1 className="mb-6 font-serif text-4xl font-semibold leading-[1.1] tracking-tight text-sage-900 sm:text-5xl lg:text-6xl">
-              Your Dog Deserves
+              Your Pet Deserves
               <br />
               <span className="text-sage-600">a Local Friend</span>
             </h1>
             <p className="mb-8 max-w-md text-lg leading-relaxed text-foreground/70">
-              PetFlik connects Geneva dog owners with verified local sitters - students, adults, and seniors who genuinely love dogs. Swipe, match, and book in seconds.
+              PetFlik connects Geneva pet owners with verified local sitters - students, adults, and seniors who genuinely love dogs and cats. Swipe, match, and book in seconds.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button size="lg" className="rounded-xl bg-sage-600 px-7 font-semibold text-white shadow-lg shadow-sage-600/20 transition-all hover:-translate-y-0.5 hover:bg-sage-700 hover:shadow-xl" onClick={goSignup}>
@@ -183,7 +184,7 @@ function HeroSection({ goSignup }: LandingHandlers) {
             </div>
             <div className="mt-10 flex gap-8 border-t border-sage-200/50 pt-8">
               {[
-                { value: '1,000+', label: 'Happy Dogs' },
+                { value: '1,000+', label: 'Happy Pets' },
                 { value: '500+', label: 'Verified Sitters' },
                 { value: '4.9★', label: 'Average Rating' },
               ].map((stat) => (
