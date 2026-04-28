@@ -11,6 +11,49 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+const insertWorkflowNotifications = async (
+  bookingId: string,
+  ownerId: string,
+  sitterId: string,
+  ownerMessage: string,
+  sitterMessage: string,
+) => {
+  await supabase.from('notifications').insert([
+    {
+      user_id: ownerId,
+      type: 'payment_completed',
+      title: 'Payment completed',
+      message: ownerMessage,
+      related_id: bookingId,
+    },
+    {
+      user_id: sitterId,
+      type: 'payment_completed',
+      title: 'Payment received',
+      message: sitterMessage,
+      related_id: bookingId,
+    },
+  ])
+}
+
+const insertWorkflowMessage = async (ownerId: string, sitterId: string, content: string) => {
+  const { data: matchRow } = await supabase
+    .from('matches')
+    .select('id, user1_id, user2_id')
+    .or(`and(user1_id.eq.${ownerId},user2_id.eq.${sitterId}),and(user1_id.eq.${sitterId},user2_id.eq.${ownerId})`)
+    .limit(1)
+    .maybeSingle()
+
+  if (!matchRow?.id) return
+
+  await supabase.from('messages').insert({
+    match_id: matchRow.id,
+    sender_id: ownerId,
+    content,
+    read: false,
+  })
+}
+
 serve(async (req) => {
   const signature = req.headers.get('stripe-signature')
   
@@ -51,10 +94,35 @@ serve(async (req) => {
           .single()
 
         if (payment) {
+          const { data: booking } = await supabase
+            .from('bookings')
+            .select('id, owner_id, sitter_id')
+            .eq('id', payment.booking_id)
+            .maybeSingle()
+
           await supabase
             .from('bookings')
-            .update({ status: 'paid' })
+            .update({
+              status: 'confirmed',
+              payment_status: 'held',
+              updated_at: new Date().toISOString(),
+            })
             .eq('id', payment.booking_id)
+
+          if (booking?.owner_id && booking?.sitter_id) {
+            await insertWorkflowNotifications(
+              booking.id,
+              booking.owner_id,
+              booking.sitter_id,
+              'Your payment succeeded. Booking is confirmed and ready for service.',
+              'Owner payment succeeded. Booking is confirmed and ready for service.',
+            )
+            await insertWorkflowMessage(
+              booking.owner_id,
+              booking.sitter_id,
+              'Payment completed. Booking confirmed and ready for service.',
+            )
+          }
         }
         
         console.log('Payment succeeded:', paymentIntent.id)

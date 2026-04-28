@@ -10,6 +10,7 @@ import ReviewModal from '@/components/bookings/ReviewModal';
 import i18n from '@/lib/i18n';
 import { formatCurrencyChf } from '@/lib/currency';
 import { featureFlags } from '@/lib/feature-flags';
+import { emitBookingWorkflowEvent } from '@/lib/booking-workflow';
 
 interface Booking {
   id: string;
@@ -44,6 +45,14 @@ const BookingsPage: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'completed'>('all');
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+
+  const getWorkflowStatus = (booking: Booking): 'pending' | 'accepted' | 'completed' | 'cancelled' => {
+    const raw = String(booking.status || '').toLowerCase();
+    if (raw === 'requested' || raw === 'pending') return 'pending';
+    if (raw === 'confirmed' || raw === 'accepted' || raw === 'in-progress') return 'accepted';
+    if (raw === 'completed') return 'completed';
+    return 'cancelled';
+  };
 
   useEffect(() => {
     fetchBookings();
@@ -192,6 +201,11 @@ const BookingsPage: React.FC = () => {
   const handleAcceptBooking = async (bookingId: string) => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
+      const { data: bookingRow } = await supabase
+        .from('bookings')
+        .select('id, owner_id, sitter_id')
+        .eq('id', bookingId)
+        .single();
       
       // Sitter accepts booking - this will notify owner to pay
       const { error } = await supabase.rpc('update_booking_status', {
@@ -205,6 +219,26 @@ const BookingsPage: React.FC = () => {
         title: t('bookings.bookingAccepted'), 
         description: t('bookings.ownerNotified') 
       });
+
+      if (bookingRow?.owner_id && bookingRow?.sitter_id && currentUser?.id) {
+        await emitBookingWorkflowEvent({
+          bookingId,
+          ownerId: bookingRow.owner_id,
+          sitterId: bookingRow.sitter_id,
+          actorId: currentUser.id,
+          ownerNotification: {
+            type: 'booking_accepted',
+            title: 'Booking accepted',
+            message: 'Your booking was accepted. Payment is now required to confirm.',
+          },
+          sitterNotification: {
+            type: 'booking_accepted',
+            title: 'Booking accepted',
+            message: 'You accepted this booking request.',
+          },
+          chatMessage: 'Booking accepted. Next step: owner payment.',
+        });
+      }
       
       fetchBookings();
     } catch (error: any) {
@@ -285,6 +319,11 @@ const BookingsPage: React.FC = () => {
   const handleMarkComplete = async (bookingId: string) => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
+      const { data: bookingRow } = await supabase
+        .from('bookings')
+        .select('id, owner_id, sitter_id')
+        .eq('id', bookingId)
+        .single();
       
       const { data, error } = await (supabase as any).rpc('mark_service_completed', {
         p_booking_id: bookingId
@@ -300,6 +339,26 @@ const BookingsPage: React.FC = () => {
         title: t('bookings.serviceComplete', 'Service Marked Complete'), 
         description: t('bookings.waitingConfirmation', 'Waiting for owner confirmation to release payment.') 
       });
+
+      if (bookingRow?.owner_id && bookingRow?.sitter_id && currentUser?.id) {
+        await emitBookingWorkflowEvent({
+          bookingId,
+          ownerId: bookingRow.owner_id,
+          sitterId: bookingRow.sitter_id,
+          actorId: currentUser.id,
+          ownerNotification: {
+            type: 'service_completed',
+            title: 'Service marked complete',
+            message: 'Sitter marked the service complete. Please confirm completion.',
+          },
+          sitterNotification: {
+            type: 'service_completed',
+            title: 'Service marked complete',
+            message: 'Waiting for owner confirmation.',
+          },
+          chatMessage: 'Service marked complete. Waiting for owner confirmation.',
+        });
+      }
       
       fetchBookings();
     } catch (error: any) {
@@ -326,6 +385,26 @@ const BookingsPage: React.FC = () => {
         title: t('bookings.completionConfirmed', 'Completion Confirmed!'), 
         description: t('bookings.leaveReviewPrompt', 'Please leave a review to release payment to the sitter\'s balance!') 
       });
+
+      if (booking.owner_id && booking.sitter_id && currentUser?.id) {
+        await emitBookingWorkflowEvent({
+          bookingId,
+          ownerId: booking.owner_id,
+          sitterId: booking.sitter_id,
+          actorId: currentUser.id,
+          ownerNotification: {
+            type: 'completion_confirmed',
+            title: 'Completion confirmed',
+            message: 'Service completion confirmed. You can now leave a review.',
+          },
+          sitterNotification: {
+            type: 'completion_confirmed',
+            title: 'Completion confirmed',
+            message: 'Owner confirmed completion. Awaiting review.',
+          },
+          chatMessage: 'Completion confirmed. Review is now available.',
+        });
+      }
       
       // Open review modal
       setSelectedBooking(booking);
@@ -381,16 +460,13 @@ const BookingsPage: React.FC = () => {
 
   const filteredBookings = bookings.filter(booking => {
     if (filter === 'all') return true;
-    if (filter === 'pending') return (booking.status as string) === 'requested';
-    if (filter === 'accepted') return (booking.status as string) === 'confirmed';
-    return booking.status === filter;
+    return getWorkflowStatus(booking) === filter;
   });
   
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'requested': return 'bg-yellow-500/10 text-yellow-600';
-      case 'confirmed': return 'bg-blue-500/10 text-blue-600';
-      case 'in-progress': return 'bg-purple-500/10 text-purple-600';
+      case 'pending': return 'bg-yellow-500/10 text-yellow-600';
+      case 'accepted': return 'bg-blue-500/10 text-blue-600';
       case 'completed': return 'bg-medium-jungle/10 text-medium-jungle';
       case 'cancelled': return 'bg-red-500/10 text-red-600';
       default: return 'bg-gray-500/10 text-gray-600';
@@ -465,9 +541,20 @@ const BookingsPage: React.FC = () => {
                   <p className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">{booking.walker_name}</p>
                   <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">{booking.dog_name}</p>
                 </div>
-                <span className={`text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap ${getStatusColor(booking.status)}`}>
-                  {booking.status === 'confirmed' ? t('bookings.confirmed') : booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                {(() => {
+                  const workflowStatus = getWorkflowStatus(booking);
+                  return (
+                <span className={`text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap ${getStatusColor(workflowStatus)}`}>
+                  {workflowStatus === 'pending'
+                    ? 'Pending'
+                    : workflowStatus === 'accepted'
+                      ? 'Accepted'
+                      : workflowStatus === 'completed'
+                        ? 'Completed'
+                        : 'Cancelled'}
                 </span>
+                  );
+                })()}
               </div>
               
               <div className="space-y-2 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-3">
@@ -482,7 +569,7 @@ const BookingsPage: React.FC = () => {
               </div>
             
               {/* Show Accept/Decline buttons when booking is requested (for SITTER) */}
-              {(booking.status as string) === 'requested' && currentUser?.id === booking.sitter_id && (
+              {(getWorkflowStatus(booking) === 'pending') && currentUser?.id === booking.sitter_id && (
                 <div className="flex gap-2">
                   <Button onClick={() => handleAcceptBooking(booking.id)} className="flex-1 bg-primary text-white">
                     {t('bookings.accept')}
@@ -494,7 +581,7 @@ const BookingsPage: React.FC = () => {
               )}
               
               {/* Show Pay Now button when booking confirmed but not paid (OWNER) */}
-              {(booking.status as string) === 'confirmed' && (!booking.payment_status || booking.payment_status === 'pending') && currentUser?.id === booking.owner_id && (
+              {(getWorkflowStatus(booking) === 'accepted') && (!booking.payment_status || booking.payment_status === 'pending') && currentUser?.id === booking.owner_id && (
                 <div className="space-y-2">
                   {featureFlags.minPaymentMode && (
                     <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
@@ -511,7 +598,7 @@ const BookingsPage: React.FC = () => {
               )}
               
               {/* Show waiting message when confirmed and paid */}
-              {(booking.status as string) === 'confirmed' && booking.payment_status === 'held' && (
+              {(getWorkflowStatus(booking) === 'accepted') && booking.payment_status === 'held' && (
                 <div>
                   <div className="text-sm text-center text-medium-jungle dark:text-sage-green mb-2">
                     {t('bookings.paymentSecured')}

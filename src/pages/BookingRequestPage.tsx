@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { formatPetAge, parseLegacyAge } from '@/lib/pet-age';
 import { formatCurrencyChf } from '@/lib/currency';
+import { emitBookingWorkflowEvent } from '@/lib/booking-workflow';
 
 const resolvePrimaryPetImage = (raw?: string | null): string | undefined => {
   if (!raw) return undefined;
@@ -125,6 +126,7 @@ const BookingRequestPage: React.FC = () => {
 
       // Create booking using RPC function or direct insert
       let bookingError = null;
+      let createdBookingId: string | null = null;
       
       // Try RPC function first
       const { data: bookingId, error: rpcError } = await supabase.rpc('create_booking', {
@@ -141,7 +143,7 @@ const BookingRequestPage: React.FC = () => {
 
       // If RPC doesn't exist, try direct insert
       if (rpcError && (rpcError.message.includes('does not exist') || rpcError.message.includes('not find'))) {
-        const { error: insertError } = await supabase
+        const { data: inserted, error: insertError } = await supabase
           .from('bookings')
           .insert({
             owner_id: currentUser?.id,
@@ -156,9 +158,13 @@ const BookingRequestPage: React.FC = () => {
             commission_fee: platformFee,
             status: 'requested',
             payment_status: 'pending',
-          });
+          })
+          .select('id')
+          .single();
+        createdBookingId = inserted?.id ?? null;
         bookingError = insertError;
       } else {
+        createdBookingId = bookingId ?? null;
         bookingError = rpcError;
       }
 
@@ -168,6 +174,26 @@ const BookingRequestPage: React.FC = () => {
         title: 'Booking Request Sent!',
         description: 'The sitter will be notified of your request.',
       });
+
+      if (createdBookingId && currentUser?.id && walkerId) {
+        await emitBookingWorkflowEvent({
+          bookingId: createdBookingId,
+          ownerId: currentUser.id,
+          sitterId: walkerId,
+          actorId: currentUser.id,
+          ownerNotification: {
+            type: 'booking_requested',
+            title: 'Booking Request Created',
+            message: 'Your booking request is now pending sitter acceptance.',
+          },
+          sitterNotification: {
+            type: 'booking_requested',
+            title: 'New Booking Request',
+            message: 'You received a new booking request. Accept to continue to payment.',
+          },
+          chatMessage: 'Booking request sent. Current status: Pending acceptance.',
+        });
+      }
 
       navigate('/bookings');
     } catch (error: any) {
