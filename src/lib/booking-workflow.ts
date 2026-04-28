@@ -51,9 +51,23 @@ export const emitBookingWorkflowEvent = async (input: WorkflowEventInput): Promi
     });
   }
 
-  // Best-effort notifications: workflow must not fail if these fail.
+  // Best-effort + idempotent notifications: avoid duplicates for same booking event/user.
   if (notificationRows.length > 0) {
-    await supabase.from('notifications').insert(notificationRows);
+    const dedupedRows: typeof notificationRows = [];
+    for (const row of notificationRows) {
+      const { data: existing } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', row.user_id)
+        .eq('type', row.type)
+        .eq('related_id', row.related_id)
+        .limit(1)
+        .maybeSingle();
+      if (!existing?.id) dedupedRows.push(row);
+    }
+    if (dedupedRows.length > 0) {
+      await supabase.from('notifications').insert(dedupedRows);
+    }
   }
 
   if (!input.chatMessage) return;
@@ -61,11 +75,23 @@ export const emitBookingWorkflowEvent = async (input: WorkflowEventInput): Promi
   const matchId = await findMatchId(input.ownerId, input.sitterId);
   if (!matchId) return;
 
-  await supabase.from('messages').insert({
-    match_id: matchId,
-    sender_id: input.actorId,
-    content: input.chatMessage,
-    read: false,
-  });
+  const { data: existingMessage } = await supabase
+    .from('messages')
+    .select('id')
+    .eq('match_id', matchId)
+    .eq('sender_id', input.actorId)
+    .eq('content', input.chatMessage)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!existingMessage?.id) {
+    await supabase.from('messages').insert({
+      match_id: matchId,
+      sender_id: input.actorId,
+      content: input.chatMessage,
+      read: false,
+    });
+  }
 };
 

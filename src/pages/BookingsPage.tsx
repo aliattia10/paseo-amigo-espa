@@ -226,16 +226,6 @@ const BookingsPage: React.FC = () => {
           ownerId: bookingRow.owner_id,
           sitterId: bookingRow.sitter_id,
           actorId: currentUser.id,
-          ownerNotification: {
-            type: 'booking_accepted',
-            title: 'Booking accepted',
-            message: 'Your booking was accepted. Payment is now required to confirm.',
-          },
-          sitterNotification: {
-            type: 'booking_accepted',
-            title: 'Booking accepted',
-            message: 'You accepted this booking request.',
-          },
           chatMessage: 'Booking accepted. Next step: owner payment.',
         });
       }
@@ -346,16 +336,6 @@ const BookingsPage: React.FC = () => {
           ownerId: bookingRow.owner_id,
           sitterId: bookingRow.sitter_id,
           actorId: currentUser.id,
-          ownerNotification: {
-            type: 'service_completed',
-            title: 'Service marked complete',
-            message: 'Sitter marked the service complete. Please confirm completion.',
-          },
-          sitterNotification: {
-            type: 'service_completed',
-            title: 'Service marked complete',
-            message: 'Waiting for owner confirmation.',
-          },
           chatMessage: 'Service marked complete. Waiting for owner confirmation.',
         });
       }
@@ -392,16 +372,6 @@ const BookingsPage: React.FC = () => {
           ownerId: booking.owner_id,
           sitterId: booking.sitter_id,
           actorId: currentUser.id,
-          ownerNotification: {
-            type: 'completion_confirmed',
-            title: 'Completion confirmed',
-            message: 'Service completion confirmed. You can now leave a review.',
-          },
-          sitterNotification: {
-            type: 'completion_confirmed',
-            title: 'Completion confirmed',
-            message: 'Owner confirmed completion. Awaiting review.',
-          },
           chatMessage: 'Completion confirmed. Review is now available.',
         });
       }

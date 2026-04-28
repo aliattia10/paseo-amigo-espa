@@ -11,7 +11,6 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { featureFlags } from '@/lib/feature-flags';
 import { formatCurrencyChf } from '@/lib/currency';
-import { emitBookingWorkflowEvent } from '@/lib/booking-workflow';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
 const isStripeTestKey = stripeKey.startsWith('pk_test_');
@@ -23,16 +22,10 @@ const stripePromise = loadStripe(stripeKey);
 function PaymentForm({
   bookingId,
   amount,
-  ownerId,
-  sitterId,
-  currentUserId,
   onSuccess,
 }: {
   bookingId: string;
   amount: number;
-  ownerId?: string;
-  sitterId?: string;
-  currentUserId?: string;
   onSuccess: () => void;
 }) {
   const stripe = useStripe();
@@ -78,26 +71,6 @@ function PaymentForm({
             updated_at: new Date().toISOString()
           })
           .eq('id', bookingId);
-
-        if (ownerId && sitterId && currentUserId) {
-          await emitBookingWorkflowEvent({
-            bookingId,
-            ownerId,
-            sitterId,
-            actorId: currentUserId,
-            ownerNotification: {
-              type: 'payment_completed',
-              title: 'Payment completed',
-              message: 'Payment succeeded. Booking is confirmed and ready for service.',
-            },
-            sitterNotification: {
-              type: 'payment_completed',
-              title: 'Payment received',
-              message: 'Owner payment completed. You can proceed with the service.',
-            },
-            chatMessage: 'Payment completed. Booking confirmed and ready for service.',
-          });
-        }
 
         toast.success('Payment successful! Your booking is confirmed.');
         onSuccess();
@@ -291,9 +264,6 @@ export default function PaymentPage() {
             <PaymentForm
               bookingId={bookingId!}
               amount={booking.total_price || booking.payment_amount}
-              ownerId={booking.owner_id}
-              sitterId={booking.sitter_id}
-              currentUserId={currentUser?.id}
               onSuccess={() => navigate('/bookings')}
             />
           </Elements>

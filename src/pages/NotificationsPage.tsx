@@ -30,6 +30,16 @@ const NotificationsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const dedupeNotifications = (items: Notification[]): Notification[] => {
+    const seen = new Set<string>();
+    return items.filter((n) => {
+      const key = `${n.type}|${n.relatedId ?? ''}|${n.title}|${n.description}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   useEffect(() => {
     fetchNotifications();
   }, [currentUser]);
@@ -121,7 +131,7 @@ const NotificationsPage: React.FC = () => {
         relatedId: notif.related_id ?? null,
       }));
 
-      setNotifications(formattedNotifications);
+      setNotifications(dedupeNotifications(formattedNotifications));
     } catch {
       setNotifications([]);
     } finally {
@@ -133,9 +143,13 @@ const NotificationsPage: React.FC = () => {
   const getIconForType = (type: string) => {
     switch (type) {
       case 'booking_request': return 'calendar_add_on';
+      case 'booking_requested': return 'calendar_add_on';
       case 'booking_status_update': return 'task_alt';
+      case 'booking_confirmed': return 'task_alt';
+      case 'payment_completed': return 'payments';
       case 'message': return 'chat_bubble';
       case 'review': return 'star';
+      case 'review_received': return 'star';
       default: return 'notifications';
     }
   };
@@ -143,9 +157,13 @@ const NotificationsPage: React.FC = () => {
   const getIconColorForType = (type: string) => {
     switch (type) {
       case 'booking_request': return 'text-primary';
+      case 'booking_requested': return 'text-primary';
       case 'booking_status_update': return 'text-medium-jungle';
+      case 'booking_confirmed': return 'text-medium-jungle';
+      case 'payment_completed': return 'text-medium-jungle';
       case 'message': return 'text-blue-500';
       case 'review': return 'text-secondary';
+      case 'review_received': return 'text-secondary';
       default: return 'text-gray-500';
     }
   };
@@ -167,16 +185,14 @@ const NotificationsPage: React.FC = () => {
         return;
       }
       
-      // Update each notification
-      for (const notif of unreadNotifs) {
-        await supabase
-          .from('notifications')
-          .update({ read: true })
-          .eq('id', notif.id);
-      }
-
-      // Update local state
+      // Optimistic local update
       setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
+      
+      const unreadIds = unreadNotifs.map((n) => n.id);
+      await supabase
+        .from('notifications')
+        .update({ read: true })
+        .in('id', unreadIds);
       
       toast({
         title: t('common.success'),
@@ -198,9 +214,11 @@ const NotificationsPage: React.FC = () => {
     if (filter === 'bookings') return (
       notif.type === 'booking' ||
       notif.type === 'booking_request' ||
+      notif.type === 'booking_requested' ||
       notif.type === 'booking_status_update' ||
       notif.type === 'booking_confirmed' ||
-      notif.type === 'payment'
+      notif.type === 'payment' ||
+      notif.type === 'payment_completed'
     );
     return true;
   });
@@ -226,7 +244,7 @@ const NotificationsPage: React.FC = () => {
       return;
     }
     if (type === 'review' || type.includes('review')) {
-      navigate('/bookings');
+      navigate('/profile/public');
       return;
     }
     navigate('/bookings');

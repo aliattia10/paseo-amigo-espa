@@ -159,7 +159,7 @@ export default function MessagesPage() {
       } catch (e) {
         if (!cancelled) {
           setError(t('messages.loadFailed') || 'Could not load messages.');
-          setConversations([]);
+          // Keep last good list to avoid destructive empty flashes on reconnect/tab switch.
         }
       } finally {
         if (!cancelled) setLoading(false);

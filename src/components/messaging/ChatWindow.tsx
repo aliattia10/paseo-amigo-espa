@@ -11,6 +11,7 @@ import { Send, ArrowLeft, MessageCircle, Image, Video, X, Calendar } from 'lucid
 import { supabase } from '@/integrations/supabase/client';
 import type { ChatMessage, WalkRequest } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { formatCurrencyChf } from '@/lib/currency';
 
 interface ChatWindowProps {
   walkRequest: WalkRequest | null;
@@ -24,6 +25,18 @@ interface ChatWindowProps {
   matchId?: string;
 }
 
+type ChatBooking = {
+  id: string;
+  status: string;
+  start_time?: string;
+  total_price?: number;
+  payment_status?: string | null;
+  owner_id?: string;
+  sitter_id?: string;
+  completed_at?: string | null;
+  completion_confirmed_at?: string | null;
+};
+
 const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser, matchId }) => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
@@ -36,7 +49,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [chatBookings, setChatBookings] = useState<Array<{ id: string; status: string; start_time?: string; total_price?: number }>>([]);
+  const [chatBookings, setChatBookings] = useState<ChatBooking[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -106,13 +119,69 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     (async () => {
       const { data } = await supabase
         .from('bookings')
-        .select('id, status, start_time, total_price')
+        .select('id, status, start_time, total_price, payment_status, owner_id, sitter_id, completed_at, completion_confirmed_at')
         .or(`and(owner_id.eq.${uid},sitter_id.eq.${oid}),and(owner_id.eq.${oid},sitter_id.eq.${uid})`)
         .order('created_at', { ascending: false })
         .limit(5);
       setChatBookings(data ?? []);
     })();
   }, [currentUser?.id, otherUser?.id]);
+
+  const workflowStatus = (b: ChatBooking): 'pending' | 'accepted' | 'completed' | 'cancelled' => {
+    const raw = String(b.status || '').toLowerCase();
+    if (raw === 'requested' || raw === 'pending') return 'pending';
+    if (raw === 'confirmed' || raw === 'accepted' || raw === 'in-progress') return 'accepted';
+    if (raw === 'completed') return 'completed';
+    return 'cancelled';
+  };
+
+  const refreshChatBookings = async () => {
+    if (!currentUser?.id || !otherUser?.id) return;
+    const uid = currentUser.id;
+    const oid = otherUser.id;
+    const { data } = await supabase
+      .from('bookings')
+      .select('id, status, start_time, total_price, payment_status, owner_id, sitter_id, completed_at, completion_confirmed_at')
+      .or(`and(owner_id.eq.${uid},sitter_id.eq.${oid}),and(owner_id.eq.${oid},sitter_id.eq.${uid})`)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    setChatBookings(data ?? []);
+  };
+
+  const onAcceptBooking = async (bookingId: string) => {
+    const { error } = await (supabase as any).rpc('update_booking_status', {
+      p_booking_id: bookingId,
+      p_new_status: 'confirmed',
+    });
+    if (error) throw error;
+    await refreshChatBookings();
+  };
+
+  const onDeclineBooking = async (bookingId: string) => {
+    const { error } = await (supabase as any).rpc('update_booking_status', {
+      p_booking_id: bookingId,
+      p_new_status: 'cancelled',
+      p_cancellation_reason: 'Declined from chat',
+    });
+    if (error) throw error;
+    await refreshChatBookings();
+  };
+
+  const onMarkComplete = async (bookingId: string) => {
+    const { data, error } = await (supabase as any).rpc('mark_service_completed', {
+      p_booking_id: bookingId,
+    });
+    if (error || !data?.success) throw error || new Error(data?.error || 'Could not mark completed');
+    await refreshChatBookings();
+  };
+
+  const onConfirmComplete = async (bookingId: string) => {
+    const { data, error } = await (supabase as any).rpc('confirm_service_completion', {
+      p_booking_id: bookingId,
+    });
+    if (error || !data?.success) throw error || new Error(data?.error || 'Could not confirm completion');
+    await refreshChatBookings();
+  };
 
   // Subscribe to real-time messages
   useEffect(() => {
@@ -364,18 +433,44 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             </div>
             <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
               {chatBookings.map((b) => (
-                <button
+                <div
                   key={b.id}
-                  type="button"
-                  onClick={() => navigate('/bookings')}
-                  className="flex-shrink-0 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-left min-w-[120px] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="flex-shrink-0 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-left min-w-[220px]"
                 >
                   <p className="text-xs font-medium text-text-primary-light dark:text-text-primary-dark truncate">
                     {b.start_time ? new Date(b.start_time).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                   </p>
-                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark capitalize">{b.status}</p>
-                  {b.total_price != null && <p className="text-xs text-primary font-medium">€{Number(b.total_price).toFixed(0)}</p>}
-                </button>
+                  <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark capitalize">{workflowStatus(b)}</p>
+                  {b.total_price != null && <p className="text-xs text-primary font-medium">{formatCurrencyChf(Number(b.total_price))}</p>}
+
+                  <div className="mt-2 flex gap-1">
+                    {workflowStatus(b) === 'pending' && currentUser?.id === b.sitter_id && (
+                      <>
+                        <Button size="sm" className="h-7 px-2 text-xs" onClick={() => onAcceptBooking(b.id).catch(() => toast({ title: t('common.error'), description: 'Could not accept booking', variant: 'destructive' }))}>
+                          Accept
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => onDeclineBooking(b.id).catch(() => toast({ title: t('common.error'), description: 'Could not decline booking', variant: 'destructive' }))}>
+                          Decline
+                        </Button>
+                      </>
+                    )}
+                    {workflowStatus(b) === 'accepted' && (!b.payment_status || b.payment_status === 'pending') && currentUser?.id === b.owner_id && (
+                      <Button size="sm" className="h-7 px-2 text-xs" onClick={() => navigate(`/payment?bookingId=${b.id}`)}>
+                        Pay now
+                      </Button>
+                    )}
+                    {workflowStatus(b) === 'accepted' && b.payment_status === 'held' && currentUser?.id === b.sitter_id && (
+                      <Button size="sm" className="h-7 px-2 text-xs" onClick={() => onMarkComplete(b.id).catch(() => toast({ title: t('common.error'), description: 'Could not mark complete', variant: 'destructive' }))}>
+                        Mark complete
+                      </Button>
+                    )}
+                    {workflowStatus(b) === 'completed' && b.completed_at && !b.completion_confirmed_at && currentUser?.id === b.owner_id && (
+                      <Button size="sm" className="h-7 px-2 text-xs" onClick={() => onConfirmComplete(b.id).catch(() => toast({ title: t('common.error'), description: 'Could not confirm completion', variant: 'destructive' }))}>
+                        Confirm
+                      </Button>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
             <button

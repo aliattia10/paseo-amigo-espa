@@ -18,22 +18,23 @@ const insertWorkflowNotifications = async (
   ownerMessage: string,
   sitterMessage: string,
 ) => {
-  await supabase.from('notifications').insert([
-    {
-      user_id: ownerId,
-      type: 'payment_completed',
-      title: 'Payment completed',
-      message: ownerMessage,
-      related_id: bookingId,
-    },
-    {
-      user_id: sitterId,
-      type: 'payment_completed',
-      title: 'Payment received',
-      message: sitterMessage,
-      related_id: bookingId,
-    },
-  ])
+  const rows = [
+    { user_id: ownerId, type: 'payment_completed', title: 'Payment completed', message: ownerMessage, related_id: bookingId },
+    { user_id: sitterId, type: 'payment_completed', title: 'Payment received', message: sitterMessage, related_id: bookingId },
+  ]
+  for (const row of rows) {
+    const { data: existing } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('user_id', row.user_id)
+      .eq('type', row.type)
+      .eq('related_id', row.related_id)
+      .limit(1)
+      .maybeSingle()
+    if (!existing?.id) {
+      await supabase.from('notifications').insert(row)
+    }
+  }
 }
 
 const insertWorkflowMessage = async (ownerId: string, sitterId: string, content: string) => {
@@ -46,12 +47,23 @@ const insertWorkflowMessage = async (ownerId: string, sitterId: string, content:
 
   if (!matchRow?.id) return
 
-  await supabase.from('messages').insert({
-    match_id: matchRow.id,
-    sender_id: ownerId,
-    content,
-    read: false,
-  })
+  const { data: existingMsg } = await supabase
+    .from('messages')
+    .select('id')
+    .eq('match_id', matchRow.id)
+    .eq('sender_id', ownerId)
+    .eq('content', content)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (!existingMsg?.id) {
+    await supabase.from('messages').insert({
+      match_id: matchRow.id,
+      sender_id: ownerId,
+      content,
+      read: false,
+    })
+  }
 }
 
 serve(async (req) => {
