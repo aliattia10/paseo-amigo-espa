@@ -78,9 +78,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
       }, 10000);
 
       try {
+        const hasExistingData = matches.length > 0 || walkRequests.length > 0;
         if (!cancelled) {
           setLoadError(null);
-          if (showLoading) setLoading(true);
+          if (showLoading && !hasExistingData) setLoading(true);
         }
 
         // 1) Fetch matches – try user1_id/user2_id first (most projects use this), then user_id/matched_user_id
@@ -107,7 +108,8 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
           useUser12 = true;
         }
 
-        if ((useUser12 && matchesResB === null) || (!useUser12 && matchesResA === null)) {
+        const hasTimedOutRequest = (useUser12 && matchesResB === null) || (!useUser12 && matchesResA === null);
+        if (hasTimedOutRequest) {
           if (!cancelled) setLoadError(t('messages.loadFailed') || 'Could not load matches.');
         } else if (matchesError) {
           if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
@@ -172,7 +174,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
               setLoadError(t('messages.loadFailed') || 'Could not load match details.');
             }
           }
-        } else {
+        } else if (Array.isArray(matchesData) && matchesData.length === 0) {
           if (!cancelled) setMatches([]);
         }
 
