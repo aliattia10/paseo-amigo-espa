@@ -49,6 +49,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [resolvedMatchId, setResolvedMatchId] = useState<string | null>(matchId ?? null);
   const [chatBookings, setChatBookings] = useState<ChatBooking[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -63,9 +64,35 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    setResolvedMatchId(matchId ?? null);
+  }, [matchId]);
+
+  // Fallback resolution so chat stays usable if a conversation opens before matchId arrives.
+  useEffect(() => {
+    if (resolvedMatchId || walkRequest || !currentUser?.id || !otherUser?.id) return;
+    let cancelled = false;
+    const uid = currentUser.id;
+    const oid = otherUser.id;
+
+    (async () => {
+      const { data } = await supabase
+        .from('matches')
+        .select('id, user1_id, user2_id')
+        .or(`and(user1_id.eq.${uid},user2_id.eq.${oid}),and(user1_id.eq.${oid},user2_id.eq.${uid})`)
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.id) setResolvedMatchId(data.id);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedMatchId, walkRequest, currentUser?.id, otherUser?.id]);
+
   // Load initial messages (when matchId is missing briefly after optimistic open, show UI with empty messages)
   useEffect(() => {
-    if (!matchId && !walkRequest) {
+    if (!resolvedMatchId && !walkRequest) {
       setLoading(false);
       return;
     }
@@ -78,11 +105,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
 
     const loadMessages = async () => {
       try {
-        if (matchId) {
+        if (resolvedMatchId) {
           const { data, error } = await (supabase as any)
             .from('messages')
             .select('*')
-            .eq('match_id', matchId)
+            .eq('match_id', resolvedMatchId)
             .order('created_at', { ascending: true });
           
           if (error) throw error;
@@ -106,7 +133,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
 
     loadMessages();
     return () => clearTimeout(timeoutId);
-  }, [matchId, walkRequest, toast, t]);
+  }, [resolvedMatchId, walkRequest, toast, t]);
 
   // Load bookings between current user and this conversation partner (so they appear in chat)
   useEffect(() => {
@@ -185,15 +212,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
 
   // Subscribe to real-time messages
   useEffect(() => {
-    if (matchId) {
+    if (resolvedMatchId) {
       // Subscribe to match messages
       const channel = supabase
-        .channel(`match-${matchId}`)
+        .channel(`match-${resolvedMatchId}`)
         .on('postgres_changes', {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `match_id=eq.${matchId}`
+          filter: `match_id=eq.${resolvedMatchId}`
         }, (payload) => {
           setMessages(prev => {
             // Avoid duplicates
@@ -218,7 +245,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         subscription.unsubscribe();
       };
     }
-  }, [matchId, walkRequest]);
+  }, [resolvedMatchId, walkRequest]);
 
   const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -298,7 +325,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newMessage.trim() && !selectedMedia) || !currentUser || sending) return;
-    if (!matchId && !walkRequest) return; // matchId not resolved yet (optimistic open)
+    if (!resolvedMatchId && !walkRequest) {
+      toast({
+        title: t('messages.loadingConversation', 'Preparing conversation...'),
+        description: t('messages.loadFailed', 'Please wait a moment and try again.'),
+      });
+      return;
+    }
 
     setSending(true);
     setUploading(true);
@@ -313,12 +346,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         mediaType = type;
       }
 
-      if (matchId) {
+      if (resolvedMatchId) {
         // Send message for match using the send_message function
         const messageText = newMessage.trim() || (mediaType === 'image' ? '?? Image' : '?? Video');
         
         const { data: messageId, error } = await (supabase as any).rpc('send_message', {
-          p_match_id: matchId,
+          p_match_id: resolvedMatchId,
           p_sender_id: currentUser.id,
           p_content: messageText
         });
@@ -332,7 +365,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         // Optimistically add message to UI immediately
         const newMsg = {
           id: messageId || Date.now().toString(),
-          match_id: matchId,
+          match_id: resolvedMatchId,
           sender_id: currentUser.id,
           content: messageText,
           created_at: new Date().toISOString(),
@@ -409,7 +442,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               {walkRequest ? t('messages.walkFor', { dog: walkRequest.dogId }) : t('messages.match')}
             </p>
           </div>
-          {matchId && (
+          {resolvedMatchId && (
             <Button
               onClick={() => {
                 navigate(`/booking/request?walkerId=${otherUser.id}&walkerName=${encodeURIComponent(otherUser.name)}&rate=${otherUser.hourlyRate || 15}`);
@@ -560,7 +593,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         </div>
 
         <form onSubmit={handleSendMessage} className="flex-shrink-0 px-4 py-2 border-t border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark space-y-2">
-          {!matchId && !walkRequest && (
+          {!resolvedMatchId && !walkRequest && (
             <p className="text-xs text-muted-foreground text-center">
               {t('messages.loadingConversation', 'Preparing conversation...')}
             </p>
@@ -613,7 +646,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               size="icon"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={sending || uploading || (!matchId && !walkRequest)}
+              disabled={sending || uploading}
               className="flex-shrink-0"
             >
               <Image className="w-4 h-4" />
@@ -623,12 +656,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder={t('messages.writeMessage')}
               className="flex-1"
-              disabled={sending || uploading || (!matchId && !walkRequest)}
+              disabled={sending || uploading}
             />
             <Button
               type="submit"
               size="icon"
-              disabled={(!newMessage.trim() && !selectedMedia) || sending || uploading || (!matchId && !walkRequest)}
+              disabled={(!newMessage.trim() && !selectedMedia) || sending || uploading}
               className="flex-shrink-0 bg-primary hover:bg-primary/90"
             >
               {uploading ? (
