@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { createUser, getUser } from '@/lib/supabase-services';
@@ -35,6 +35,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const bootstrapDoneRef = useRef(false);
 
   useEffect(() => {
     const checkAdminStatus = (user: SupabaseUser | null) => {
@@ -103,6 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error) {
         setLoading(false);
+      } finally {
+        bootstrapDoneRef.current = true;
       }
     };
 
@@ -134,7 +137,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       checkAdminStatus(session?.user ?? null);
       
       if (session?.user) {
-        setLoading(true);
+        // Keep UI stable on background token refreshes (common after tab switches).
+        // Only block UI if auth bootstrap has not completed yet.
+        if (!bootstrapDoneRef.current) setLoading(true);
         await fetchUserProfile(session.user.id);
       } else {
         setUserProfile(null);

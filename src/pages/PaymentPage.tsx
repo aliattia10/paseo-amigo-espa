@@ -13,6 +13,7 @@ import { featureFlags } from '@/lib/feature-flags';
 import { formatCurrencyChf } from '@/lib/currency';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
+const isStripeTestKey = stripeKey.startsWith('pk_test_');
 if (!stripeKey && import.meta.env.DEV) {
   console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set in environment variables');
 }
@@ -43,7 +44,15 @@ function PaymentForm({ bookingId, amount, onSuccess }: { bookingId: string; amou
       });
 
       if (error) {
-        toast.error(error.message);
+        const rawMessage = String(error.message || '');
+        const showTestCardHint =
+          isStripeTestKey &&
+          (rawMessage.toLowerCase().includes('test mode') || rawMessage.toLowerCase().includes('test card'));
+        if (showTestCardHint) {
+          toast.error('Test mode is enabled. Use a Stripe test card like 4242 4242 4242 4242.');
+        } else {
+          toast.error(rawMessage || 'Payment failed. Please try again.');
+        }
       } else {
         // Update booking status to confirmed (payment successful)
         await supabase
@@ -199,6 +208,11 @@ export default function PaymentPage() {
           {featureFlags.minPaymentMode && (
             <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               Test pricing mode active: minimum CHF amount applied.
+            </div>
+          )}
+          {isStripeTestKey && (
+            <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+              Stripe test mode active: use a test card (e.g. 4242 4242 4242 4242), not a real card.
             </div>
           )}
           <div className="mb-6 p-4 bg-muted rounded-lg space-y-3">
