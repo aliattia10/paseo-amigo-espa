@@ -88,6 +88,42 @@ const BookingsPage: React.FC = () => {
       setBookings(formatted);
     };
 
+    const hydrateBookingRows = async (rows: any[]) => {
+      const userIds = new Set<string>();
+      const petIds = new Set<string>();
+      rows.forEach((b: any) => {
+        if (b.owner_id) userIds.add(b.owner_id);
+        if (b.sitter_id) userIds.add(b.sitter_id);
+        if (b.dog_id) petIds.add(b.dog_id);
+        if (b.pet_id) petIds.add(b.pet_id);
+      });
+
+      const { data: userRows } = userIds.size
+        ? await supabase.from('users').select('id, name').in('id', [...userIds])
+        : { data: [] };
+      const nameById = new Map<string, string>();
+      (userRows || []).forEach((u: any) => { if (u?.id && u?.name) nameById.set(u.id, u.name); });
+
+      const petNameById = new Map<string, string>();
+      if (petIds.size) {
+        const { data: petRows, error: petError } = await supabase.from('pets').select('id, name').in('id', [...petIds]);
+        if (!petError) {
+          (petRows || []).forEach((p: any) => { if (p?.id && p?.name) petNameById.set(p.id, p.name); });
+        }
+        if (petNameById.size === 0) {
+          const { data: dogRows } = await supabase.from('dogs').select('id, name').in('id', [...petIds]);
+          (dogRows || []).forEach((p: any) => { if (p?.id && p?.name) petNameById.set(p.id, p.name); });
+        }
+      }
+
+      return rows.map((b: any) => ({
+        ...b,
+        owner: b.owner_id ? { name: nameById.get(b.owner_id) ?? null } : null,
+        sitter: b.sitter_id ? { name: nameById.get(b.sitter_id) ?? null } : null,
+        dog: (b.pet_id || b.dog_id) ? { name: petNameById.get(b.pet_id || b.dog_id) ?? null } : null,
+      }));
+    };
+
     try {
       // Timeout so we never stay in loading forever
       const timeoutMs = 8000;
@@ -98,12 +134,7 @@ const BookingsPage: React.FC = () => {
       const queryPromise = (async () => {
         return supabase
           .from('bookings')
-          .select(`
-            *,
-            sitter:users!bookings_sitter_id_fkey(name),
-            owner:users!bookings_owner_id_fkey(name),
-            dog:dogs(name)
-          `)
+          .select('*')
           .or(`owner_id.eq.${userId},sitter_id.eq.${userId}`)
           .order('created_at', { ascending: false });
       })();
@@ -125,29 +156,7 @@ const BookingsPage: React.FC = () => {
             .or(`owner_id.eq.${userId},sitter_id.eq.${userId}`)
             .order('created_at', { ascending: false });
           if (!simpleError && simpleData && simpleData.length > 0) {
-            const userIds = new Set<string>();
-            const petIds = new Set<string>();
-            simpleData.forEach((b: any) => {
-              if (b.owner_id) userIds.add(b.owner_id);
-              if (b.sitter_id) userIds.add(b.sitter_id);
-              if (b.dog_id) petIds.add(b.dog_id);
-            });
-            const { data: userRows } = userIds.size
-              ? await supabase.from('users').select('id, name').in('id', [...userIds])
-              : { data: [] };
-            const nameById = new Map<string, string>();
-            (userRows || []).forEach((u: any) => { if (u?.id && u?.name) nameById.set(u.id, u.name); });
-            const petNameById = new Map<string, string>();
-            if (petIds.size) {
-              const { data: petRows } = await supabase.from('pets').select('id, name').in('id', [...petIds]);
-              (petRows || []).forEach((p: any) => { if (p?.id && p?.name) petNameById.set(p.id, p.name); });
-            }
-            const merged = simpleData.map((b: any) => ({
-              ...b,
-              owner: b.owner_id ? { name: nameById.get(b.owner_id) ?? null } : null,
-              sitter: b.sitter_id ? { name: nameById.get(b.sitter_id) ?? null } : null,
-              dog: b.dog_id ? { name: petNameById.get(b.dog_id) ?? null } : null,
-            }));
+            const merged = await hydrateBookingRows(simpleData);
             applyData(merged);
           } else if (!simpleError && simpleData) {
             applyData(simpleData);
@@ -161,7 +170,7 @@ const BookingsPage: React.FC = () => {
         return;
       }
 
-      applyData(data ?? []);
+      applyData(data ? await hydrateBookingRows(data) : []);
     } catch (error: any) {
       setBookings([]);
       const msg = error?.message ?? '';

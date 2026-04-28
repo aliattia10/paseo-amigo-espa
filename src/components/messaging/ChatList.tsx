@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,21 +45,27 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
+  const matchIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    matchIdsRef.current = new Set(matches.map((m) => m.id));
+  }, [matches]);
 
   useEffect(() => {
     const TIMEOUT_MS = 8000;
     const withTimeout = <T,>(p: Promise<T>): Promise<T | null> =>
       Promise.race([p, new Promise<null>((res) => setTimeout(() => res(null), TIMEOUT_MS))]).catch(() => null);
+    let cancelled = false;
 
     const loadChats = async (showLoading = true) => {
       if (!userProfile || !currentUser?.id) {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
         return;
       }
 
       const uid = typeof currentUser.id === 'string' ? currentUser.id.trim() : '';
       if (!uid) {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
         return;
       }
 
@@ -67,13 +73,15 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
       const forceStopLoading = setTimeout(() => {
         if (!loadingCleared) {
           loadingCleared = true;
-          setLoading(false);
+          if (!cancelled) setLoading(false);
         }
       }, 10000);
 
       try {
-        setLoadError(null);
-        if (showLoading) setLoading(true);
+        if (!cancelled) {
+          setLoadError(null);
+          if (showLoading) setLoading(true);
+        }
 
         // 1) Fetch matches – try user1_id/user2_id first (most projects use this), then user_id/matched_user_id
         let matchesData: any[] | null = null;
@@ -100,14 +108,14 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
         }
 
         if ((useUser12 && matchesResB === null) || (!useUser12 && matchesResA === null)) {
-          setLoadError(t('messages.loadFailed') || 'Could not load matches.');
+          if (!cancelled) setLoadError(t('messages.loadFailed') || 'Could not load matches.');
         } else if (matchesError) {
           if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
-          setLoadError(t('messages.loadFailed') || 'Could not load matches.');
+          if (!cancelled) setLoadError(t('messages.loadFailed') || 'Could not load matches.');
         } else if (matchesData && matchesData.length > 0) {
           const mutualMatches = matchesData.filter((m: any) => m.is_mutual !== false);
           if (mutualMatches.length === 0) {
-            setMatches([]);
+            if (!cancelled) setMatches([]);
           } else {
             const matchIds = mutualMatches.map((m: any) => m.id);
             const messagesByMatch = new Map<string, string>();
@@ -159,29 +167,33 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
               })
             );
             const validMatches = matchesWithUsers.filter((m: any) => m.otherUser);
-            setMatches(validMatches);
-            if (mutualMatches.length > 0 && validMatches.length === 0) {
+            if (!cancelled) setMatches(validMatches);
+            if (!cancelled && mutualMatches.length > 0 && validMatches.length === 0) {
               setLoadError(t('messages.loadFailed') || 'Could not load match details.');
             }
           }
         } else {
-          setMatches([]);
+          if (!cancelled) setMatches([]);
         }
 
-        const requests = userProfile.userType === 'owner'
-          ? await getWalkRequestsByOwner(userProfile.id)
-          : await getWalkRequestsByWalker(userProfile.id);
-        const activeRequests = requests.filter(
-          request => ['pending', 'accepted', 'in-progress'].includes(request.status)
-        );
-        setWalkRequests(activeRequests);
+        try {
+          const requests = userProfile.userType === 'owner'
+            ? await getWalkRequestsByOwner(userProfile.id)
+            : await getWalkRequestsByWalker(userProfile.id);
+          const activeRequests = requests.filter(
+            request => ['pending', 'accepted', 'in-progress'].includes(request.status)
+          );
+          if (!cancelled) setWalkRequests(activeRequests);
+        } catch (requestError) {
+          if (import.meta.env.DEV) console.warn('Walk request loading skipped:', requestError);
+        }
       } catch (error: any) {
         if (import.meta.env.DEV) console.error('Error loading chats:', error);
-        setLoadError(t('messages.loadFailed') || 'Could not load conversations.');
+        if (!cancelled) setLoadError(t('messages.loadFailed') || 'Could not load conversations.');
       } finally {
         clearTimeout(forceStopLoading);
         loadingCleared = true;
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
@@ -202,12 +214,25 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
           if (involvesUser) loadChats(false);
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+          const row = payload.new as Record<string, unknown>;
+          if (row?.sender_id === currentUser.id || row?.receiver_id === currentUser.id) {
+            loadChats(false);
+          } else if (typeof row?.match_id === 'string' && matchIdsRef.current.has(row.match_id)) {
+            loadChats(false);
+          }
+        }
+      )
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [userProfile, currentUser, toast, t, refreshTrigger, retryTrigger]);
+  }, [userProfile, currentUser, t, refreshTrigger, retryTrigger]);
 
   const formatDate = (date: Date) => {
     const now = new Date();
