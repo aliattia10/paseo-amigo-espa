@@ -850,7 +850,7 @@ const NewHomePage: React.FC = () => {
       {/* Minimal Top Bar */}
       <header className="shrink-0 max-w-md mx-auto w-full">
         <div className="flex items-center px-4 py-3 justify-between">
-          <img src="/app-logo.png?v=3" alt="Petflik" className="w-8 h-8" />
+          <img src="/app-logo.png?v=3" alt="Petflik" className="w-24 h-24" />
           <div className="flex items-center gap-1">
             <button
               onClick={toggleTheme}
