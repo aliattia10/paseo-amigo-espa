@@ -89,7 +89,6 @@ export const PayoutSetupPage: React.FC = () => {
         throw new Error('No session found');
       }
 
-      console.log('Creating Connect account...');
       const response = await fetch(
         `${SUPABASE_URL}/functions/v1/create-connect-account`,
         {
@@ -102,14 +101,14 @@ export const PayoutSetupPage: React.FC = () => {
       );
 
       const responseText = await response.text();
-      console.log('Response:', response.status, responseText);
+      if (import.meta.env.DEV) console.debug('Connect account response:', response.status);
 
       if (!response.ok) {
         throw new Error(`Failed to create account: ${responseText}`);
       }
 
-      const result = JSON.parse(responseText);
-      console.log('Account created:', result);
+      JSON.parse(responseText);
+      if (import.meta.env.DEV) console.debug('Connect account created');
       
       // Now create onboarding link
       await handleStartOnboarding();
@@ -135,7 +134,6 @@ export const PayoutSetupPage: React.FC = () => {
         throw new Error('No session found');
       }
 
-      console.log('Creating onboarding link...');
       const response = await fetch(
         `${SUPABASE_URL}/functions/v1/create-onboarding-link`,
         {
@@ -152,7 +150,7 @@ export const PayoutSetupPage: React.FC = () => {
       );
 
       const responseText = await response.text();
-      console.log('Onboarding response:', response.status, responseText);
+      if (import.meta.env.DEV) console.debug('Onboarding response:', response.status);
 
       if (!response.ok) {
         throw new Error(`Failed to create onboarding link: ${responseText}`);

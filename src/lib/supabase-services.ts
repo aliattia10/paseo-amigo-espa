@@ -130,41 +130,62 @@ export const updateUserKyc = async (
 
 // Dog Services
 export const createDog = async (dogData: Omit<Dog, 'id' | 'createdAt' | 'updatedAt'>) => {
-  const { data, error } = await supabase
-    .from('dogs')
-    .insert({
-      owner_id: dogData.ownerId,
-      name: dogData.name,
-      age: dogData.age,
-      age_years: dogData.ageYears,
-      age_months: dogData.ageMonths,
-      breed: dogData.breed,
-      breed_custom: dogData.customBreed,
-      pet_size: dogData.petSize,
-      allergies: dogData.allergies,
-      health_issues: dogData.healthIssues,
-      notes: dogData.notes,
-      image_url: dogData.imageUrl,
-    })
-    .select()
-    .single();
+  const basePayload: Record<string, unknown> = {
+    owner_id: dogData.ownerId,
+    name: dogData.name,
+    pet_type: 'dog',
+    age: dogData.age,
+    age_years: dogData.ageYears,
+    age_months: dogData.ageMonths,
+    breed: dogData.breed,
+    breed_custom: dogData.customBreed,
+    pet_size: dogData.petSize,
+    allergies: dogData.allergies,
+    health_issues: dogData.healthIssues,
+    notes: dogData.notes,
+    image_url: dogData.imageUrl,
+  };
 
-  if (error) {
-    console.error('Error creating dog:', error);
-    throw error;
+  const insertWithRetry = async (table: 'pets' | 'dogs', initialPayload: Record<string, unknown>) => {
+    let payload = { ...initialPayload };
+    if (table === 'dogs') {
+      delete payload.pet_type;
+    }
+
+    for (let attempts = 0; attempts < 8; attempts++) {
+      const { data, error } = await supabase.from(table).insert(payload).select('id').single();
+      if (!error) return { data, error: null };
+
+      const msg = error.message || '';
+      const match = msg.match(/Could not find the '([^']+)' column/);
+      if (match?.[1] && match[1] in payload) {
+        const next = { ...payload };
+        delete next[match[1]];
+        payload = next;
+        continue;
+      }
+
+      return { data: null, error };
+    }
+
+    return { data: null, error: { message: 'Could not create pet profile' } };
+  };
+
+  const petsResult = await insertWithRetry('pets', basePayload);
+  if (petsResult.data?.id) return petsResult.data.id;
+
+  const petsMsg = petsResult.error?.message || '';
+  if (/does not exist|not find|relation/i.test(petsMsg)) {
+    const dogsResult = await insertWithRetry('dogs', basePayload);
+    if (dogsResult.data?.id) return dogsResult.data.id;
+    throw dogsResult.error;
   }
-  return data.id;
+
+  throw petsResult.error;
 };
 
 export const getDogsByOwner = async (ownerId: string): Promise<Dog[]> => {
-  const { data, error } = await supabase
-    .from('dogs')
-    .select('*')
-    .eq('owner_id', ownerId);
-
-  if (error) throw error;
-
-  return (data || []).map(dog => ({
+  const mapDog = (dog: any): Dog => ({
     id: dog.id,
     ownerId: dog.owner_id,
     name: dog.name,
@@ -180,7 +201,31 @@ export const getDogsByOwner = async (ownerId: string): Promise<Dog[]> => {
     imageUrl: dog.image_url || undefined,
     createdAt: new Date(dog.created_at),
     updatedAt: new Date(dog.updated_at),
-  }));
+  });
+
+  const petsRes = await supabase
+    .from('pets')
+    .select('*')
+    .eq('owner_id', ownerId)
+    .eq('pet_type', 'dog');
+
+  if (!petsRes.error) {
+    return (petsRes.data || []).map(mapDog);
+  }
+
+  const petsMsg = petsRes.error.message || '';
+  if (!/does not exist|not find|relation/i.test(petsMsg)) {
+    throw petsRes.error;
+  }
+
+  const { data, error } = await supabase
+    .from('dogs')
+    .select('*')
+    .eq('owner_id', ownerId);
+
+  if (error) throw error;
+
+  return (data || []).map(mapDog);
 };
 
 export const updateDog = async (dogId: string, dogData: Partial<Dog>) => {
@@ -288,7 +333,7 @@ export const getNearbyUsers = async (userType: string, latitude?: number, longit
 
 export const updateUserLocation = async (userId: string, latitude: number, longitude: number) => {
   // TODO: Implement location update
-  console.log('Location update not yet implemented');
+  if (import.meta.env.DEV) console.debug('Location update not yet implemented');
 };
 
 export const getNearbyWalkers = async (latitude: number, longitude: number, radius: number): Promise<WalkerProfile[]> => {
@@ -300,18 +345,32 @@ export const getNearbyWalkers = async (latitude: number, longitude: number, radi
 export const uploadImage = async (file: File, userId: string, folder: string = 'dogs'): Promise<string> => {
   const fileExt = file.name.split('.').pop();
   const fileName = `${userId}/${folder}/${Math.random()}.${fileExt}`;
-  
-  const { data, error } = await supabase.storage
-    .from('images')
-    .upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: true
-    });
 
-  if (error) throw error;
+  const candidateBuckets = ['avatars', 'profile-images', 'images'] as const;
+  let usedBucket: (typeof candidateBuckets)[number] | null = null;
+  let lastError: Error | null = null;
+
+  for (const bucket of candidateBuckets) {
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+
+    if (!error) {
+      usedBucket = bucket;
+      break;
+    }
+    lastError = error as unknown as Error;
+  }
+
+  if (!usedBucket) {
+    throw lastError ?? new Error('Unable to upload image to storage');
+  }
 
   const { data: { publicUrl } } = supabase.storage
-    .from('images')
+    .from(usedBucket)
     .getPublicUrl(fileName);
 
   return publicUrl;

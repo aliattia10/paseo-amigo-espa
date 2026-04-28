@@ -27,6 +27,24 @@ const DogProfileForm: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        e.target.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Image must be less than 5MB.",
+          variant: "destructive",
+        });
+        e.target.value = '';
+        return;
+      }
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -64,10 +82,10 @@ const DogProfileForm: React.FC = () => {
       });
 
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "No se pudo crear el perfil del perro.",
+        description: error?.message || "No se pudo crear el perfil del perro.",
         variant: "destructive",
       });
     } finally {

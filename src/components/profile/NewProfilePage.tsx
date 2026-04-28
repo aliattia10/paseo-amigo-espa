@@ -273,7 +273,7 @@ const NewProfilePage: React.FC = () => {
     const fetchReviews = async () => {
       try {
         const { supabase } = await import('@/integrations/supabase/client');
-        const res = await withTimeout(
+        let res = await withTimeout(
           supabase
             .from('reviews')
             .select('*, reviewer:users!reviews_reviewer_id_fkey(name, profile_image)')
@@ -281,6 +281,18 @@ const NewProfilePage: React.FC = () => {
             .order('created_at', { ascending: false })
             .limit(5)
         );
+
+        if (res?.error && /reviewed_id|column/i.test(res.error.message || '')) {
+          res = await withTimeout(
+            supabase
+              .from('reviews')
+              .select('*, reviewer:users!reviews_reviewer_id_fkey(name, profile_image)')
+              .eq('reviewee_id', currentUser.id)
+              .order('created_at', { ascending: false })
+              .limit(5)
+          );
+        }
+
         if (res?.data) {
           setReviews(res.data.map((r: any) => ({
             id: r.id,

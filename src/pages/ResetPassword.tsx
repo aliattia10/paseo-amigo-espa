@@ -20,28 +20,18 @@ const ResetPassword: React.FC = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    console.log('ResetPassword: Component mounted');
-    console.log('ResetPassword: Current URL:', window.location.href);
-    console.log('ResetPassword: Search params:', window.location.search);
-    
     // Get URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const hasParams = urlParams.toString().length > 0;
     
-    console.log('ResetPassword: Has URL params:', hasParams);
-    console.log('ResetPassword: All params:', Object.fromEntries(urlParams.entries()));
-    
     // If we have any URL parameters, show the form immediately
     // This handles password reset links from Supabase
     if (hasParams) {
-      console.log('ResetPassword: URL parameters detected, showing form');
       setStatus('form');
       return;
     }
     
     // If no URL parameters, check for existing session
-    console.log('ResetPassword: No URL params, checking session...');
-    
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -54,13 +44,11 @@ const ResetPassword: React.FC = () => {
         }
 
         if (session) {
-          console.log('ResetPassword: Valid session found, showing form');
           setStatus('form');
           return;
         }
 
         // No session and no parameters, redirect to auth
-        console.log('ResetPassword: No session and no parameters, redirecting to auth');
         toast({
           title: t('auth.resetPasswordError'),
           description: t('auth.noValidSession'),
@@ -102,50 +90,32 @@ const ResetPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log('ResetPassword: Updating password...');
-      
       // Get URL parameters to check if this is a password reset callback
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      const type = urlParams.get('type');
       const accessToken = urlParams.get('access_token');
       const refreshToken = urlParams.get('refresh_token');
-      
-      console.log('ResetPassword: Password update params:', { 
-        code: !!code, 
-        type, 
-        accessToken: !!accessToken, 
-        refreshToken: !!refreshToken 
-      });
       
       let error;
       
       // Handle password reset with code (most common case)
       if (code) {
-        console.log('ResetPassword: Verifying recovery code and updating password...');
-        
         // Use the exchangeCodeForSession method for password reset
-        const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+        const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
         
         if (sessionError) {
           console.error('Code exchange error:', sessionError);
           throw sessionError;
         }
-        
-        console.log('ResetPassword: Code exchanged for session, now updating password...');
-        
         // Now update the password
-        const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+        const { error: updateError } = await supabase.auth.updateUser({
           password: password
         });
-        
-        console.log('ResetPassword: Update result:', { updateData, updateError });
         
         error = updateError;
       } 
       // If we have tokens from URL, we need to set the session first
       else if (accessToken && refreshToken) {
-        console.log('ResetPassword: Setting session from URL tokens...');
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
@@ -155,26 +125,17 @@ const ResetPassword: React.FC = () => {
           console.error('Session setting error:', sessionError);
           throw sessionError;
         }
-        
-        console.log('ResetPassword: Session set, now updating password...');
-        
-        const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+        const { error: updateError } = await supabase.auth.updateUser({
           password: password
         });
-        
-        console.log('ResetPassword: Update result:', { updateData, updateError });
         
         error = updateError;
       }
       // If no code or tokens, try to update with current session
       else {
-        console.log('ResetPassword: No code or tokens, trying to update with current session...');
-        
-        const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+        const { error: updateError } = await supabase.auth.updateUser({
           password: password
         });
-        
-        console.log('ResetPassword: Update result:', { updateData, updateError });
         
         error = updateError;
       }

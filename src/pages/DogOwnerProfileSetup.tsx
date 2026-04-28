@@ -141,9 +141,6 @@ const DogOwnerProfileSetup: React.FC = () => {
     
     setLoading(true);
     try {
-      console.log('=== CREATING PET PROFILE ===');
-      console.log('Pet data:', petData);
-      
       // Use photos array for multi-image support
       const imageUrlJson = JSON.stringify(photos.filter(p => p));
       const resolvedBreed = petData.breed === 'Other'
@@ -156,13 +153,7 @@ const DogOwnerProfileSetup: React.FC = () => {
         throw new Error('You must be logged in to create a pet profile');
       }
 
-      console.log('Current user ID:', currentUser.id);
-      console.log('Photos to save:', photos.filter(p => p));
-
-      // Try pets table first (new structure)
-      const { data: insertedPet, error: petsError } = await supabase
-        .from('pets')
-        .insert({
+      const basePayload: Record<string, unknown> = {
           owner_id: currentUser.id,
           name: petData.name,
           pet_type: petType,
@@ -179,112 +170,55 @@ const DogOwnerProfileSetup: React.FC = () => {
           allergies: petData.allergies || null,
           health_issues: petData.healthIssues || null,
           energy_level: petData.energyLevel,
-        })
-        .select()
-        .single();
+      };
 
-      console.log('Insert result:', { insertedPet, petsError });
-
-      if (petsError) {
-        console.error('Pets table error:', {
-          message: petsError.message,
-          details: petsError.details,
-          hint: petsError.hint,
-          code: petsError.code
-        });
-        
-        // Fallback to dogs table if pets doesn't exist
-        if (petsError.message.includes('does not exist') || petsError.message.includes('not find')) {
-          console.log('Trying dogs table as fallback...');
-          const { error: dogsError } = await supabase
-            .from('dogs')
-            .insert({
-              owner_id: currentUser!.id,
-              name: petData.name,
-              age: legacyAgeText,
-              age_years: parsedYears,
-              age_months: parsedMonths,
-              breed: resolvedBreed,
-              breed_custom: petData.breed === 'Other' ? (petData.customBreed.trim() || null) : null,
-              pet_size: petData.petSize,
-              notes: petData.notes,
-              image_url: imageUrlJson,
-              temperament: petData.temperament,
-              special_needs: petData.specialNeeds || null,
-              allergies: petData.allergies || null,
-              health_issues: petData.healthIssues || null,
-              energy_level: petData.energyLevel,
-            });
-          
-          if (dogsError) throw dogsError;
-        } else {
-          throw petsError;
+      const insertWithRetry = async (table: 'pets' | 'dogs', initialPayload: Record<string, unknown>) => {
+        let payload = { ...initialPayload };
+        if (table === 'dogs') {
+          delete payload.pet_type;
         }
-      }
 
-      console.log('Pet profile created successfully');
-      
-      // Use the returned pet data if available
-      if (insertedPet) {
-        console.log('Created pet:', insertedPet);
-        toast({
-          title: t('common.success'),
-          description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
-        });
-        navigate('/profile');
-      } else {
-        // Fallback: try to fetch the created pet
-        const { data: createdPet, error: fetchError } = await supabase
-          .from('pets')
-          .select('id')
-          .eq('owner_id', currentUser.id)
-          .eq('name', petData.name)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+        for (let attempts = 0; attempts < 8; attempts++) {
+          const res = await supabase.from(table).insert(payload).select('id').single();
+          if (!res.error) return { data: res.data, error: null };
 
-        if (fetchError) {
-          console.error('Fetch error:', fetchError);
-          // Try dogs table as fallback
-          const { data: createdDog } = await supabase
-            .from('dogs')
-            .select('id')
-            .eq('owner_id', currentUser.id)
-            .eq('name', petData.name)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-          
-          if (createdDog) {
-            toast({
-              title: t('common.success'),
-              description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
-            });
-            navigate('/profile');
-            return;
+          const msg = res.error.message || '';
+          const match = msg.match(/Could not find the '([^']+)' column/);
+          if (match?.[1] && match[1] in payload) {
+            const next = { ...payload };
+            delete next[match[1]];
+            payload = next;
+            continue;
           }
+
+          return { data: null, error: res.error };
         }
 
-        if (createdPet) {
-          toast({
-            title: t('common.success'),
-            description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
-          });
-          navigate('/profile');
+        return { data: null, error: { message: 'Could not create pet profile' } };
+      };
+
+      const petsResult = await insertWithRetry('pets', basePayload);
+
+      if (!petsResult.data?.id) {
+        const msg = petsResult.error?.message || '';
+        if (msg.includes('does not exist') || msg.includes('not find') || msg.includes('relation')) {
+          const dogsResult = await insertWithRetry('dogs', basePayload);
+          if (!dogsResult.data?.id) throw dogsResult.error;
         } else {
-          // Fallback to dashboard if we can't get the ID
-          toast({
-            title: t('common.success'),
-            description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created successfully!`,
-          });
-          navigate('/profile');
+          throw petsResult.error;
         }
       }
+
+      toast({
+        title: t('common.success'),
+        description: `${petType === 'dog' ? 'Dog' : 'Cat'} profile created!`,
+      });
+      navigate('/profile');
     } catch (error: any) {
-      console.error('Create pet error:', error);
+      if (import.meta.env.DEV) console.error('Create pet error:', error);
       toast({
         title: t('common.error'),
-        description: error.message,
+        description: error.message || 'Could not create pet profile. Please try again.',
         variant: 'destructive',
       });
     } finally {
