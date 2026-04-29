@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { supabase } from '@/config/database';
+import { supabase, supabaseAdmin } from '@/config/database';
 import { AuthRequest } from '@/middleware/auth';
 
 // Register new user
@@ -59,14 +58,24 @@ export const register = async (req: Request, res: Response) => {
       throw userError;
     }
 
-    // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({
+        success: false,
+        error: 'Server configuration error'
+      });
+    }
+
+    const signOptions: jwt.SignOptions = {
+      expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as jwt.SignOptions['expiresIn'],
+    };
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      signOptions
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: {
         user: {
@@ -80,7 +89,7 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to register user'
     });
@@ -116,14 +125,24 @@ export const login = async (req: Request, res: Response) => {
     //   });
     // }
 
-    // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({
+        success: false,
+        error: 'Server configuration error'
+      });
+    }
+
+    const signOptions: jwt.SignOptions = {
+      expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as jwt.SignOptions['expiresIn'],
+    };
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      signOptions
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         user: {
@@ -137,7 +156,7 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to login'
     });
@@ -148,13 +167,13 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async (req: AuthRequest, res: Response) => {
   try {
     // In a real app, you might want to blacklist the token
-    res.json({
+    return res.json({
       success: true,
       message: 'Logged out successfully'
     });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to logout'
     });
@@ -174,13 +193,13 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: user
     });
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to get profile'
     });
@@ -211,13 +230,13 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: user
     });
   } catch (error) {
     console.error('Update profile error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to update profile'
     });

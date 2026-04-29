@@ -19,7 +19,7 @@ if [ $? -eq 0 ]; then
     echo "3. Deploy automatically"
     echo ""
     echo "📋 Don't forget to set environment variables in Netlify dashboard!"
-    echo "   Check netlify-env-vars.txt for the required variables"
+    echo "   Set VITE_* and backend secrets in Netlify Site Settings → Environment (see README / env.example)"
 else
     echo "❌ Build failed! Please check the errors above."
     exit 1

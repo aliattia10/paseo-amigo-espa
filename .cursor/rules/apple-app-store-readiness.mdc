@@ -1,0 +1,22 @@
+---
+description: Pre-flight checklist before App Store submission and release polish (Paseo / web-first stack).
+alwaysApply: true
+---
+
+# Apple App Store and release readiness
+
+This repo ships a **Vite + React web app** deployed to hosting (e.g. Netlify). **There is no `ios/` or native shell here.** To distribute on the App Store you still need **a wrapper** (Capacitor, Cordova, or a minimal WKWebView app) pointing at production URLs plus native assets.
+
+## Before every submission
+
+1. Run `npm run lint` and `npm run build` at repo root; run `npm run build` and `npm run lint` under `backend/`.
+2. Use **Stripe live keys** and **production** Supabase in hosting env vars; remove any pasted secrets from the repo (`netlify-env-vars.txt` belongs in Dashboard only).
+3. Apply DB changes only via **`supabase/migrations/`** plus `supabase db push`; do not fork one-off SQL in production without a migration pair.
+4. Privacy: URLs and in-app texts must match Privacy Policy / Terms URLs you submit (App Privacy labels, data collected).
+5. Payments: disclose dog-walking/booking monetization clearly; Stripe + Connect follows standard review if flows are coherent and refunds/support are reachable.
+6. Auth: deep links / OAuth redirect URIs registered for **production domain** only.
+7. Performance: lazy-load heavy routes if main bundle exceeds target; icons and splash for the eventual native wrapper must match branding.
+
+## Cursor agent behaviour on “release polish” topics
+
+Prefer **small fixes** with clear rationale; avoid drive-by refactors. When asked to delete docs/sql, preserve **migration history** and **README/backend README** operational value; remove only redundant scratchpads and duplicate scripts superseded by migrations.

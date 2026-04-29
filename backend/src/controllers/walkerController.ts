@@ -28,14 +28,14 @@ export const getWalkers = async (req: Request, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       count: walkers.length,
       data: walkers
     });
   } catch (error) {
     console.error('Get walkers error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to get walkers'
     });
@@ -66,13 +66,13 @@ export const getWalkerById = async (req: Request, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: walker
     });
   } catch (error) {
     console.error('Get walker error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to get walker'
     });
@@ -124,13 +124,13 @@ export const createWalkerProfile = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: profile
     });
   } catch (error) {
     console.error('Create walker profile error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to create walker profile'
     });
@@ -167,13 +167,13 @@ export const updateWalkerProfile = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: profile
     });
   } catch (error) {
     console.error('Update walker profile error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to update walker profile'
     });

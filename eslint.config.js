@@ -5,10 +5,17 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "backend/**", "src/integrations/supabase/types.ts"] },
+  {
+    ignores: [
+      "dist",
+      "supabase/**",
+      "kyc_service/**",
+      "src/integrations/supabase/types.ts",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}", "vite.config.ts", "tailwind.config.ts"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,

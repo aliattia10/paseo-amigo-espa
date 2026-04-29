@@ -17,14 +17,14 @@ export const getDogs = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       count: dogs.length,
       data: dogs
     });
   } catch (error) {
     console.error('Get dogs error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to get dogs'
     });
@@ -54,13 +54,13 @@ export const getDogById = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: dog
     });
   } catch (error) {
     console.error('Get dog error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to get dog'
     });
@@ -90,13 +90,13 @@ export const createDog = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: dog
     });
   } catch (error) {
     console.error('Create dog error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to create dog'
     });
@@ -135,13 +135,13 @@ export const updateDog = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: dog
     });
   } catch (error) {
     console.error('Update dog error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to update dog'
     });
@@ -164,13 +164,13 @@ export const deleteDog = async (req: AuthRequest, res: Response) => {
       throw error;
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Dog deleted successfully'
     });
   } catch (error) {
     console.error('Delete dog error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to delete dog'
     });
