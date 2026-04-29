@@ -1,0 +1,17 @@
+---
+description: Keep matching, chat opening, and match notifications reliable for both users.
+alwaysApply: true
+---
+
+# Match + Messaging Reliability
+
+When working on like/match/chat flow:
+
+1. Never rely on a single matches schema shape; support both (`user1_id/user2_id`) and (`user_id/matched_user_id`) safely.
+2. Normalize IDs before comparisons (`String(id).trim()`).
+3. Ensure both users receive match notifications when a mutual match is created.
+4. Keep chat usable even if match resolution is delayed; avoid noisy error toasts during short race windows.
+5. Empty states must distinguish:
+   - truly no matches,
+   - temporary loading issues.
+6. For mobile UX issues, prioritize compact, centered cards and avoid oversized empty-state blocks.

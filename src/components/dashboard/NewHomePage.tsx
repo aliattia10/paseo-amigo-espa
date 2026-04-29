@@ -92,6 +92,58 @@ const NewHomePage: React.FC = () => {
   });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
+  const resolveMatchId = async (userA: string, userB: string): Promise<string | null> => {
+    const a = String(userA).trim();
+    const b = String(userB).trim();
+
+    const { data: dataB, error: errB } = await (supabase as any)
+      .from('matches')
+      .select('id, user1_id, user2_id')
+      .or(`and(user1_id.eq.${a},user2_id.eq.${b}),and(user1_id.eq.${b},user2_id.eq.${a})`)
+      .limit(1)
+      .maybeSingle();
+    if (!errB && dataB?.id) return dataB.id as string;
+
+    const { data: dataA } = await (supabase as any)
+      .from('matches')
+      .select('id, user_id, matched_user_id')
+      .or(`and(user_id.eq.${a},matched_user_id.eq.${b}),and(user_id.eq.${b},matched_user_id.eq.${a})`)
+      .limit(1)
+      .maybeSingle();
+    return (dataA?.id as string) || null;
+  };
+
+  const ensureMatchNotifications = async (userA: string, userB: string, otherName: string) => {
+    const a = String(userA).trim();
+    const b = String(userB).trim();
+    const matchId = await resolveMatchId(a, b);
+
+    const makeNotif = async (targetUserId: string, counterpartName: string) => {
+      const payload = {
+        user_id: targetUserId,
+        type: 'match',
+        title: t('match.itsAMatch', "It's a Match!"),
+        message: t('home.youLiked', { name: counterpartName }),
+        read: false,
+        related_id: matchId,
+      };
+      await (supabase as any).from('notifications').insert(payload);
+    };
+
+    // Best-effort insert for both users; ignore errors to avoid blocking like/match UX.
+    try {
+      await makeNotif(a, otherName);
+    } catch (error) {
+      if (import.meta.env.DEV) console.debug('Match notification skipped for user A');
+    }
+    try {
+      const { data: me } = await supabase.from('users').select('name').eq('id', a).single();
+      await makeNotif(b, me?.name || 'New match');
+    } catch (error) {
+      if (import.meta.env.DEV) console.debug('Match notification skipped for user B');
+    }
+  };
+
   // Load user's likes and passes from Supabase
   React.useEffect(() => {
     const loadUserInteractions = async () => {
@@ -594,6 +646,7 @@ const NewHomePage: React.FC = () => {
         
         // If it's a match, show the modal
         if (isMatch) {
+          await ensureMatchNotifications(likerId, likedId, profile.name);
           // For owner-sitter matches, try to get pet type from owner's pets
           let petTypeForSound: 'dog' | 'cat' | undefined = undefined;
           try {
@@ -663,6 +716,7 @@ const NewHomePage: React.FC = () => {
               liker_user_id: petData.owner_id,
               liked_user_id: currentUser.id
             });
+            await ensureMatchNotifications(petData.owner_id, currentUser.id, profile.name);
             
             // Get owner's name for match modal
             const { data: ownerData } = await supabase
@@ -937,7 +991,8 @@ const NewHomePage: React.FC = () => {
               </Button>
             </div>
           ) : profiles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
+            <div className="flex flex-col items-center justify-center h-full w-full">
+              <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-lg px-6 py-8 text-center">
               <span className="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600 mb-3">
                 {userRole === 'owner' ? 'person_search' : 'pets'}
               </span>
@@ -974,6 +1029,7 @@ const NewHomePage: React.FC = () => {
               >
                 {t('home.startOver')}
               </button>
+              </div>
             </div>
           ) : (
             <>

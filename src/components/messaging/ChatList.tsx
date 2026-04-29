@@ -139,7 +139,16 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
               /* messages table may not exist */
             }
 
-            const getUserId = (m: any) => (useUser12 ? (m.user1_id === uid ? m.user2_id : m.user1_id) : (m.user_id === uid ? m.matched_user_id : m.user_id));
+            const getUserId = (m: any) => {
+              if (useUser12) {
+                const u1 = String(m.user1_id || '').trim();
+                const u2 = String(m.user2_id || '').trim();
+                return u1 === uid ? u2 : u1;
+              }
+              const u = String(m.user_id || '').trim();
+              const mu = String(m.matched_user_id || '').trim();
+              return u === uid ? mu : u;
+            };
 
             const matchesWithUsers = await Promise.all(
               mutualMatches.map(async (match: any) => {

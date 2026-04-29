@@ -72,17 +72,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
   useEffect(() => {
     if (resolvedMatchId || walkRequest || !currentUser?.id || !otherUser?.id) return;
     let cancelled = false;
-    const uid = currentUser.id;
-    const oid = otherUser.id;
+    const uid = String(currentUser.id).trim();
+    const oid = String(otherUser.id).trim();
 
     (async () => {
-      const { data } = await supabase
+      const { data: dataB, error: errB } = await supabase
         .from('matches')
         .select('id, user1_id, user2_id')
         .or(`and(user1_id.eq.${uid},user2_id.eq.${oid}),and(user1_id.eq.${oid},user2_id.eq.${uid})`)
         .limit(1)
         .maybeSingle();
-      if (!cancelled && data?.id) setResolvedMatchId(data.id);
+
+      if (!errB && dataB?.id) {
+        if (!cancelled) setResolvedMatchId(dataB.id);
+        return;
+      }
+
+      // Fallback schema support: user_id / matched_user_id
+      const { data: dataA } = await supabase
+        .from('matches')
+        .select('id, user_id, matched_user_id')
+        .or(`and(user_id.eq.${uid},matched_user_id.eq.${oid}),and(user_id.eq.${oid},matched_user_id.eq.${uid})`)
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && dataA?.id) setResolvedMatchId(dataA.id);
     })();
 
     return () => {
@@ -326,10 +339,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     e.preventDefault();
     if ((!newMessage.trim() && !selectedMedia) || !currentUser || sending) return;
     if (!resolvedMatchId && !walkRequest) {
-      toast({
-        title: t('messages.loadingConversation', 'Preparing conversation...'),
-        description: t('messages.loadFailed', 'Please wait a moment and try again.'),
-      });
       return;
     }
 
