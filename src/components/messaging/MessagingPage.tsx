@@ -34,23 +34,7 @@ const MessagingPage: React.FC = () => {
   } | null>(null);
 
   const findMatchBetweenUsers = async (uid: string, otherId: string) => {
-    const { data: dataB } = await supabase
-      .from('matches')
-      .select('id, user1_id, user2_id')
-      .or(`and(user1_id.eq.${uid},user2_id.eq.${otherId}),and(user1_id.eq.${otherId},user2_id.eq.${uid})`)
-      .limit(1)
-      .maybeSingle();
-    if (dataB?.id) return dataB.id as string;
-
-    const { data: dataA } = await supabase
-      .from('matches')
-      .select('id, user_id, matched_user_id')
-      .or(`and(user_id.eq.${uid},matched_user_id.eq.${otherId}),and(user_id.eq.${otherId},matched_user_id.eq.${uid})`)
-      .limit(1)
-      .maybeSingle();
-    if (dataA?.id) return dataA.id as string;
-
-    // Fallback when schema-specific filters fail in some environments.
+    // Schema-agnostic path to avoid 400s from missing column filters.
     const { data: raw } = await supabase
       .from('matches')
       .select('*')

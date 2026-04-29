@@ -76,31 +76,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     const oid = String(otherUser.id).trim();
 
     (async () => {
-      const { data: dataB } = await supabase
-        .from('matches')
-        .select('id, user1_id, user2_id')
-        .or(`and(user1_id.eq.${uid},user2_id.eq.${oid}),and(user1_id.eq.${oid},user2_id.eq.${uid})`)
-        .limit(1)
-        .maybeSingle();
-
-      if (dataB?.id) {
-        if (!cancelled) setResolvedMatchId(dataB.id);
-        return;
-      }
-
-      // Fallback schema support: user_id / matched_user_id
-      const { data: dataA } = await supabase
-        .from('matches')
-        .select('id, user_id, matched_user_id')
-        .or(`and(user_id.eq.${uid},matched_user_id.eq.${oid}),and(user_id.eq.${oid},matched_user_id.eq.${uid})`)
-        .limit(1)
-        .maybeSingle();
-      if (dataA?.id) {
-        if (!cancelled) setResolvedMatchId(dataA.id);
-        return;
-      }
-
-      // Fallback for environments where schema filters can fail.
+      // Schema-agnostic fallback: fetch visible rows and resolve pair client-side.
       const { data: raw } = await supabase
         .from('matches')
         .select('*')
