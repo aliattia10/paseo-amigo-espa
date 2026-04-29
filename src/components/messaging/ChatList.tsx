@@ -147,7 +147,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
                 if (!otherUserId) return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
 
                 const userRes = await withTimeout(
-                  supabase.from('users').select('id, name, profile_image, user_type, hourly_rate, rating, review_count').eq('id', otherUserId).single()
+                  supabase.from('users').select('id, name, email, profile_image, user_type, hourly_rate, rating, review_count, is_demo, is_bot, is_active').eq('id', otherUserId).single()
                 );
                 const userData = userRes?.data;
                 if (userData) {
@@ -165,7 +165,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
                     },
                   };
                 }
-                // Fallback: keep match visible even when user join cannot be loaded.
+                // Keep match visible even when joined user row cannot be fetched.
                 return {
                   ...match,
                   lastMessageAt: messagesByMatch.get(match.id),

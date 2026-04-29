@@ -113,7 +113,7 @@ const MessagingPage: React.FC = () => {
 
         const { data: userData } = await supabase
           .from('users')
-          .select('id, name, profile_image, user_type, hourly_rate')
+          .select('id, name, email, profile_image, user_type, hourly_rate, is_demo, is_bot, is_active')
           .eq('id', userId)
           .single();
         if (!userData) return;
@@ -179,9 +179,10 @@ const MessagingPage: React.FC = () => {
 
         const { data: userData } = await supabase
           .from('users')
-          .select('id, name, profile_image, user_type, hourly_rate')
+          .select('id, name, email, profile_image, user_type, hourly_rate, is_demo, is_bot, is_active')
           .eq('id', matchRow.otherId)
           .single();
+        if (!userData) return;
 
         let profileImage: string | undefined;
         try {

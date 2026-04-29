@@ -27,6 +27,15 @@ function isDemoUserEmail(email: string | null | undefined): boolean {
   return /@demo\.petflik\.com$/i.test(email) || /@example\.com$/i.test(email);
 }
 
+function isEligibleUserRecord(user: { id?: string; email?: string | null; is_demo?: boolean | null; is_bot?: boolean | null; is_active?: boolean | null } | null | undefined): boolean {
+  if (!user?.id) return false;
+  if (isDemoUserId(user.id)) return false;
+  if (isDemoUserEmail(user.email)) return false;
+  if (user.is_demo === true || user.is_bot === true) return false;
+  if (user.is_active === false) return false;
+  return true;
+}
+
 interface Profile {
   id: string;
   name: string;
@@ -246,7 +255,7 @@ const NewHomePage: React.FC = () => {
         const petsPromise = Promise.race([
           (supabase as any)
             .from('pets')
-            .select(`id, name, age, age_years, age_months, image_url, owner_id, pet_type, breed, mood, personality_tags, users!pets_owner_id_fkey (latitude, longitude, preferences)`)
+            .select(`id, name, age, age_years, age_months, image_url, owner_id, pet_type, breed, mood, personality_tags, users!pets_owner_id_fkey (id, email, latitude, longitude, preferences, is_demo, is_bot, is_active)`)
             .neq('owner_id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
           new Promise<{ data: null; error: { message: string } }>((resolve) =>
@@ -257,7 +266,7 @@ const NewHomePage: React.FC = () => {
         const sittersPromise = Promise.race([
           (supabase as any)
             .from('users')
-            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude, rating, review_count, verified, years_experience, pets_cared_for, hobbies, preferences')
+            .select('id, name, bio, profile_image, hourly_rate, user_type, email, latitude, longitude, rating, review_count, verified, years_experience, pets_cared_for, hobbies, preferences, is_demo, is_bot, is_active')
             .or('user_type.eq.walker,user_type.eq.sitter,user_type.eq.both')
             .neq('id', currentUser?.id || '')
             .order('created_at', { ascending: false }),
@@ -299,7 +308,7 @@ const NewHomePage: React.FC = () => {
         if (!petsError && pets) {
           const petsNoDemo = pets.filter((pet: { owner_id?: string; users?: any }) => {
             const owner = Array.isArray(pet.users) ? pet.users[0] : pet.users;
-            return !isDemoUserId(pet.owner_id) && owner?.preferences?.profilePaused !== true;
+            return isEligibleUserRecord(owner) && owner?.preferences?.profilePaused !== true;
           });
           const petProfiles: Profile[] = petsNoDemo.map((pet: any) => {
             let imageUrls: string[] = [];
@@ -345,9 +354,8 @@ const NewHomePage: React.FC = () => {
         }
         if (!sittersError && sitters && sitters.length > 0) {
           const realSitters = sitters.filter(
-            (sitter: { id: string; email?: string | null; preferences?: Record<string, unknown> | null }) =>
-              !isDemoUserId(sitter.id) &&
-              !isDemoUserEmail(sitter.email) &&
+            (sitter: { id: string; email?: string | null; preferences?: Record<string, unknown> | null; is_demo?: boolean | null; is_bot?: boolean | null; is_active?: boolean | null }) =>
+              isEligibleUserRecord(sitter) &&
               sitter.preferences?.profilePaused !== true
           );
           const sitterProfiles: Profile[] = realSitters.map((sitter: any) => {
