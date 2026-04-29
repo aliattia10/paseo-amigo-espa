@@ -175,6 +175,87 @@ const MessagingPage: React.FC = () => {
     openChatForUser();
   }, [currentUser?.id, searchParams, setSearchParams, selectedChat?.otherUser?.id, location.state]);
 
+  // 4) Open directly from notification deep-link by matchId.
+  useEffect(() => {
+    const qMatchId = searchParams.get('matchId');
+    if (!currentUser?.id || !qMatchId) return;
+    if (selectedChat?.matchId === qMatchId) return;
+
+    const openByMatchId = async () => {
+      try {
+        const uid = String(currentUser.id).trim();
+        const mid = String(qMatchId).trim();
+
+        // Try user1/user2 schema first
+        let matchRow: any = null;
+        const { data: mB, error: eB } = await supabase
+          .from('matches')
+          .select('id, user1_id, user2_id')
+          .eq('id', mid)
+          .maybeSingle();
+
+        if (!eB && mB) {
+          const u1 = String(mB.user1_id || '').trim();
+          const u2 = String(mB.user2_id || '').trim();
+          const otherId = u1 === uid ? u2 : u1;
+          if (otherId) {
+            matchRow = { id: mB.id, otherId };
+          }
+        } else {
+          // Fallback legacy schema
+          const { data: mA } = await supabase
+            .from('matches')
+            .select('id, user_id, matched_user_id')
+            .eq('id', mid)
+            .maybeSingle();
+          if (mA) {
+            const u = String(mA.user_id || '').trim();
+            const mu = String(mA.matched_user_id || '').trim();
+            const otherId = u === uid ? mu : u;
+            if (otherId) {
+              matchRow = { id: mA.id, otherId };
+            }
+          }
+        }
+
+        if (!matchRow?.otherId) return;
+
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id, name, profile_image, user_type, hourly_rate')
+          .eq('id', matchRow.otherId)
+          .single();
+
+        let profileImage: string | undefined;
+        try {
+          if (userData?.profile_image) {
+            const parsed = JSON.parse(userData.profile_image);
+            profileImage = Array.isArray(parsed) ? parsed[0] : userData.profile_image;
+          }
+        } catch {
+          profileImage = userData?.profile_image;
+        }
+
+        setSelectedChat({
+          walkRequest: null,
+          otherUser: {
+            id: userData?.id || matchRow.otherId,
+            name: userData?.name || (t('messages.match') || 'Match'),
+            profileImage,
+            role: userData?.user_type,
+            hourlyRate: userData?.hourly_rate,
+          },
+          matchId: matchRow.id,
+        });
+        setSearchParams({}, { replace: true });
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('Open chat from matchId:', e);
+      }
+    };
+
+    openByMatchId();
+  }, [currentUser?.id, searchParams, setSearchParams, selectedChat?.matchId, t]);
+
   const handleSelectChat = (walkRequest: WalkRequest | null, otherUser: { id: string; name: string; profileImage?: string; role?: string; hourlyRate?: number }, matchId?: string) => {
     setSelectedChat({ walkRequest, otherUser, matchId });
   };

@@ -15,6 +15,8 @@ interface Match {
   id: string;
   user_id?: string;
   matched_user_id?: string;
+  user1_id?: string;
+  user2_id?: string;
   is_mutual?: boolean;
   match_type?: string;
   created_at: string;
@@ -174,14 +176,23 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
                     },
                   };
                 }
-                return { ...match, otherUser: null, lastMessageAt: messagesByMatch.get(match.id) };
+                // Fallback: keep match visible even when user join cannot be loaded.
+                return {
+                  ...match,
+                  lastMessageAt: messagesByMatch.get(match.id),
+                  otherUser: {
+                    id: otherUserId,
+                    name: t('messages.match') || 'Match',
+                    profile_image: undefined,
+                    role: undefined,
+                    hourly_rate: undefined,
+                    rating: undefined,
+                    review_count: undefined,
+                  },
+                };
               })
             );
-            const validMatches = matchesWithUsers.filter((m: any) => m.otherUser);
-            if (!cancelled) setMatches(validMatches);
-            if (!cancelled && mutualMatches.length > 0 && validMatches.length === 0) {
-              setLoadError(t('messages.loadFailed') || 'Could not load match details.');
-            }
+            if (!cancelled) setMatches(matchesWithUsers.filter((m: any) => m.otherUser));
           }
         } else if (Array.isArray(matchesData) && matchesData.length === 0) {
           if (!cancelled) setMatches([]);

@@ -240,7 +240,11 @@ const NotificationsPage: React.FC = () => {
       return;
     }
     if (type === 'match') {
-      navigate('/messages');
+      if (notif.relatedId) {
+        navigate(`/messages?matchId=${notif.relatedId}`);
+      } else {
+        navigate('/messages');
+      }
       return;
     }
     if (type === 'review' || type.includes('review')) {

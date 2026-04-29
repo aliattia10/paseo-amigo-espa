@@ -1,0 +1,17 @@
+---
+description: Diagnose and fix recurring match-to-message failures end-to-end.
+alwaysApply: true
+---
+
+# Messages Diagnostics Super Prompt
+
+When users report messaging failures ("no conversations", cannot send after match, notification can't open chat):
+
+1. Trace full path: like/match creation -> conversation open -> message send -> notification deep-link.
+2. Support both matches schemas everywhere:
+   - (`user1_id`, `user2_id`)
+   - (`user_id`, `matched_user_id`)
+3. Use stable deep-links for match notifications (`/messages?matchId=...`) and resolve participant safely.
+4. Avoid false-negative empty states caused by race conditions while matchId is resolving.
+5. Keep send action disabled only for true blockers, not transient resolution states.
+6. Add best-effort diagnostics in dev logs, but keep UX calm in production.
