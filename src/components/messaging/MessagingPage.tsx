@@ -33,6 +33,24 @@ const MessagingPage: React.FC = () => {
     matchId?: string;
   } | null>(null);
 
+  const findMatchBetweenUsers = async (uid: string, otherId: string) => {
+    const { data: dataB } = await supabase
+      .from('matches')
+      .select('id, user1_id, user2_id')
+      .or(`and(user1_id.eq.${uid},user2_id.eq.${otherId}),and(user1_id.eq.${otherId},user2_id.eq.${uid})`)
+      .limit(1)
+      .maybeSingle();
+    if (dataB?.id) return dataB.id as string;
+
+    const { data: dataA } = await supabase
+      .from('matches')
+      .select('id, user_id, matched_user_id')
+      .or(`and(user_id.eq.${uid},matched_user_id.eq.${otherId}),and(user_id.eq.${otherId},matched_user_id.eq.${uid})`)
+      .limit(1)
+      .maybeSingle();
+    return (dataA?.id as string) || null;
+  };
+
   // 1) Optimistic open from match modal: use navigation state so the conversation shows immediately
   useEffect(() => {
     const state = location.state as OpenMatchState | null;
@@ -66,35 +84,10 @@ const MessagingPage: React.FC = () => {
 
     const resolve = async () => {
       try {
-        let matchesList: any[] | null = null;
-        const { data: dataB, error: errB } = await supabase
-          .from('matches')
-          .select('id, user1_id, user2_id')
-          .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
-        if (errB?.code === '42703' || errB?.status === 400 || (errB?.message && String(errB.message).includes('user1_id'))) {
-          const { data: dataA } = await supabase
-            .from('matches')
-            .select('id, user_id, matched_user_id')
-            .or(`user_id.eq.${uid},matched_user_id.eq.${uid}`);
-          matchesList = dataA ?? null;
-          const match = matchesList?.find(
-            (m: any) =>
-              (m.user_id === uid && m.matched_user_id === otherId) || (m.matched_user_id === uid && m.user_id === otherId)
-          );
-          if (cancelled || !match?.id) return;
-          setSelectedChat((prev) =>
-            prev && prev.otherUser.id === otherId ? { ...prev, matchId: match.id } : prev
-          );
-          return;
-        }
-        matchesList = dataB ?? null;
-        const match = matchesList?.find(
-          (m: any) =>
-            (m.user1_id === uid && m.user2_id === otherId) || (m.user1_id === otherId && m.user2_id === uid)
-        );
-        if (cancelled || !match?.id) return;
+        const matchId = await findMatchBetweenUsers(uid, otherId);
+        if (cancelled || !matchId) return;
         setSelectedChat((prev) =>
-          prev && prev.otherUser.id === otherId ? { ...prev, matchId: match.id } : prev
+          prev && prev.otherUser.id === otherId ? { ...prev, matchId } : prev
         );
       } catch (e) {
         if (import.meta.env.DEV) console.error('Resolve matchId:', e);
@@ -115,27 +108,7 @@ const MessagingPage: React.FC = () => {
     const openChatForUser = async () => {
       try {
         const uid = String(currentUser.id).trim();
-        let matchesList: any[] | null = null;
-        const { data: dataB, error: errB } = await supabase
-          .from('matches')
-          .select('id, user1_id, user2_id')
-          .or(`user1_id.eq.${uid},user2_id.eq.${uid}`);
-        if (errB?.code === '42703' || errB?.status === 400 || (errB?.message && String(errB.message).includes('user1_id'))) {
-          const { data: dataA } = await supabase
-            .from('matches')
-            .select('id, user_id, matched_user_id')
-            .or(`user_id.eq.${uid},matched_user_id.eq.${uid}`);
-          matchesList = dataA ?? null;
-        } else {
-          matchesList = dataB ?? null;
-        }
-        const match = matchesList?.find((m: any) => {
-          if (m.user_id != null) {
-            return (m.user_id === uid && m.matched_user_id === userId) || (m.matched_user_id === uid && m.user_id === userId);
-          }
-          return (m.user1_id === uid && m.user2_id === userId) || (m.user1_id === userId && m.user2_id === uid);
-        });
-        const matchId = match?.id;
+        const matchId = await findMatchBetweenUsers(uid, userId);
         if (!matchId) return;
 
         const { data: userData } = await supabase
@@ -201,7 +174,8 @@ const MessagingPage: React.FC = () => {
           if (otherId) {
             matchRow = { id: mB.id, otherId };
           }
-        } else {
+        }
+        if (!matchRow) {
           // Fallback legacy schema
           const { data: mA } = await supabase
             .from('matches')

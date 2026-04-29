@@ -117,6 +117,10 @@ const NewHomePage: React.FC = () => {
     const a = String(userA).trim();
     const b = String(userB).trim();
     const matchId = await resolveMatchId(a, b);
+    if (!matchId) {
+      if (import.meta.env.DEV) console.debug('Skipping match notification because match row is missing');
+      return;
+    }
 
     const makeNotif = async (targetUserId: string, counterpartName: string) => {
       const payload = {
@@ -710,13 +714,21 @@ const NewHomePage: React.FC = () => {
             .maybeSingle();
           
           if (mutualLike) {
-            isMatch = true;
             // Create match record between owner and sitter
-            const { data: matchResult } = await supabase.rpc('check_and_create_match', {
+            const { error: createMatchError } = await supabase.rpc('check_and_create_match', {
               liker_user_id: petData.owner_id,
               liked_user_id: currentUser.id
             });
-            await ensureMatchNotifications(petData.owner_id, currentUser.id, profile.name);
+            if (createMatchError && import.meta.env.DEV) {
+              console.warn('check_and_create_match failed:', createMatchError.message);
+            }
+            const matchId = await resolveMatchId(petData.owner_id, currentUser.id);
+            isMatch = !!matchId;
+            if (!isMatch) {
+              if (import.meta.env.DEV) console.warn('Mutual like detected but no match row created');
+            } else {
+              await ensureMatchNotifications(petData.owner_id, currentUser.id, profile.name);
+            }
             
             // Get owner's name for match modal
             const { data: ownerData } = await supabase
@@ -725,29 +737,31 @@ const NewHomePage: React.FC = () => {
               .eq('id', petData.owner_id)
               .single();
             
-            // Play match sound based on pet type
-            const petType = profile.petType || 'dog';
-            playMatchSound(petType);
-            
-            let ownerImageUrl = profile.imageUrls[0];
-            if (ownerData?.profile_image) {
-              try {
-                const parsed = JSON.parse(ownerData.profile_image);
-                ownerImageUrl = Array.isArray(parsed) ? parsed[0] : ownerData.profile_image;
-              } catch {
-                ownerImageUrl = ownerData.profile_image;
+            if (isMatch) {
+              // Play match sound based on pet type
+              const petType = profile.petType || 'dog';
+              playMatchSound(petType);
+              
+              let ownerImageUrl = profile.imageUrls[0];
+              if (ownerData?.profile_image) {
+                try {
+                  const parsed = JSON.parse(ownerData.profile_image);
+                  ownerImageUrl = Array.isArray(parsed) ? parsed[0] : ownerData.profile_image;
+                } catch {
+                  ownerImageUrl = ownerData.profile_image;
+                }
               }
+              
+              setMatchedUser({
+                id: petData.owner_id,
+                name: ownerData?.name || t('home.petOwner'),
+                imageUrl: ownerImageUrl,
+                petType: petType,
+                petCardId: profile.id,
+              });
+              setShowMatchModal(true);
+              showedMatchModal = true;
             }
-            
-            setMatchedUser({
-              id: petData.owner_id,
-              name: ownerData?.name || t('home.petOwner'),
-              imageUrl: ownerImageUrl,
-              petType: petType,
-              petCardId: profile.id,
-            });
-            setShowMatchModal(true);
-            showedMatchModal = true;
           }
         }
         

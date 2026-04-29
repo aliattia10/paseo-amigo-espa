@@ -76,14 +76,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
     const oid = String(otherUser.id).trim();
 
     (async () => {
-      const { data: dataB, error: errB } = await supabase
+      const { data: dataB } = await supabase
         .from('matches')
         .select('id, user1_id, user2_id')
         .or(`and(user1_id.eq.${uid},user2_id.eq.${oid}),and(user1_id.eq.${oid},user2_id.eq.${uid})`)
         .limit(1)
         .maybeSingle();
 
-      if (!errB && dataB?.id) {
+      if (dataB?.id) {
         if (!cancelled) setResolvedMatchId(dataB.id);
         return;
       }

@@ -80,37 +80,34 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
           if (showLoading && !hasExistingData) setLoading(true);
         }
 
-        // 1) Fetch matches – try user1_id/user2_id first (most projects use this), then user_id/matched_user_id
-        let matchesData: any[] | null = null;
-        let matchesError: any = null;
-        let useUser12 = false;
-        let matchesResA: any = null;
-
+        // 1) Fetch matches from both schema variants and merge; some environments may contain mixed rows.
         const orFilterB = `user1_id.eq.${uid},user2_id.eq.${uid}`;
-        const matchesResB = await withTimeout(
-          supabase.from('matches').select('*').or(orFilterB).order('created_at', { ascending: false })
-        );
-        matchesError = matchesResB?.error ?? null;
-        if (matchesError?.code === '42703' || matchesError?.status === 400 || (matchesError?.message && String(matchesError.message).includes('user1_id'))) {
-          const orFilterA = `user_id.eq.${uid},matched_user_id.eq.${uid}`;
-          matchesResA = await withTimeout(
-            supabase.from('matches').select('*').or(orFilterA).order('created_at', { ascending: false })
-          );
-          matchesError = matchesResA?.error ?? null;
-          matchesData = matchesResA?.data ?? null;
-          useUser12 = false;
-        } else {
-          matchesData = matchesResB?.data ?? null;
-          useUser12 = true;
-        }
+        const orFilterA = `user_id.eq.${uid},matched_user_id.eq.${uid}`;
+        const [matchesResB, matchesResA] = await Promise.all([
+          withTimeout(supabase.from('matches').select('*').or(orFilterB).order('created_at', { ascending: false })),
+          withTimeout(supabase.from('matches').select('*').or(orFilterA).order('created_at', { ascending: false })),
+        ]);
 
-        const hasTimedOutRequest = (useUser12 && matchesResB === null) || (!useUser12 && matchesResA === null);
-        if (hasTimedOutRequest) {
+        const timedOut = matchesResB === null && matchesResA === null;
+        if (timedOut) {
           if (!cancelled) setLoadError(t('messages.loadFailed') || 'Could not load matches.');
-        } else if (matchesError) {
-          if (import.meta.env.DEV) console.error('Error loading matches:', matchesError);
+        } else if (matchesResB?.error && matchesResA?.error) {
+          if (import.meta.env.DEV) console.error('Error loading matches:', matchesResB.error, matchesResA.error);
           if (!cancelled) setLoadError(t('messages.loadFailed') || 'Could not load matches.');
-        } else if (matchesData && matchesData.length > 0) {
+        } else {
+          const matchesDataRaw = [
+            ...(matchesResB?.data ?? []),
+            ...(matchesResA?.data ?? []),
+          ];
+          const seen = new Set<string>();
+          const matchesData = matchesDataRaw.filter((m: any) => {
+            const id = String(m?.id || '');
+            if (!id || seen.has(id)) return false;
+            seen.add(id);
+            return true;
+          });
+
+          if (matchesData.length > 0) {
           const mutualMatches = matchesData.filter((m: any) => m.is_mutual !== false);
           if (mutualMatches.length === 0) {
             if (!cancelled) setMatches([]);
@@ -136,11 +133,9 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
             }
 
             const getUserId = (m: any) => {
-              if (useUser12) {
-                const u1 = String(m.user1_id || '').trim();
-                const u2 = String(m.user2_id || '').trim();
-                return u1 === uid ? u2 : u1;
-              }
+              const u1 = String(m.user1_id || '').trim();
+              const u2 = String(m.user2_id || '').trim();
+              if (u1 || u2) return u1 === uid ? u2 : u1;
               const u = String(m.user_id || '').trim();
               const mu = String(m.matched_user_id || '').trim();
               return u === uid ? mu : u;
@@ -188,8 +183,10 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
             );
             if (!cancelled) setMatches(matchesWithUsers.filter((m: any) => m.otherUser));
           }
-        } else if (Array.isArray(matchesData) && matchesData.length === 0) {
-          if (!cancelled) setMatches([]);
+          }
+          else {
+            if (!cancelled) setMatches([]);
+          }
         }
 
         if (userProfile?.id && userProfile?.userType) {
