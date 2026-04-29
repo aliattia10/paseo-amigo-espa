@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +39,7 @@ interface ChatListProps {
 }
 
 const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => {
-  const { userProfile, currentUser } = useAuth();
+  const { userProfile, currentUser, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [walkRequests, setWalkRequests] = useState<WalkRequest[]>([]);
@@ -47,12 +47,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
-  const matchIdsRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    matchIdsRef.current = new Set(matches.map((m) => m.id));
-  }, [matches]);
-
   useEffect(() => {
     const TIMEOUT_MS = 8000;
     const withTimeout = <T,>(p: Promise<T>): Promise<T | null> =>
@@ -60,7 +54,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
     let cancelled = false;
 
     const loadChats = async (showLoading = true) => {
-      if (!userProfile || !currentUser?.id) {
+      if (!currentUser?.id) {
         if (!cancelled) setLoading(false);
         return;
       }
@@ -198,16 +192,20 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
           if (!cancelled) setMatches([]);
         }
 
-        try {
-          const requests = userProfile.userType === 'owner'
-            ? await getWalkRequestsByOwner(userProfile.id)
-            : await getWalkRequestsByWalker(userProfile.id);
-          const activeRequests = requests.filter(
-            request => ['pending', 'accepted', 'in-progress'].includes(request.status)
-          );
-          if (!cancelled) setWalkRequests(activeRequests);
-        } catch (requestError) {
-          if (import.meta.env.DEV) console.warn('Walk request loading skipped:', requestError);
+        if (userProfile?.id && userProfile?.userType) {
+          try {
+            const requests = userProfile.userType === 'owner'
+              ? await getWalkRequestsByOwner(userProfile.id)
+              : await getWalkRequestsByWalker(userProfile.id);
+            const activeRequests = requests.filter(
+              request => ['pending', 'accepted', 'in-progress'].includes(request.status)
+            );
+            if (!cancelled) setWalkRequests(activeRequests);
+          } catch (requestError) {
+            if (import.meta.env.DEV) console.warn('Walk request loading skipped:', requestError);
+          }
+        } else if (!cancelled) {
+          setWalkRequests([]);
         }
       } catch (error: any) {
         if (import.meta.env.DEV) console.error('Error loading chats:', error);
@@ -240,12 +238,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
-          const row = payload.new as Record<string, unknown>;
-          if (row?.sender_id === currentUser.id || row?.receiver_id === currentUser.id) {
-            loadChats(false);
-          } else if (typeof row?.match_id === 'string' && matchIdsRef.current.has(row.match_id)) {
-            loadChats(false);
-          }
+          loadChats(false);
         }
       )
       .subscribe();
@@ -298,7 +291,7 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat, refreshTrigger }) => 
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-[12rem] flex-1 items-center justify-center">
         <div className="text-center">

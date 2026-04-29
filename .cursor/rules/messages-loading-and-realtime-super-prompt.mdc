@@ -1,0 +1,20 @@
+---
+description: Prevent false empty states during page transitions and keep messaging realtime.
+alwaysApply: true
+---
+
+# Messages Loading + Realtime Super Prompt
+
+When users report "No conversations" flashes or delayed message updates:
+
+1. Treat route/profile initialization as async and show loading state until chat prerequisites are resolved.
+2. Never render empty-state conclusions from partial context (e.g. auth loaded but profile or match query still initializing).
+3. Keep messages and conversation list realtime:
+   - subscribe to inserts on `messages`,
+   - refresh list immediately on message events,
+   - avoid requiring manual page refresh/navigation for updates.
+4. Prefer resilient fallbacks over hard failure:
+   - if profile enrichment fails, still show conversation shell from match data.
+5. Keep UX calm:
+   - loading spinner/skeleton first,
+   - empty state only when data fetch is truly complete.
