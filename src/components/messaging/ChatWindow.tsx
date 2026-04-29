@@ -464,7 +464,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col p-0 bg-background-light dark:bg-background-dark">
+      <CardContent className="min-h-0 flex-1 flex flex-col p-0 bg-background-light dark:bg-background-dark">
         {chatBookings.length > 0 && (
           <div className="flex-shrink-0 border-b border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-3 py-2">
             <div className="flex items-center gap-2 mb-2">
@@ -524,7 +524,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
             </button>
           </div>
         )}
-        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide p-4 bg-background-light dark:bg-background-dark">
+        <div
+          ref={scrollAreaRef}
+          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide p-4 bg-background-light dark:bg-background-dark touch-pan-y"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <MessageCircle className="w-12 h-12 text-gray-500 dark:text-gray-400 mb-4" />

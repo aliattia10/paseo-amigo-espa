@@ -320,7 +320,7 @@ const MessagingPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-4 pb-24 pt-4">
+      <div className={`flex min-h-0 flex-1 flex-col px-4 pt-4 ${selectedChat ? 'pb-4' : 'pb-24'}`}>
         {selectedChat ? (
           <ChatWindow
             walkRequest={selectedChat.walkRequest}
@@ -333,7 +333,7 @@ const MessagingPage: React.FC = () => {
         )}
       </div>
 
-      <BottomNavigation unreadNotifications={unreadNotifications} />
+      {!selectedChat && <BottomNavigation unreadNotifications={unreadNotifications} />}
     </div>
   );
 };
