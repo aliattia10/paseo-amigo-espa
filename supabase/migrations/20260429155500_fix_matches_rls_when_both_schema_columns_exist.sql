@@ -74,31 +74,40 @@ BEGIN
   ) INTO has_user12_pair;
 
   IF has_user_pair AND has_user12_pair THEN
-    SELECT EXISTS (
-      SELECT 1
-      FROM public.matches m
-      WHERE m.id = p_match_id
-        AND (
-          m.user_id = p_user_id OR m.matched_user_id = p_user_id
-          OR m.user1_id = p_user_id OR m.user2_id = p_user_id
-        )
-    ) INTO result;
+    EXECUTE
+      'SELECT EXISTS (
+         SELECT 1
+         FROM public.matches m
+         WHERE m.id = $1
+           AND (
+             m.user_id = $2 OR m.matched_user_id = $2
+             OR m.user1_id = $2 OR m.user2_id = $2
+           )
+       )'
+    INTO result
+    USING p_match_id, p_user_id;
     RETURN result;
   ELSIF has_user_pair THEN
-    SELECT EXISTS (
-      SELECT 1
-      FROM public.matches m
-      WHERE m.id = p_match_id
-        AND (m.user_id = p_user_id OR m.matched_user_id = p_user_id)
-    ) INTO result;
+    EXECUTE
+      'SELECT EXISTS (
+         SELECT 1
+         FROM public.matches m
+         WHERE m.id = $1
+           AND (m.user_id = $2 OR m.matched_user_id = $2)
+       )'
+    INTO result
+    USING p_match_id, p_user_id;
     RETURN result;
   ELSIF has_user12_pair THEN
-    SELECT EXISTS (
-      SELECT 1
-      FROM public.matches m
-      WHERE m.id = p_match_id
-        AND (m.user1_id = p_user_id OR m.user2_id = p_user_id)
-    ) INTO result;
+    EXECUTE
+      'SELECT EXISTS (
+         SELECT 1
+         FROM public.matches m
+         WHERE m.id = $1
+           AND (m.user1_id = $2 OR m.user2_id = $2)
+       )'
+    INTO result
+    USING p_match_id, p_user_id;
     RETURN result;
   END IF;
 

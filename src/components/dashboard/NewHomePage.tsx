@@ -95,34 +95,48 @@ const NewHomePage: React.FC = () => {
   const resolveMatchId = async (userA: string, userB: string): Promise<string | null> => {
     const a = String(userA).trim();
     const b = String(userB).trim();
-
-    const { data: dataB, error: errB } = await (supabase as any)
+    // Schema-agnostic lookup: avoid column-specific filters that can 400 in mixed environments.
+    const { data: raw } = await (supabase as any)
       .from('matches')
-      .select('id, user1_id, user2_id')
-      .or(`and(user1_id.eq.${a},user2_id.eq.${b}),and(user1_id.eq.${b},user2_id.eq.${a})`)
-      .limit(1)
-      .maybeSingle();
-    if (!errB && dataB?.id) return dataB.id as string;
-
-    const { data: dataA } = await (supabase as any)
-      .from('matches')
-      .select('id, user_id, matched_user_id')
-      .or(`and(user_id.eq.${a},matched_user_id.eq.${b}),and(user_id.eq.${b},matched_user_id.eq.${a})`)
-      .limit(1)
-      .maybeSingle();
-    return (dataA?.id as string) || null;
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    const match = (raw || []).find((m: any) => {
+      const u1 = String(m.user1_id || '').trim();
+      const u2 = String(m.user2_id || '').trim();
+      const u = String(m.user_id || '').trim();
+      const mu = String(m.matched_user_id || '').trim();
+      return (u1 && u2 && ((u1 === a && u2 === b) || (u1 === b && u2 === a)))
+        || (u && mu && ((u === a && mu === b) || (u === b && mu === a)));
+    });
+    return (match?.id as string) || null;
   };
 
   const ensureMatchNotifications = async (userA: string, userB: string, otherName: string) => {
     const a = String(userA).trim();
     const b = String(userB).trim();
-    const matchId = await resolveMatchId(a, b);
+    let matchId = await resolveMatchId(a, b);
+    if (!matchId) {
+      // Retry once by asking DB to ensure match row exists for mutual likes.
+      await supabase.rpc('check_and_create_match', { liker_user_id: a, liked_user_id: b });
+      matchId = await resolveMatchId(a, b);
+    }
     if (!matchId) {
       if (import.meta.env.DEV) console.debug('Skipping match notification because match row is missing');
       return;
     }
 
     const makeNotif = async (targetUserId: string, counterpartName: string) => {
+      const { data: existing } = await (supabase as any)
+        .from('notifications')
+        .select('id')
+        .eq('user_id', targetUserId)
+        .eq('type', 'match')
+        .eq('related_id', matchId)
+        .limit(1)
+        .maybeSingle();
+      if (existing?.id) return;
+
       const payload = {
         user_id: targetUserId,
         type: 'match',
