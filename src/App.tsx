@@ -40,14 +40,20 @@ import AvailabilityPage from "./pages/AvailabilityPage";
 import BookingsPage from "./pages/BookingsPage";
 import BookingRequestPage from "./pages/BookingRequestPage";
 import PaymentPage from "./pages/PaymentPage";
-import { PayoutSetupPage } from "./pages/PayoutSetupPage";
+import PayoutMethodsPage from "./pages/PayoutMethodsPage";
 import AdminPayoutsPage from "./pages/AdminPayoutsPage";
 import AdminVerificationsPage from "./pages/AdminVerificationsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminGuard from "./components/admin/AdminGuard";
 import LandingPageGeneva from "./pages/LandingPageGeneva";
+import AppLandingSimplePage from "./pages/AppLandingSimplePage";
 import AboutUsPage from "./pages/AboutUsPage";
+import CareersPage from "./pages/CareersPage";
 import ContactPage from "./pages/ContactPage";
+import ForOwnersPage from "./pages/ForOwnersPage";
+import ForSittersPage from "./pages/ForSittersPage";
+import HowItWorksPage from "./pages/HowItWorksPage";
+import PricingPage from "./pages/PricingPage";
 import UserAgreementPage from "./pages/UserAgreementPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
@@ -729,8 +735,14 @@ const App = () => (
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
                 <Route path="/home" element={<LandingPageGeneva />} />
+                <Route path="/app-home" element={<AppLandingSimplePage />} />
                 <Route path="/about" element={<AboutUsPage />} />
+                <Route path="/careers" element={<CareersPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/for-owners" element={<ForOwnersPage />} />
+                <Route path="/for-sitters" element={<ForSittersPage />} />
+                <Route path="/how-it-works" element={<HowItWorksPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/user-agreement" element={<UserAgreementPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
@@ -907,7 +919,7 @@ const App = () => (
                   path="/payout-methods" 
                   element={
                     <ProtectedRoute>
-                      <PayoutSetupPage />
+                      <PayoutMethodsPage />
                     </ProtectedRoute>
                   } 
                 />
@@ -915,7 +927,7 @@ const App = () => (
                   path="/payout-setup"
                   element={
                     <ProtectedRoute>
-                      <PayoutSetupPage />
+                      <Navigate to="/payout-methods" replace />
                     </ProtectedRoute>
                   }
                 />

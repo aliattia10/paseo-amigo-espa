@@ -626,10 +626,10 @@ function FinalCTA({ goSignup, goSignin }: LandingHandlers) {
   );
 }
 
-function Footer({ goSignup, goRoute }: LandingHandlers) {
+function Footer({ goRoute }: Pick<LandingHandlers, 'goRoute'>) {
   const columns = [
-    { title: 'Platform', links: [['For Owners', goSignup], ['For Sitters', goSignup], ['How It Works', () => { window.location.hash = 'how-it-works'; }], ['Pricing', goSignup]] },
-    { title: 'Company', links: [['About', () => goRoute('/about')], ['Blog', () => goRoute('/blog')], ['Careers', goSignup], ['Contact', () => goRoute('/contact')]] },
+    { title: 'Platform', links: [['For Owners', () => goRoute('/for-owners')], ['For Sitters', () => goRoute('/for-sitters')], ['How It Works', () => goRoute('/how-it-works')], ['Pricing', () => goRoute('/pricing')]] },
+    { title: 'Company', links: [['About', () => goRoute('/about')], ['Blog', () => goRoute('/blog')], ['Careers', () => goRoute('/careers')], ['Contact', () => goRoute('/contact')]] },
     { title: 'Legal', links: [['Terms & Conditions', () => goRoute('/terms')], ['Privacy Policy', () => goRoute('/privacy')], ['Refund Policy', () => goRoute('/refund-policy')], ['Code of Conduct', () => goRoute('/code-of-conduct')]] },
   ] as const;
 
@@ -652,7 +652,7 @@ function Footer({ goSignup, goRoute }: LandingHandlers) {
               </div>
               <div className="flex items-center gap-2 text-sm text-sage-300">
                 <Mail size={14} />
-                <a href="mailto:hello@petflik.com" className="transition-colors hover:text-white">hello@petflik.com</a>
+                <a href="mailto:info@petflik.com" className="transition-colors hover:text-white">info@petflik.com</a>
               </div>
             </div>
           </div>

@@ -111,6 +111,16 @@ const TermsPage: React.FC = () => {
                 {' '}for how document and liveness checks work at a high level.
               </p>
             </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">10. Support and Refund Contact</h2>
+              <p>
+                If you need billing help, a refund review, or assistance with a dispute, contact
+                {' '}
+                <a href="mailto:info@petflik.com" className="text-medium-jungle underline">info@petflik.com</a>.
+                We will review requests according to this Terms page and our Refund Policy.
+              </p>
+            </section>
           </div>
         </div>
       </div>

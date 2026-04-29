@@ -1,0 +1,15 @@
+---
+description: Prefer payout UX that does not force Stripe Connect account creation.
+alwaysApply: true
+---
+
+# Payout Strategy Without Stripe Connect
+
+When implementing payout UX:
+
+1. Do not require users to create or onboard a Stripe Connect account in first-run flow.
+2. Prefer direct payout method collection (bank details) in-app.
+3. Keep payout requests functional through existing `payout_requests` pipeline.
+4. If a "card payout" is requested, avoid collecting full card PAN directly in app UI unless PCI scope is explicitly addressed. Favor compliant provider-hosted flows or bank transfer fallback.
+5. Maintain clear user messaging: payout setup should be simple, low-friction, and trust-focused.
+6. Remove or bypass legacy Stripe Connect onboarding routes from user-facing navigation.

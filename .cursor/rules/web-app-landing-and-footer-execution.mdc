@@ -1,0 +1,20 @@
+---
+description: Execute footer link completion, missing page creation, and web-vs-app landing split.
+alwaysApply: true
+---
+
+# Web vs App Landing + Footer Completion
+
+When asked to fix landing/footer navigation:
+
+1. Ensure every visible footer link resolves to an existing route/page.
+2. Create missing pages with production-appropriate placeholder content (not dead links).
+3. Keep web landing (`/home`) and native-app landing distinct when requested.
+4. Prefer a simpler swipe/Tinder-style app landing for native contexts.
+5. Standardize support email references to requested canonical address.
+6. Verify by:
+   - route map check,
+   - lint/build checks,
+   - manual path sanity list in runbook/docs.
+
+Do not leave "coming soon" links without a route. If a page is intentionally minimal, it must still be complete enough for App Review context.

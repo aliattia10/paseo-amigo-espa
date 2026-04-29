@@ -53,6 +53,24 @@ const PrivacyPolicyPage: React.FC = () => {
                 You also have rights under the GDPR regarding access and deletion of your data.
               </p>
             </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">5. Account Deletion</h2>
+              <p>
+                You can request account deletion directly from your profile settings in the app. If you need help,
+                contact us at <a href="mailto:info@petflik.com" className="text-medium-jungle underline">info@petflik.com</a>.
+                We process verified deletion requests in line with applicable legal retention obligations.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">6. Contact</h2>
+              <p>
+                For privacy questions or data requests, contact
+                {' '}
+                <a href="mailto:info@petflik.com" className="text-medium-jungle underline">info@petflik.com</a>.
+              </p>
+            </section>
           </div>
         </div>
       </div>

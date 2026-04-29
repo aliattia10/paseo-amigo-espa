@@ -48,6 +48,9 @@ const ContactPage: React.FC = () => {
               <div>
                 <h3 className="font-bold text-gray-900 dark:text-white">Email</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">info@petflik.com</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  Use this address for refunds, disputes, and account deletion support.
+                </p>
               </div>
             </div>
 

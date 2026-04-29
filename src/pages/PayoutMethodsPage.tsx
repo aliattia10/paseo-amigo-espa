@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { validateEmail, validateIBAN, validateBankName, validateAccountHolderName, formatIBAN } from '@/lib/validation';
+import { validateIBAN, validateBankName, validateAccountHolderName, formatIBAN } from '@/lib/validation';
 
 const PayoutMethodsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -15,7 +15,7 @@ const PayoutMethodsPage: React.FC = () => {
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);
-  const [payoutMethod, setPayoutMethod] = useState<'paypal' | 'bank'>('paypal');
+  const payoutMethod = 'bank' as const;
   const [formData, setFormData] = useState({
     paypalEmail: '',
     bankName: '',
@@ -31,7 +31,6 @@ const PayoutMethodsPage: React.FC = () => {
     message?: string;
   } | null>(null);
   const [errors, setErrors] = useState<{
-    paypalEmail?: string;
     iban?: string;
     bankName?: string;
     accountHolderName?: string;
@@ -51,7 +50,8 @@ const PayoutMethodsPage: React.FC = () => {
           .single();
         
         if (userData) {
-          setPayoutMethod(userData.payout_method || 'paypal');
+          // Stripe Connect is intentionally not required in this flow.
+          // Keep payout setup simple via direct bank details.
           setFormData({
             paypalEmail: userData.paypal_email || '',
             bankName: userData.bank_name || '',
@@ -120,30 +120,22 @@ const PayoutMethodsPage: React.FC = () => {
     loadPayoutInfo();
   }, [currentUser]);
 
-  // Validate form based on selected method
+  // Validate direct bank payout details
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
+    const ibanValidation = validateIBAN(formData.iban);
+    if (!ibanValidation.isValid) {
+      newErrors.iban = ibanValidation.error;
+    }
 
-    if (payoutMethod === 'paypal') {
-      const emailValidation = validateEmail(formData.paypalEmail);
-      if (!emailValidation.isValid) {
-        newErrors.paypalEmail = emailValidation.error;
-      }
-    } else {
-      const ibanValidation = validateIBAN(formData.iban);
-      if (!ibanValidation.isValid) {
-        newErrors.iban = ibanValidation.error;
-      }
+    const bankNameValidation = validateBankName(formData.bankName);
+    if (!bankNameValidation.isValid) {
+      newErrors.bankName = bankNameValidation.error;
+    }
 
-      const bankNameValidation = validateBankName(formData.bankName);
-      if (!bankNameValidation.isValid) {
-        newErrors.bankName = bankNameValidation.error;
-      }
-
-      const accountHolderValidation = validateAccountHolderName(formData.accountHolderName);
-      if (!accountHolderValidation.isValid) {
-        newErrors.accountHolderName = accountHolderValidation.error;
-      }
+    const accountHolderValidation = validateAccountHolderName(formData.accountHolderName);
+    if (!accountHolderValidation.isValid) {
+      newErrors.accountHolderName = accountHolderValidation.error;
     }
 
     setErrors(newErrors);
@@ -166,22 +158,14 @@ const PayoutMethodsPage: React.FC = () => {
     setLoading(true);
     try {
       const updateData: any = {
-        payout_method: payoutMethod,
+        payout_method: 'bank',
         updated_at: new Date().toISOString(),
       };
-
-      if (payoutMethod === 'paypal') {
-        updateData.paypal_email = formData.paypalEmail.trim().toLowerCase();
-        updateData.bank_name = null;
-        updateData.iban = null;
-        updateData.account_holder_name = null;
-      } else {
-        updateData.paypal_email = null;
-        updateData.bank_name = formData.bankName.trim();
-        // Store IBAN without spaces for consistency
-        updateData.iban = formData.iban.replace(/\s/g, '').toUpperCase();
-        updateData.account_holder_name = formData.accountHolderName.trim();
-      }
+      updateData.paypal_email = null;
+      updateData.bank_name = formData.bankName.trim();
+      // Store IBAN without spaces for consistency
+      updateData.iban = formData.iban.replace(/\s/g, '').toUpperCase();
+      updateData.account_holder_name = formData.accountHolderName.trim();
 
       const { error } = await supabase
         .from('users')
@@ -229,30 +213,18 @@ const PayoutMethodsPage: React.FC = () => {
       return;
     }
 
-    // Validate that payout method is properly set up
-    if (payoutMethod === 'paypal') {
-      const emailValidation = validateEmail(formData.paypalEmail);
-      if (!emailValidation.isValid) {
-        toast({
-          title: t('common.error'),
-          description: t('payout.addMethodFirst'),
-          variant: 'destructive',
-        });
-        return;
-      }
-    } else {
-      const ibanValidation = validateIBAN(formData.iban);
-      const bankNameValidation = validateBankName(formData.bankName);
-      const accountHolderValidation = validateAccountHolderName(formData.accountHolderName);
-      
-      if (!ibanValidation.isValid || !bankNameValidation.isValid || !accountHolderValidation.isValid) {
-        toast({
-          title: t('common.error'),
-          description: t('payout.addMethodFirst'),
-          variant: 'destructive',
-        });
-        return;
-      }
+    // Validate that bank payout method is properly set up
+    const ibanValidation = validateIBAN(formData.iban);
+    const bankNameValidation = validateBankName(formData.bankName);
+    const accountHolderValidation = validateAccountHolderName(formData.accountHolderName);
+    
+    if (!ibanValidation.isValid || !bankNameValidation.isValid || !accountHolderValidation.isValid) {
+      toast({
+        title: t('common.error'),
+        description: t('payout.addMethodFirst'),
+        variant: 'destructive',
+      });
+      return;
     }
 
     try {
@@ -262,10 +234,8 @@ const PayoutMethodsPage: React.FC = () => {
         .insert({
           sitter_id: currentUser!.id,
           amount: balance,
-          payout_method: payoutMethod,
-          payout_details: payoutMethod === 'paypal' 
-            ? formData.paypalEmail 
-            : `${formData.bankName} - ${formData.iban}`,
+          payout_method: 'bank',
+          payout_details: `${formData.bankName} - ${formData.iban}`,
           status: 'pending',
         });
 
@@ -393,83 +363,15 @@ const PayoutMethodsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Payout Method Selection */}
+        {/* Direct bank payout setup */}
         <div className="rounded-xl bg-card-light dark:bg-card-dark p-4 shadow-sm">
           <h3 className="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
             {t('payout.selectMethod')}
           </h3>
-          
-          <div className="flex gap-3 mb-4">
-            <button
-              onClick={() => setPayoutMethod('paypal')}
-              className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                payoutMethod === 'paypal'
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border-light dark:border-border-dark'
-              }`}
-            >
-              <div className="text-2xl mb-2">💳</div>
-              <div className="font-bold text-sm">PayPal</div>
-            </button>
-            
-            <button
-              onClick={() => setPayoutMethod('bank')}
-              className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                payoutMethod === 'bank'
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border-light dark:border-border-dark'
-              }`}
-            >
-              <div className="text-2xl mb-2">🏦</div>
-              <div className="font-bold text-sm">{t('payout.bankTransfer')}</div>
-            </button>
+          <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 mb-4 text-sm text-blue-800 dark:text-blue-200">
+            Direct bank payout setup only. No separate Stripe account onboarding is required for sitters.
           </div>
-
-          {/* PayPal Form */}
-          {payoutMethod === 'paypal' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">
-                  {t('payout.paypalEmail')} <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="email"
-                  value={formData.paypalEmail}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData({ ...formData, paypalEmail: value });
-                    // Real-time validation
-                    if (value && errors.paypalEmail) {
-                      const validation = validateEmail(value);
-                      if (validation.isValid) {
-                        setErrors({ ...errors, paypalEmail: undefined });
-                      } else {
-                        setErrors({ ...errors, paypalEmail: validation.error });
-                      }
-                    }
-                  }}
-                  onBlur={() => {
-                    const validation = validateEmail(formData.paypalEmail);
-                    if (!validation.isValid) {
-                      setErrors({ ...errors, paypalEmail: validation.error });
-                    }
-                  }}
-                  placeholder="your@email.com"
-                  className={`w-full ${errors.paypalEmail ? 'border-red-500' : ''}`}
-                />
-                {errors.paypalEmail && (
-                  <p className="text-xs text-red-500 mt-1">{errors.paypalEmail}</p>
-                )}
-                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
-                  {t('payout.paypalNote')}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Bank Transfer Form */}
-          {payoutMethod === 'bank' && (
-            <div className="space-y-4">
+          <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2">
                   {t('payout.accountHolderName')} <span className="text-red-500">*</span>
@@ -579,8 +481,7 @@ const PayoutMethodsPage: React.FC = () => {
               <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
                 {t('payout.bankNote')}
               </p>
-            </div>
-          )}
+          </div>
 
           <Button
             onClick={handleSave}

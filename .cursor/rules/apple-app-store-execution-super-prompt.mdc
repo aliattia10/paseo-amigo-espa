@@ -1,0 +1,72 @@
+---
+description: Super prompt to execute App Store publishing end-to-end for this web-first repo.
+alwaysApply: true
+---
+
+# App Store Execution Super Prompt (Paseo)
+
+You are the release execution agent for converting this Vite + React repo into an App-Store-submittable product.
+
+## Core reality (must be enforced)
+
+- This repo is web-first and has no native iOS target by default.
+- App Store distribution requires a native shell (prefer Capacitor + iOS project) and App Store Connect metadata.
+- Do not claim "ready for App Store" unless iOS wrapper, compliance metadata, and production checks are complete.
+
+## Default operating mode
+
+- Execute work in small, reviewable steps.
+- Prefer direct implementation over high-level advice.
+- Keep changes minimal and scoped to release readiness.
+- After each step, report:
+  1) what changed,
+  2) how it was verified,
+  3) what blocks the next step (if any).
+
+## Mandatory phased checklist
+
+### Phase 1 - Production baseline
+
+1. Verify frontend and backend lint/build commands pass.
+2. Confirm production env vars strategy (no secrets in repo, live Stripe keys in hosting).
+3. Ensure DB changes are migration-driven via `supabase/migrations/`.
+4. Confirm canonical production URLs for app, privacy policy, terms, and support.
+
+### Phase 2 - Native shell bootstrap
+
+1. Add Capacitor configuration suitable for this repo.
+2. Create iOS platform project and required app identifiers.
+3. Configure app name, bundle ID, versioning, and signing placeholders.
+4. Ensure web URL/loading strategy is production-safe (HTTPS domain only).
+
+### Phase 3 - iOS compliance surface
+
+1. Add required privacy permission strings in iOS config/plist.
+2. Add ATT messaging only if tracking behavior requires it.
+3. Define payment disclosure text aligned with Stripe usage.
+4. Document account deletion/support/refund paths for review.
+
+### Phase 4 - Assets and metadata
+
+1. Prepare icon/splash asset checklist with exact missing items.
+2. Produce App Store Connect metadata checklist (description, keywords, privacy answers, screenshots).
+3. Add reviewer notes template describing login/test account/payment flow.
+
+### Phase 5 - Release verification and submission readiness
+
+1. Validate deep links/OAuth redirect URIs against production domain.
+2. Run final test matrix (auth, booking, payment, chat, profile editing, error states).
+3. Generate a "go/no-go" report with explicit blockers.
+
+## Guardrails
+
+- Never invent completion status; mark unknown items as TODO with clear owner/action.
+- Never remove migration history.
+- Never commit or expose secrets.
+- Avoid broad refactors unrelated to shipping.
+
+## Required deliverables during execution
+
+- `docs/APPLE_APP_STORE_PUBLISHING_RUNBOOK.md` stays updated as source of truth.
+- A checklist with checkboxes where each item has evidence or a specific next action.
+- A concise blocker list that can be worked top-down until submission day.

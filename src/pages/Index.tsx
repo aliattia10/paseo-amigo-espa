@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Capacitor } from '@capacitor/core';
 import OnboardingRouter from './OnboardingRouter';
 
 const Index = () => {
@@ -20,8 +21,9 @@ const Index = () => {
   }
 
   if (!currentUser) {
-    // Redirect unauthenticated users to landing page
-    return <Navigate to="/home" replace />;
+    // Use a simpler mobile-first landing when running inside native shell.
+    const landingPath = Capacitor.isNativePlatform() ? "/app-home" : "/home";
+    return <Navigate to={landingPath} replace />;
   }
 
   // If user is logged in, redirect to dashboard

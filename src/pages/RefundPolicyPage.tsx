@@ -46,6 +46,18 @@ const RefundPolicyPage: React.FC = () => {
                 which may include a partial or full refund.
               </p>
             </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">4. How to Request a Refund</h2>
+              <p>
+                Send refund requests to
+                {' '}
+                <a href="mailto:info@petflik.com" className="text-medium-jungle underline">info@petflik.com</a>
+                {' '}
+                with your booking reference and a short description of the issue. Our support team will respond with
+                next steps and eligibility details.
+              </p>
+            </section>
           </div>
         </div>
       </div>
