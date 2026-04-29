@@ -95,7 +95,26 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ walkRequest, onClose, otherUser
         .or(`and(user_id.eq.${uid},matched_user_id.eq.${oid}),and(user_id.eq.${oid},matched_user_id.eq.${uid})`)
         .limit(1)
         .maybeSingle();
-      if (!cancelled && dataA?.id) setResolvedMatchId(dataA.id);
+      if (dataA?.id) {
+        if (!cancelled) setResolvedMatchId(dataA.id);
+        return;
+      }
+
+      // Fallback for environments where schema filters can fail.
+      const { data: raw } = await supabase
+        .from('matches')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(200);
+      const match = (raw || []).find((m: any) => {
+        const u1 = String(m.user1_id || '').trim();
+        const u2 = String(m.user2_id || '').trim();
+        const u = String(m.user_id || '').trim();
+        const mu = String(m.matched_user_id || '').trim();
+        return (u1 && u2 && ((u1 === uid && u2 === oid) || (u1 === oid && u2 === uid)))
+          || (u && mu && ((u === uid && mu === oid) || (u === oid && mu === uid)));
+      });
+      if (!cancelled && match?.id) setResolvedMatchId(match.id);
     })();
 
     return () => {

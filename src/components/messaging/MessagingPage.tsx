@@ -48,7 +48,23 @@ const MessagingPage: React.FC = () => {
       .or(`and(user_id.eq.${uid},matched_user_id.eq.${otherId}),and(user_id.eq.${otherId},matched_user_id.eq.${uid})`)
       .limit(1)
       .maybeSingle();
-    return (dataA?.id as string) || null;
+    if (dataA?.id) return dataA.id as string;
+
+    // Fallback when schema-specific filters fail in some environments.
+    const { data: raw } = await supabase
+      .from('matches')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    const match = (raw || []).find((m: any) => {
+      const u1 = String(m.user1_id || '').trim();
+      const u2 = String(m.user2_id || '').trim();
+      const u = String(m.user_id || '').trim();
+      const mu = String(m.matched_user_id || '').trim();
+      return (u1 && u2 && ((u1 === uid && u2 === otherId) || (u1 === otherId && u2 === uid)))
+        || (u && mu && ((u === uid && mu === otherId) || (u === otherId && mu === uid)));
+    });
+    return (match?.id as string) || null;
   };
 
   // 1) Optimistic open from match modal: use navigation state so the conversation shows immediately
@@ -159,37 +175,20 @@ const MessagingPage: React.FC = () => {
         const uid = String(currentUser.id).trim();
         const mid = String(qMatchId).trim();
 
-        // Try user1/user2 schema first
+        // Read full row to avoid schema-specific select failures.
         let matchRow: any = null;
-        const { data: mB, error: eB } = await supabase
+        const { data: m } = await supabase
           .from('matches')
-          .select('id, user1_id, user2_id')
+          .select('*')
           .eq('id', mid)
           .maybeSingle();
-
-        if (!eB && mB) {
-          const u1 = String(mB.user1_id || '').trim();
-          const u2 = String(mB.user2_id || '').trim();
-          const otherId = u1 === uid ? u2 : u1;
-          if (otherId) {
-            matchRow = { id: mB.id, otherId };
-          }
-        }
-        if (!matchRow) {
-          // Fallback legacy schema
-          const { data: mA } = await supabase
-            .from('matches')
-            .select('id, user_id, matched_user_id')
-            .eq('id', mid)
-            .maybeSingle();
-          if (mA) {
-            const u = String(mA.user_id || '').trim();
-            const mu = String(mA.matched_user_id || '').trim();
-            const otherId = u === uid ? mu : u;
-            if (otherId) {
-              matchRow = { id: mA.id, otherId };
-            }
-          }
+        if (m) {
+          const u1 = String(m.user1_id || '').trim();
+          const u2 = String(m.user2_id || '').trim();
+          const u = String(m.user_id || '').trim();
+          const mu = String(m.matched_user_id || '').trim();
+          const otherId = (u1 || u2) ? (u1 === uid ? u2 : u1) : (u === uid ? mu : u);
+          if (otherId) matchRow = { id: m.id, otherId };
         }
 
         if (!matchRow?.otherId) return;
